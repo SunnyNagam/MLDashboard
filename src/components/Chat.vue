@@ -3,6 +3,9 @@
     <v-toolbar color="deep-purple accent-4" dark>
       <v-toolbar-title>Contextual Assistant</v-toolbar-title>
       <v-spacer></v-spacer>
+      <v-btn icon @click="clearMessages">
+        <v-icon>mdi-delete</v-icon>
+      </v-btn>
       <v-btn icon @click="dialog = true">
         <v-icon>mdi-information</v-icon>
       </v-btn>
@@ -74,10 +77,10 @@ import VueMarkdown from "vue-markdown-render";
 import OpenAI from "openai";
 import Cookies from "vue-cookies";
 
-const openai = new OpenAI({
-  apiKey: Cookies.get("OPEN_ROUTER_API_KEY"), // defaults to process.env["OPENAI_API_KEY"]
+const openaiApi = new OpenAI({
+  apiKey: Cookies.get("OPEN_ROUTER_API_KEY"),
   baseURL: "https://openrouter.ai/api/v1",
-  dangerouslyAllowBrowser: true, // Enable this if you used OAuth to fetch a user-scoped `apiKey` above. See https://openrouter.ai/docs#oauth to learn how.
+  dangerouslyAllowBrowser: true,
 });
 
 const props = defineProps({
@@ -87,11 +90,12 @@ const props = defineProps({
   },
 });
 
-const selectedModel = ref("Ollama3");
+const selectedModel = ref("meta-llama/llama-3-8b-instruct");
 const modelChoices = [
   "anthropic/claude-3-haiku",
   "microsoft/wizardlm-2-8x22b",
   "perplexity/sonar-medium-online",
+  "meta-llama/llama-3-8b-instruct",
   "Ollama3",
 ];
 const dialog = ref(false);
@@ -99,92 +103,88 @@ const dialog = ref(false);
 const messages = ref([
   {
     role: "system",
-    content:
-      "You are a helpful dashboard and planning assistant." + props.context,
+    content: `You are a helpful dashboard and planning assistant. ${props.context}`,
   },
 ]);
+const clearMessages = () => {
+  messages.value = messages.value.filter(
+    (message, index) => message.role === "system" && index === 0
+  );
+};
 
 const lastMessage = ref(null);
 const userInput = ref("");
-watch(messages, () => {
-  if (lastMessage.value) {
-    lastMessage.value.scrollIntoView();
+
+watch(
+  () => messages.value,
+  () => {
+    if (lastMessage.value) {
+      lastMessage.value.scrollIntoView();
+    }
   }
-});
+);
 
 watch(
   () => props.context,
-  (newVal, oldVal) => {
-    console.log(newVal);
-    // handle the change here
-    messages.value[0].content =
-      "You are a helpful dashboard and planning assistant." + props.context;
+  (newContext, oldContext) => {
+    if (newContext !== oldContext) {
+      messages.value[0] = {
+        role: "system",
+        content: `You are a helpful dashboard and planning assistant. ${newContext}`,
+      };
+    }
   }
 );
-console.log(props.context);
 
-const sendMessage = async () => {
+async function sendMessageToApi(userMessage) {
+  try {
+    if (selectedModel.value !== "Ollama3") {
+      const stream = await openaiApi.chat.completions.create({
+        model: selectedModel.value,
+        messages: messages.value,
+        stream: true,
+      });
+      messages.value.push({
+        content: "",
+        role: "assistant",
+      });
+      for await (const part of stream) {
+        messages.value[messages.value.length - 1].content +=
+          part.choices[0]?.delta?.content || "";
+      }
+    } else {
+      const response = await ollama.chat({
+        model: "llama3",
+        messages: messages.value,
+        stream: true,
+      });
+      messages.value.push({
+        content: "",
+        role: "assistant",
+      });
+      for await (const part of response) {
+        messages.value[messages.value.length - 1].content +=
+          part.message.content;
+      }
+    }
+  } catch (error) {
+    console.error("Chat API error:", error);
+    messages.value.push({
+      content: "Error communicating with the chatbot.",
+      role: "assistant",
+    });
+  }
+}
+
+function sendMessage() {
   if (userInput.value.trim()) {
-    // Update local messages with user input
     const userMessage = {
       content: userInput.value,
       role: "user",
     };
     messages.value.push(userMessage);
-
-    // Prepare message for ollama
-    const message = {
-      role: "user",
-      content: userInput.value,
-    };
-
+    sendMessageToApi(userMessage);
     userInput.value = ""; // Clear input after sending
-
-    try {
-      // Send message to ollama and await the response
-      let response = null;
-
-      if (selectedModel.value != "Ollama3") {
-        const stream = await openai.chat.completions.create({
-          model: selectedModel.value,
-          messages: messages.value,
-          stream: true,
-        });
-        // Process each part of the response
-        messages.value.push({
-          content: "",
-          role: "assistant",
-        });
-        for await (const part of stream) {
-          messages.value[messages.value.length - 1].content +=
-            part.choices[0]?.delta?.content || "";
-        }
-      } else {
-        response = await ollama.chat({
-          model: "llama3",
-          messages: messages.value,
-          stream: true,
-        });
-        // Process each part of the response
-        messages.value.push({
-          content: "",
-          role: "assistant",
-        });
-        for await (const part of response) {
-          messages.value[messages.value.length - 1].content +=
-            part.message.content;
-        }
-      }
-    } catch (error) {
-      console.error("Chat API error:", error);
-      messages.value.push({
-        content: "Error communicating with the chatbot.",
-        role: "assistant",
-      });
-    }
   }
-  console.log(messages);
-};
+}
 </script>
-
-<style scoped></style>

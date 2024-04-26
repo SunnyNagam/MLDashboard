@@ -44,6 +44,12 @@ function getTodoTexts(todoItems) {
 }
 
 fetchTodoData();
+
+const chatContext = computed(
+  () =>
+    "Use the following information only if helpful: Items on user's todo list (with steps): \n\n" +
+    getTodoTexts(todo.value.Now)
+);
 </script>
 
 <template>
@@ -65,12 +71,7 @@ fetchTodoData();
         <TodoListCard title="Eventually" :collapsed="true" />
       </v-col>
       <v-col cols="15" md="5">
-        <Chat
-          :context="
-            'Use the following information only if helpful: Items on user\'s todo list (with steps): \n\n' +
-            getTodoTexts(todo.Now)
-          "
-        />
+        <Chat :context="chatContext" />
       </v-col>
     </v-row>
     <iframe
