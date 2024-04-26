@@ -1,0 +1,9 @@
+{
+    "name": "addNotionTodo",
+    "dependencies": {
+        "@notionhq/client": "^2.2.15"
+    },
+    "scripts": {
+        "locally": "node --input-type=module -e \"import pkg from './index.js'; console.log(await pkg.handler());\""
+    }
+}

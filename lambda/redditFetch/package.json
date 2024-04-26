@@ -1,0 +1,9 @@
+{
+    "name": "redditFetch",
+    "dependencies": {
+        "axios": "^1.6.8"
+    },
+    "scripts": {
+        "locally": "node --input-type=module -e \"import pkg from './index.js'; console.log(await pkg.handler());\""
+    }
+}

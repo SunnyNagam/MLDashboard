@@ -1,0 +1,65 @@
+<template>
+  <v-dialog v-model="editDialog" max-width="500px">
+    <v-card>
+      <v-card-title>
+        <span class="text-h5">Edit item</span>
+      </v-card-title>
+      <v-card-text>
+        <v-text-field
+          v-model="editItemText"
+          label="Edit item"
+          autofocus
+        ></v-text-field>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="blue darken-1" text @click="toggle">Close</v-btn>
+        <v-btn color="blue darken-1" text @click="saveEdit">Save</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+</template>
+
+<script setup>
+import { defineProps, defineEmits, ref, watch, nextTick } from "vue";
+
+const props = defineProps({
+  item: {
+    type: Object,
+    default: () => [],
+  },
+  active: {
+    type: Boolean,
+    default: false,
+  },
+});
+watch(
+  () => props.active,
+  (newValue) => {
+    nextTick(() => {
+      editDialog.value = newValue;
+      if (newValue) {
+        editItem.value = props.item;
+        editItemText.value = props.item.text;
+        editItemId.value = props.item.id;
+      }
+    });
+  }
+);
+
+const emit = defineEmits(["save", "toggle"]);
+
+const editDialog = ref(props.active);
+const editItem = ref(props.item);
+const editItemText = ref(props.item.text);
+const editItemId = ref(props.item.id);
+
+const saveEdit = () => {
+  emit("save", editItemText.value, editItemId.value, editItem.value);
+  toggle();
+};
+
+const toggle = () => {
+  emit("toggle", false);
+};
+</script>
