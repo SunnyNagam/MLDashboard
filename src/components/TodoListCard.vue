@@ -1,6 +1,6 @@
 <template>
-  <v-card class="mx-auto" max-width="600">
-    <v-toolbar color="blue darken-2" dark>
+  <v-card class="mx-auto" max-width="600" elevation="2" rounded="lg">
+    <v-toolbar color="primary" dark>
       <v-btn icon @click="showList = !showList">
         <v-icon>{{ showList ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
       </v-btn>
@@ -13,8 +13,14 @@
         <v-icon>mdi-sort-variant</v-icon>
       </v-btn>
     </v-toolbar>
+    <v-progress-linear
+      v-if="apiIsLoading"
+      indeterminate
+      class="mx-auto"
+      size="64"
+    ></v-progress-linear>
 
-    <v-list v-if="showList">
+    <v-list v-show="showList">
       <v-list-group v-for="item in todo" :key="item.id">
         <template v-slot:activator="{ props }">
           <v-list-item
@@ -42,16 +48,16 @@
                   >mdi-table-row-plus-after</v-icon
                 >
                 <v-icon
-                  @click="
+                  @click.stop="
                     addDialog = true;
                     addParentID = item.id;
                   "
                   >mdi-plus</v-icon
                 >
-                <v-icon @click="removeItem(item.id)" color="red"
+                <v-icon @click.stop="removeItem(item.id)" color="red"
                   >mdi-delete</v-icon
                 >
-                <v-icon @click="editItem(item)">mdi-pencil</v-icon>
+                <v-icon @click.stop="editItem(item)">mdi-pencil</v-icon>
               </div>
             </template>
           </v-list-item>
@@ -77,68 +83,65 @@
               ></v-checkbox-btn>
             </v-list-item-action>
           </template>
-          <v-list-item-title>
-            {{ subTask.text }}
-          </v-list-item-title>
+          <v-list-item-title>{{ subTask.text }}</v-list-item-title>
           <template v-slot:append>
             <div class="invisible group-hover:visible">
               <v-icon
-                @click="
+                @click.stop="
                   addDialog = true;
                   addAfterID = subTask.id;
                   addParentID = item.id;
                 "
                 >mdi-table-row-plus-after</v-icon
               >
-              <v-icon @click="removeItem(subTask.id)" color="red"
+              <v-icon @click.stop="removeItem(subTask.id)" color="red"
                 >mdi-delete</v-icon
               >
-              <v-icon @click="editItem(subTask)">mdi-pencil</v-icon>
+              <v-icon @click.stop="editItem(subTask)">mdi-pencil</v-icon>
             </div>
           </template>
         </v-list-item>
       </v-list-group>
     </v-list>
+
+    <TodoEditDialog
+      :active="editDialog"
+      :item="editDialogItem"
+      @save="saveEdit"
+      @toggle="editDialog = $event"
+    ></TodoEditDialog>
+
+    <v-dialog v-model="addDialog" max-width="500px">
+      <v-card>
+        <v-card-title>
+          <span class="text-h5">Add a new item</span>
+        </v-card-title>
+
+        <v-card-text>
+          <v-text-field
+            v-model="newItemText"
+            label="New item"
+            autofocus
+          ></v-text-field>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" text @click="addDialog = false">Close</v-btn>
+          <v-btn color="primary" text @click="addItem(newItemText)">Save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
-  <TodoEditDialog
-    :active="editDialog"
-    :item="editDialogItem"
-    @save="saveEdit"
-    @toggle="editDialog = $event"
-  ></TodoEditDialog>
-  <v-dialog v-model="addDialog" max-width="500px">
-    <v-card>
-      <v-card-title>
-        <span class="text-h5">Add a new item</span>
-      </v-card-title>
-
-      <v-card-text>
-        <v-text-field
-          v-model="newItemText"
-          label="New item"
-          autofocus
-        ></v-text-field>
-      </v-card-text>
-
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn color="blue darken-1" text @click="addDialog = false"
-          >Close</v-btn
-        >
-        <v-btn color="blue darken-1" text @click="addItem(newItemText)"
-          >Save</v-btn
-        >
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref, watch } from "vue";
+import { defineProps, defineEmits, ref, watch, computed } from "vue";
 import TodoEditDialog from "./TodoEditDialog.vue";
 import { useApi } from "@/useAPI.js";
 
 const { setApiKey, getApiKey } = useApi();
+const apiIsLoading = ref(false);
 
 const props = defineProps({
   title: {
@@ -153,25 +156,23 @@ const props = defineProps({
 
 const todo = ref([{ text: "Loading...", id: "..." }]);
 
-const getTodo = async () => {
-  console.log(todo.value);
-  fetch("https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/fetch", {
-    headers: {
-      "X-Api-Key": getApiKey(),
-    },
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      todo.value = data[props.title];
-      console.log("Todo List index: ", props.title);
-      console.log("Todo items:", data[props.title]);
-    })
-    .catch((error) => console.log("Error fetching data:", error));
+const fetchTodo = async () => {
+  apiIsLoading.value = true;
+  const response = await fetch(
+    "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/fetch",
+    {
+      headers: {
+        "X-Api-Key": getApiKey(),
+      },
+    }
+  );
+  const data = await response.json();
+  todo.value = data[props.title];
+  apiIsLoading.value = false;
 };
 
 const expandedItems = ref({});
 const toggleExpanded = (itemId) => {
-  console.log(todo.value);
   if (expandedItems.value[itemId]) {
     delete expandedItems.value[itemId];
   } else {
@@ -179,17 +180,12 @@ const toggleExpanded = (itemId) => {
   }
 };
 
-import { computed } from "vue";
+const isExpanded = computed(() => (itemId) => !!expandedItems.value[itemId]);
 
-const isExpanded = computed(() => {
-  return (itemId) => !!expandedItems.value[itemId];
-});
-
-const sortAsc = ref(true); // Add this line
+const sortAsc = ref(true);
 const toggleSort = () => {
-  // Add this method
   sortAsc.value = !sortAsc.value;
-  todo.sort((a, b) => {
+  todo.value.sort((a, b) => {
     if (sortAsc.value) {
       return new Date(a.created) - new Date(b.created);
     } else {
@@ -209,15 +205,14 @@ if (props.collapsed) {
 }
 
 if (showList.value) {
-  getTodo();
+  fetchTodo();
 }
 
-// only fetch data if the list is expanded
 watch(
   () => showList.value,
   (newValue) => {
     if (newValue) {
-      getTodo();
+      fetchTodo();
     }
   }
 );
@@ -233,155 +228,135 @@ const editItem = (item) => {
 };
 
 const saveEdit = async (text, id, item) => {
-  console.log("Editing todo item:", text, id, item);
+  apiIsLoading.value = true;
+  editDialog.value = false;
   let endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/edit?text=${text}&block_id=${id}`;
   if (item.checked != undefined) {
-    endpoint = endpoint.concat(`&todoToggle=${item.checked}`);
+    endpoint += `&todoToggle=${item.checked}`;
   }
-  console.log(endpoint);
-  fetch(endpoint, {
+  const response = await fetch(endpoint, {
     headers: {
       "X-Api-Key": getApiKey(),
     },
-  })
-    .then((response) => response.json())
-    .then((response) => {
-      console.log(response);
-      if (item.checked != undefined) {
-        todo.value = todo.value.map((todo) =>
-          todo.id === response.parent.block_id
-            ? {
-                ...todo,
-                subTasks: todo.subTasks.map((subTask) =>
-                  subTask.id === item.id
-                    ? { ...subTask, text: text, checked: item.checked }
-                    : subTask
-                ),
-              }
-            : todo
-        );
-      } else {
-        todo.value = todo.value.map((todo) =>
-          todo.id === id ? { ...todo, text: text } : todo
-        );
-      }
-    })
-    .catch((error) => console.log("Error fetching data:", error));
+  });
+  const data = await response.json();
+  if (item.checked != undefined) {
+    todo.value = todo.value.map((todo) =>
+      todo.id === data.parent.block_id
+        ? {
+            ...todo,
+            subTasks: todo.subTasks.map((subTask) =>
+              subTask.id === item.id
+                ? { ...subTask, text: text, checked: item.checked }
+                : subTask
+            ),
+          }
+        : todo
+    );
+  } else {
+    todo.value = todo.value.map((todo) =>
+      todo.id === id ? { ...todo, text: text } : todo
+    );
+  }
+  apiIsLoading.value = false;
 };
 
-const removeItem = (id) => {
+const removeItem = async (id) => {
+  apiIsLoading.value = true;
   const endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/delete?block_id=${id}`;
-  console.log(endpoint);
-  fetch(endpoint, {
+  const response = await fetch(endpoint, {
     headers: {
       "X-Api-Key": getApiKey(),
     },
-  })
-    .then((response) => response.json())
-    .then((response) => {
-      console.log(response);
-      todo.value = todo.value.filter((todo) => todo.id !== id);
-      // also check subtasks
-      todo.value = todo.value.map((todo) =>
-        todo.subTasks
-          ? {
-              ...todo,
-              subTasks: todo.subTasks.filter((subTask) => subTask.id !== id),
-            }
-          : todo
-      );
-    })
-    .catch((error) => console.log("Error fetching data:", error));
+  });
+  const data = await response.json();
+  todo.value = todo.value.filter((todo) => todo.id !== id);
+  todo.value = todo.value.map((todo) =>
+    todo.subTasks
+      ? {
+          ...todo,
+          subTasks: todo.subTasks.filter((subTask) => subTask.id !== id),
+        }
+      : todo
+  );
+  apiIsLoading.value = false;
 };
 
-const addItem = (text) => {
-  console.log("Adding todo item:", text);
+const addItem = async (text) => {
+  apiIsLoading.value = true;
   let endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/add?text=${text}`;
   if (addAfterID.value) {
-    endpoint = endpoint.concat(`&after_id=${addAfterID.value}`);
+    endpoint += `&after_id=${addAfterID.value}`;
   }
   if (addParentID.value) {
-    endpoint = endpoint.concat(`&parent_id=${addParentID.value}`);
+    endpoint += `&parent_id=${addParentID.value}`;
   }
-  console.log(endpoint);
-  fetch(endpoint, {
+  const response = await fetch(endpoint, {
     headers: {
       "X-Api-Key": getApiKey(),
     },
-  })
-    .then((response) => response.json())
-    .then((response) => {
-      console.log(response);
-      if (!addParentID.value) {
-        todo.value = todo.value.reduce((acc, item) => {
-          acc.push(item);
-          if (item.id === addAfterID.value) {
-            acc.push({
-              text: text,
-              id: response.results[0].id,
-              created: new Date().toISOString(),
-            });
-          }
-          return acc;
-        }, []);
-      } else {
-        todo.value = todo.value.map((todo) =>
-          todo.id === addParentID.value
-            ? addAfterID.value
-              ? {
-                  ...todo,
-                  subTasks: todo.subTasks.reduce((acc, subTask) => {
-                    acc.push(subTask);
-                    if (subTask.id === addAfterID.value) {
-                      acc.push({
-                        text: text,
-                        id: response.results[0].id,
-                        created: new Date().toISOString(),
-                        checked: false,
-                      });
-                    }
-                    return acc;
-                  }, []),
-                }
-              : {
-                  ...todo,
-                  subTasks: [
-                    ...todo.subTasks,
-                    {
-                      text: text,
-                      id: response.results[0].id,
-                      created: new Date().toISOString(),
-                      checked: false,
-                    },
-                  ],
-                }
-            : todo
-        );
+  });
+  const data = await response.json();
+  if (!addParentID.value) {
+    todo.value = todo.value.reduce((acc, item) => {
+      acc.push(item);
+      if (item.id === addAfterID.value) {
+        acc.push({
+          text: text,
+          id: data.results[0].id,
+          created: new Date().toISOString(),
+        });
       }
-    })
-    .catch((error) => console.log("Error fetching data:", error))
-    .finally(() => {
-      newItemText.value = "";
-      addDialog.value = false;
-      addAfterID.value = null;
-      addParentID.value = null;
-    });
+      return acc;
+    }, []);
+  } else {
+    todo.value = todo.value.map((todo) =>
+      todo.id === addParentID.value
+        ? addAfterID.value
+          ? {
+              ...todo,
+              subTasks: todo.subTasks.reduce((acc, subTask) => {
+                acc.push(subTask);
+                if (subTask.id === addAfterID.value) {
+                  acc.push({
+                    text: text,
+                    id: data.results[0].id,
+                    created: new Date().toISOString(),
+                    checked: false,
+                  });
+                }
+                return acc;
+              }, []),
+            }
+          : {
+              ...todo,
+              subTasks: [
+                ...todo.subTasks,
+                {
+                  text: text,
+                  id: response.results[0].id,
+                  created: new Date().toISOString(),
+                  checked: false,
+                },
+              ],
+            }
+        : todo
+    );
+  }
+  newItemText.value = "";
+  addDialog.value = false;
+  addAfterID.value = null;
+  addParentID.value = null;
+  apiIsLoading.value = false;
 };
 
-const toggleItem = (parent_id, task_id, text, checked) => {
-  console.log("Toggling todo item:", parent_id, task_id, text, checked);
-  console.log(todo.value);
-  let endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/edit?text=${text}&block_id=${task_id}&todoToggle=${checked}`;
-  console.log(endpoint);
-  fetch(endpoint, {
+const toggleItem = async (parent_id, task_id, text, checked) => {
+  const endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/edit?text=${text}&block_id=${task_id}&todoToggle=${checked}`;
+  const response = await fetch(endpoint, {
     headers: {
       "X-Api-Key": getApiKey(),
     },
-  })
-    .then((response) => response.json())
-    .then((response) => {
-      console.log(response);
-    })
-    .catch((error) => console.log("Error fetching data:", error));
+  });
+  const data = await response.json();
 };
 </script>
