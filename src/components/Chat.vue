@@ -103,7 +103,7 @@ const dialog = ref(false);
 const messages = ref([
   {
     role: "system",
-    content: `You are a helpful dashboard and planning assistant. ${props.context}`,
+    content: `You are a proactive and helpful dashboard and planning assistant. ${props.context}`,
   },
 ]);
 const clearMessages = () => {

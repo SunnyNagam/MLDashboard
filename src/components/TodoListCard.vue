@@ -159,7 +159,7 @@ const todo = ref([{ text: "Loading...", id: "..." }]);
 const fetchTodo = async () => {
   apiIsLoading.value = true;
   const response = await fetch(
-    "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/fetch",
+    `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/fetch?list_name=${props.title}`,
     {
       headers: {
         "X-Api-Key": getApiKey(),
