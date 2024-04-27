@@ -1,10 +1,16 @@
 <script setup>
 import { ref } from "vue";
-import VueMarkdown from "vue-markdown-render";
+import { useApi } from "@/useAPI.js";
+
+const { getApiKey } = useApi();
 
 const getReddit = async () => {
   console.log(redditData.value);
-  fetch("https://oaqgkmqhcze2maefuhxmvmfiw40pfrwz.lambda-url.us-east-2.on.aws/")
+  fetch("https://l49j2lk6oh.execute-api.us-east-2.amazonaws.com/Prod/fetch", {
+    headers: {
+      "X-Api-Key": getApiKey(),
+    },
+  })
     .then((response) => response.json())
     .then((data) => {
       redditData.value = data;
