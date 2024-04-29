@@ -3,6 +3,7 @@ import { ref, watch } from "vue";
 import { useApi } from "@/useAPI.js";
 
 const { getApiKey } = useApi();
+const imgRegex = /\.(jpg|jpeg|png|gif|bmp|webp|tiff|svg)(\?.*)?$/i;
 
 const getReddit = async () => {
   loading.value = true;
@@ -31,7 +32,6 @@ const decodeHtml = (html) => {
   var txt = document.createElement("textarea");
   txt.innerHTML = html;
   let parsedHtml = txt.value;
-  const imgRegex = /\.(jpg|jpeg|png|gif|bmp|webp|tiff|svg)(\?.*)?$/i;
 
   // replace images with img tags
   parsedHtml = parsedHtml.replace(
@@ -125,16 +125,23 @@ watch(selectedTimeframe, () => {
                 {{ post.title }}
               </v-expansion-panel-title>
               <v-expansion-panel-text>
-                <div v-if="post.description" class="mb-4">
-                  <v-card flat>
-                    <v-card-text class="">
-                      <div
-                        class="md"
-                        v-html="decodeHtml(post.description)"
-                      ></div>
-                    </v-card-text>
-                  </v-card>
-                </div>
+                <v-card flat class="mb-4">
+                  <v-card-text class="">
+                    <div
+                      v-if="post.description"
+                      class="md"
+                      v-html="decodeHtml(post.description)"
+                    ></div>
+                    <!-- if url is an image, render image instead -->
+                    <img
+                      v-else-if="post.url.match(imgRegex)"
+                      :src="post.url"
+                      alt="post image"
+                      class="w-full"
+                    />
+                    <a v-else class="mb-4" :href="post.url">{{ post.url }}</a>
+                  </v-card-text>
+                </v-card>
                 <div v-if="post.comments.length">
                   <div
                     v-for="(comment, cIndex) in post.comments"

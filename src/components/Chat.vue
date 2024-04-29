@@ -10,7 +10,7 @@
         <v-icon>mdi-information</v-icon>
       </v-btn>
     </v-toolbar>
-    <v-card-text class="h-64 overflow-y-auto">
+    <v-card-text class="h-[75vh] overflow-y-auto">
       <div
         class="space-y-2 py-2"
         v-for="(message, index) in messages.slice(1)"

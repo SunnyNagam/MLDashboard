@@ -64,20 +64,16 @@ const chatContext = computed(
         </h1>
       </v-col>
     </v-row>
-    <v-row>
-      <v-col cols="15" md="7">
-        <TodoListCard title="Now" />
-        <TodoListCard title="Soon" :collapsed="true" />
-        <TodoListCard title="Eventually" :collapsed="true" />
-      </v-col>
-      <v-col cols="15" md="5">
-        <Chat :context="chatContext" />
-      </v-col>
-    </v-row>
+    <div class="my-5">
+      <TodoListCard title="Now" />
+      <TodoListCard title="Soon" :collapsed="true" />
+      <TodoListCard title="Eventually" :collapsed="true" />
+    </div>
+    <Chat :context="chatContext" />
     <iframe
       :src="calendarUrl"
       style="border: solid 1px #777"
-      width="800"
+      width="400"
       height="600"
       frameborder="0"
       scrolling="no"
