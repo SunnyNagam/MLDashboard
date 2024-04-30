@@ -16,7 +16,7 @@ const calendarUrl = computed(
 async function fetchTodoData() {
   try {
     const response = await fetch(
-      "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/fetch",
+      "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/fetch?list_name=Now",
       {
         headers: {
           "X-Api-Key": getApiKey(),
@@ -50,6 +50,13 @@ const chatContext = computed(
     "Use the following information only if helpful: Items on user's todo list (with steps): \n\n" +
     getTodoTexts(todo.value.Now)
 );
+
+function handleApiKeySubmit(enteredApiKey) {
+  setApiKey(enteredApiKey);
+  apiKeyModalVisible.value = false;
+  // refresh page
+  window.location.reload();
+}
 </script>
 
 <template>
@@ -82,18 +89,23 @@ const chatContext = computed(
   </v-container>
   <v-dialog v-model="apiKeyModalVisible" persistent max-width="290">
     <v-card>
-      <v-card-title class="text-h6">Enter API Key</v-card-title>
+      <v-card-title class="headline">Enter API Key</v-card-title>
       <v-card-text>
-        <v-text-field v-model="enteredApiKey" label="API Key" type="password" />
+        <v-text-field
+          v-model="enteredApiKey"
+          label="API Key"
+          type="password"
+          autofocus
+          solo
+          @keydown.enter="handleApiKeySubmit(enteredApiKey)"
+        />
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn @click="apiKeyModalVisible = false">Close</v-btn>
-        <v-btn
-          @click="
-            setApiKey(enteredApiKey);
-            apiKeyModalVisible = false;
-          "
+        <v-btn color="grey darken-1" @click="apiKeyModalVisible = false"
+          >Close</v-btn
+        >
+        <v-btn color="primary" @click="handleApiKeySubmit(enteredApiKey)"
           >Submit</v-btn
         >
       </v-card-actions>

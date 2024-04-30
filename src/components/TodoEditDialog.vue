@@ -1,20 +1,20 @@
 <template>
   <v-dialog v-model="editDialog" max-width="500px">
     <v-card>
-      <v-card-title>
-        <span class="text-h5">Edit item</span>
-      </v-card-title>
+      <v-card-title class="headline"> Edit item </v-card-title>
       <v-card-text>
         <v-text-field
           v-model="editItemText"
           label="Edit item"
           autofocus
+          solo
+          @keydown.enter="saveEdit"
         ></v-text-field>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="blue darken-1" text @click="toggle">Close</v-btn>
-        <v-btn color="blue darken-1" text @click="saveEdit">Save</v-btn>
+        <v-btn color="grey darken-1" text @click="toggle">Close</v-btn>
+        <v-btn color="primary" text @click="saveEdit">Save</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

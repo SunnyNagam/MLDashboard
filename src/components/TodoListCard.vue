@@ -113,21 +113,23 @@
 
     <v-dialog v-model="addDialog" max-width="500px">
       <v-card>
-        <v-card-title>
-          <span class="text-h5">Add a new item</span>
-        </v-card-title>
+        <v-card-title class="headline">Add a new item</v-card-title>
 
         <v-card-text>
           <v-text-field
             v-model="newItemText"
             label="New item"
             autofocus
+            solo
+            @keydown.enter="addItem(newItemText)"
           ></v-text-field>
         </v-card-text>
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="addDialog = false">Close</v-btn>
+          <v-btn color="grey darken-1" text @click="addDialog = false"
+            >Close</v-btn
+          >
           <v-btn color="primary" text @click="addItem(newItemText)">Save</v-btn>
         </v-card-actions>
       </v-card>
@@ -240,19 +242,14 @@ const saveEdit = async (text, id, item) => {
     },
   });
   const data = await response.json();
-  if (item.checked != undefined) {
-    todo.value = todo.value.map((todo) =>
-      todo.id === data.parent.block_id
-        ? {
-            ...todo,
-            subTasks: todo.subTasks.map((subTask) =>
-              subTask.id === item.id
-                ? { ...subTask, text: text, checked: item.checked }
-                : subTask
-            ),
-          }
-        : todo
+  const parentIndex = todo.value.findIndex(
+    (todo) => todo.id === data.parent.block_id
+  );
+  if (parentIndex !== -1) {
+    const subtaskIndex = todo.value[parentIndex].subTasks.findIndex(
+      (subTask) => subTask.id === item.id
     );
+    todo.value[parentIndex].subTasks[subtaskIndex].text = text;
   } else {
     todo.value = todo.value.map((todo) =>
       todo.id === id ? { ...todo, text: text } : todo
@@ -297,51 +294,33 @@ const addItem = async (text) => {
     },
   });
   const data = await response.json();
+
+  function createNewItem(text, id) {
+    return {
+      text: text,
+      id: id,
+      created: new Date().toISOString(),
+      checked: false,
+    };
+  }
+
   if (!addParentID.value) {
-    todo.value = todo.value.reduce((acc, item) => {
-      acc.push(item);
-      if (item.id === addAfterID.value) {
-        acc.push({
-          text: text,
-          id: data.results[0].id,
-          created: new Date().toISOString(),
-        });
-      }
-      return acc;
-    }, []);
+    const index = todo.value.findIndex((item) => item.id === addAfterID.value);
+    todo.value.splice(index + 1, 0, createNewItem(text, data.results[0].id));
   } else {
-    todo.value = todo.value.map((todo) =>
-      todo.id === addParentID.value
-        ? addAfterID.value
-          ? {
-              ...todo,
-              subTasks: todo.subTasks.reduce((acc, subTask) => {
-                acc.push(subTask);
-                if (subTask.id === addAfterID.value) {
-                  acc.push({
-                    text: text,
-                    id: data.results[0].id,
-                    created: new Date().toISOString(),
-                    checked: false,
-                  });
-                }
-                return acc;
-              }, []),
-            }
-          : {
-              ...todo,
-              subTasks: [
-                ...todo.subTasks,
-                {
-                  text: text,
-                  id: response.results[0].id,
-                  created: new Date().toISOString(),
-                  checked: false,
-                },
-              ],
-            }
-        : todo
-    );
+    todo.value = todo.value.map((todoItem) => {
+      if (todoItem.id === addParentID.value) {
+        const subIndex = todoItem.subTasks.findIndex(
+          (subTask) => subTask.id === addAfterID.value
+        );
+        todoItem.subTasks.splice(
+          subIndex + 1,
+          0,
+          createNewItem(text, data.results[0].id)
+        );
+      }
+      return todoItem;
+    });
   }
   newItemText.value = "";
   addDialog.value = false;
