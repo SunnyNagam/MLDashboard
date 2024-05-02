@@ -33,9 +33,39 @@
           :view-mode="viewType"
           :weekdays="weekday"
           :hide-week-number="true"
-        ></v-calendar>
+        >
+          <template v-slot:event="{ day, allDay, event }">
+            <VChip
+              :color="allDay ? 'primary' : undefined"
+              density="compact"
+              :label="allDay"
+              width="100%"
+              @click="showEvent(event)"
+            >
+              {{ event.title }}
+            </VChip>
+          </template>
+        </v-calendar>
       </v-sheet>
     </div>
+
+    <!-- Modal -->
+    <v-dialog v-model="showEventDialog" max-width="500px">
+      <v-card>
+        <v-card-title>{{ selectedEvent.title }}</v-card-title>
+        <v-card-subtitle>
+          Start: {{ selectedEvent.start }}
+          <br />
+          End: {{ selectedEvent.end }}
+          <br />
+          All Day: {{ selectedEvent.allDay ? "Yes" : "No" }}
+        </v-card-subtitle>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="showEventDialog = false">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
@@ -53,6 +83,10 @@ const currentDate = ref([new Date()]);
 const viewType = ref("month");
 const types = ref(["month", "week", "day"]);
 const weekday = ref([0, 1, 2, 3, 4, 5, 6]);
+
+// Modal Data
+const showEventDialog = ref(false);
+const selectedEvent = ref({});
 
 const fetchCalendar = async () => {
   apiIsLoading.value = true;
@@ -77,6 +111,17 @@ const fetchCalendar = async () => {
 onMounted(() => {
   fetchCalendar();
 });
+
+// Show Event in Modal
+const showEvent = (event) => {
+  selectedEvent.value = {
+    title: event.title,
+    start: event.start,
+    end: event.start,
+    allDay: event.allDay,
+  };
+  showEventDialog.value = true;
+};
 </script>
 
 <style scoped>
