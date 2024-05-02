@@ -35,10 +35,19 @@
           :hide-week-number="true"
         >
           <template v-slot:event="{ day, allDay, event }">
-            <v-tooltip :text="event.title" location="top center">
+            <v-tooltip
+              v-model="showTooltipId[event.id]"
+              :text="event.title"
+              location="top center"
+              :open-on-focus="true"
+            >
               <template v-slot:activator="{ props }">
                 <VChip
                   v-bind="props"
+                  @touchstart="showTooltipId[event.id] = true"
+                  @touchend="showTooltipId[event.id] = false"
+                  @mouseenter="showTooltipId[event.id] = true"
+                  @mouseleave="showTooltipId[event.id] = false"
                   :color="allDay ? 'primary' : undefined"
                   density="compact"
                   :label="allDay"
@@ -103,6 +112,7 @@ const weekday = ref([0, 1, 2, 3, 4, 5, 6]);
 // Modal Data
 const showEventDialog = ref(false);
 const selectedEvent = ref({});
+const showTooltipId = ref({});
 
 const fetchCalendar = async () => {
   apiIsLoading.value = true;
@@ -116,6 +126,7 @@ const fetchCalendar = async () => {
   );
   const data = await response.json();
   calendarEvents.value = data.map((event) => ({
+    id: event.id,
     title: event.summary,
     start: new Date(event.start.dateTime || event.start.date),
     end: new Date(event.end.dateTime || event.end.date),
