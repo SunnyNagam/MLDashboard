@@ -3,6 +3,7 @@ import { ref, computed } from "vue";
 import { useApi } from "@/useAPI.js";
 import TodoListCard from "@/components/TodoListCard.vue";
 import Chat from "@/components/Chat.vue";
+import Calendar from "@/components/Calendar.vue";
 
 const { setApiKey, getApiKey } = useApi();
 const enteredApiKey = ref("");
@@ -71,12 +72,13 @@ function handleApiKeySubmit(enteredApiKey) {
         </h1>
       </v-col>
     </v-row>
-    <div class="my-5">
+    <div class="my-10">
       <TodoListCard title="Now" />
       <TodoListCard title="Soon" :collapsed="true" />
       <TodoListCard title="Eventually" :collapsed="true" />
     </div>
     <Chat :context="chatContext" />
+    <Calendar />
     <iframe
       :src="calendarUrl"
       style="border: solid 1px #777"
