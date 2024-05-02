@@ -28,38 +28,46 @@
             class="group"
             @click="toggleExpanded(item.id)"
           >
-            <v-list-item-title>{{ item.text }}</v-list-item-title>
-            <v-list-item-subtitle
-              >Created:
-              {{ new Date(item.created).toDateString() }}</v-list-item-subtitle
-            >
             <template v-slot:prepend>
-              <v-icon>{{
-                isExpanded(item.id) ? "mdi-chevron-up" : "mdi-chevron-down"
-              }}</v-icon>
+              <v-icon>
+                {{
+                  isExpanded(item.id) ? "mdi-chevron-up" : "mdi-chevron-down"
+                }}
+              </v-icon>
             </template>
-            <template v-slot:append>
-              <div class="invisible group-hover:visible">
+            <template v-slot:append> </template>
+            <div class="flex flex-1">
+              <div class="flex-grow">
+                <v-list-item-title>{{ item.text }}</v-list-item-title>
+                <v-list-item-subtitle>
+                  Created: {{ new Date(item.created).toDateString() }}
+                </v-list-item-subtitle>
+              </div>
+              <div
+                class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center invisible group-hover:visible space-x-2 bg-zinc-800 p-2 rounded-lg"
+              >
                 <v-icon
                   @click.stop="
                     addDialog = true;
                     addAfterID = item.id;
                   "
-                  >mdi-table-row-plus-after</v-icon
                 >
+                  mdi-table-row-plus-after
+                </v-icon>
                 <v-icon
                   @click.stop="
                     addDialog = true;
                     addParentID = item.id;
                   "
-                  >mdi-plus</v-icon
                 >
-                <v-icon @click.stop="removeItem(item.id)" color="red"
-                  >mdi-delete</v-icon
-                >
-                <v-icon @click.stop="editItem(item)">mdi-pencil</v-icon>
+                  mdi-plus
+                </v-icon>
+                <v-icon @click.stop="removeItem(item.id)" color="red">
+                  mdi-delete
+                </v-icon>
+                <v-icon @click.stop="editItem(item)"> mdi-pencil </v-icon>
               </div>
-            </template>
+            </div>
           </v-list-item>
         </template>
 
@@ -85,18 +93,21 @@
           </template>
           <v-list-item-title>{{ subTask.text }}</v-list-item-title>
           <template v-slot:append>
-            <div class="invisible group-hover:visible">
+            <div
+              class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center invisible group-hover:visible space-x-2 bg-zinc-800 p-2 rounded-lg"
+            >
               <v-icon
                 @click.stop="
                   addDialog = true;
                   addAfterID = subTask.id;
                   addParentID = item.id;
                 "
-                >mdi-table-row-plus-after</v-icon
               >
-              <v-icon @click.stop="removeItem(subTask.id)" color="red"
-                >mdi-delete</v-icon
-              >
+                mdi-table-row-plus-after
+              </v-icon>
+              <v-icon @click.stop="removeItem(subTask.id)" color="red">
+                mdi-delete
+              </v-icon>
               <v-icon @click.stop="editItem(subTask)">mdi-pencil</v-icon>
             </div>
           </template>

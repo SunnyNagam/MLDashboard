@@ -61,7 +61,7 @@ function handleApiKeySubmit(enteredApiKey) {
 </script>
 
 <template>
-  <v-container>
+  <v-container class="px-0">
     <v-row>
       <v-col cols="10">
         <h1 class="text-6xl font-bold mb-4">
@@ -79,15 +79,6 @@ function handleApiKeySubmit(enteredApiKey) {
     </div>
     <Chat :context="chatContext" />
     <Calendar />
-    <iframe
-      :src="calendarUrl"
-      style="border: solid 1px #777"
-      width="400"
-      height="600"
-      frameborder="0"
-      scrolling="no"
-      class="mt-6"
-    ></iframe>
   </v-container>
   <v-dialog v-model="apiKeyModalVisible" persistent max-width="290">
     <v-card>

@@ -8,9 +8,14 @@
       </v-btn>
       <v-toolbar-title>Calendar</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn icon @click="toggleSort">
-        <v-icon>mdi-sort-variant</v-icon>
-      </v-btn>
+      <v-select
+        v-model="viewType"
+        :items="types"
+        class="mr-2 w-12"
+        variant="outlined"
+        dense
+        hide-details
+      ></v-select>
     </v-toolbar>
 
     <v-progress-linear
@@ -18,24 +23,19 @@
       indeterminate
       class="mx-auto"
     ></v-progress-linear>
-    <v-select
-      v-model="viewType"
-      :items="types"
-      class="ma-2"
-      label="View Mode"
-      variant="outlined"
-      dense
-      hide-details
-    ></v-select>
-    <v-sheet v-show="showCalendar">
-      <v-calendar
-        ref="calendar"
-        v-model:now="currentDate"
-        :events="calendarEvents"
-        :view-mode="viewType"
-        :weekdays="weekday"
-      ></v-calendar>
-    </v-sheet>
+
+    <div v-show="showCalendar">
+      <v-sheet class="text-lg">
+        <v-calendar
+          ref="calendar"
+          v-model:now="currentDate"
+          :events="calendarEvents"
+          :view-mode="viewType"
+          :weekdays="weekday"
+          :hide-week-number="true"
+        ></v-calendar>
+      </v-sheet>
+    </div>
   </v-card>
 </template>
 
@@ -72,10 +72,6 @@ const fetchCalendar = async () => {
     allDay: !event.start.dateTime,
   }));
   apiIsLoading.value = false;
-};
-
-const toggleSort = () => {
-  calendarEvents.value.reverse();
 };
 
 onMounted(() => {
