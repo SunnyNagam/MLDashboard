@@ -52,13 +52,19 @@
     <!-- Modal -->
     <v-dialog v-model="showEventDialog" max-width="500px">
       <v-card>
-        <v-card-title>{{ selectedEvent.title }}</v-card-title>
+        <v-card-title class="headline">{{ selectedEvent.title }}</v-card-title>
         <v-card-subtitle>
           Start: {{ selectedEvent.start }}
           <br />
           End: {{ selectedEvent.end }}
           <br />
           All Day: {{ selectedEvent.allDay ? "Yes" : "No" }}
+          <br />
+          <br />
+          <VBtn :href="selectedEvent.link" target="_blank" :color="primary">
+            <v-icon>mdi-calendar</v-icon>
+            View Event</VBtn
+          >
         </v-card-subtitle>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -73,6 +79,7 @@
 import { ref, onMounted } from "vue";
 import { useApi } from "@/useAPI.js";
 import { VCalendar } from "vuetify/labs/VCalendar";
+import { VBtn } from "vuetify/lib/components/index.mjs";
 
 const { setApiKey, getApiKey } = useApi();
 
@@ -99,11 +106,13 @@ const fetchCalendar = async () => {
     }
   );
   const data = await response.json();
+  console.log(data[0]);
   calendarEvents.value = data.map((event) => ({
     title: event.summary,
     start: new Date(event.start.dateTime || event.start.date),
     end: new Date(event.end.dateTime || event.end.date),
     allDay: !event.start.dateTime,
+    link: event.htmlLink,
   }));
   apiIsLoading.value = false;
 };
@@ -119,6 +128,7 @@ const showEvent = (event) => {
     start: event.start,
     end: event.start,
     allDay: event.allDay,
+    link: event.link,
   };
   showEventDialog.value = true;
 };
