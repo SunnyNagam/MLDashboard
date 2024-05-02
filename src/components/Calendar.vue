@@ -19,7 +19,7 @@
       class="mx-auto"
     ></v-progress-linear>
 
-    <v-list v-show="showCalendar" class="h-[75vh] overflow-y-auto">
+    <v-list v-show="showCalendar" class="h-[50vh] overflow-y-auto">
       <v-list-item-group>
         <v-list-item v-for="event in calendar" :key="event.id" class="group">
           <v-list-item-content>
