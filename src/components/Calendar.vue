@@ -50,7 +50,11 @@
     </div>
 
     <!-- Modal -->
-    <v-dialog v-model="showEventDialog" max-width="500px">
+    <v-dialog
+      v-model="showEventDialog"
+      max-width="500px"
+      scroll-strategy="close"
+    >
       <v-card>
         <v-card-title class="headline">{{ selectedEvent.title }}</v-card-title>
         <v-card-subtitle>
