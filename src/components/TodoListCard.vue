@@ -122,7 +122,7 @@
       @toggle="editDialog = $event"
     ></TodoEditDialog>
 
-    <v-dialog v-model="addDialog" max-width="500px">
+    <v-dialog v-model="addDialog" max-width="500px" scroll-strategy="close">
       <v-card>
         <v-card-title class="headline">Add a new item</v-card-title>
 

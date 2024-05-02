@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="editDialog" max-width="500px">
+  <v-dialog v-model="editDialog" max-width="500px" scroll-strategy="close">
     <v-card>
       <v-card-title class="headline"> Edit item </v-card-title>
       <v-card-text>
