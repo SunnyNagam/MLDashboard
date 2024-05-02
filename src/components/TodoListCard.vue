@@ -159,7 +159,7 @@ const apiIsLoading = ref(false);
 const props = defineProps({
   title: {
     type: String,
-    default: "ToDo List",
+    default: "Now",
   },
   collapsed: {
     type: Boolean,

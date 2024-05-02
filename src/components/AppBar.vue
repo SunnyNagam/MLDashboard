@@ -1,21 +1,24 @@
 <template>
-  <v-app-bar flat scroll-behavior="hide" class="bg-primary">
+  <v-app-bar
+    flat
+    scroll-behavior="hide"
+    scroll-threshold="10"
+    class="bg-primary"
+  >
     <v-app-bar-title
       class="flex justify-start text-no-wrap"
-      style="max-width: 20%"
+      style="max-width: 40%"
     >
       <v-btn variant="text" @click="goHome" icon="mdi:mdi-home" />
+      <v-btn variant="text" @click="goReddit" icon="mdi:mdi-reddit" />
     </v-app-bar-title>
 
-    <template v-slot:append>
-      <v-btn variant="text" @click="goReddit" icon="mdi:mdi-reddit" />
-    </template>
+    <template v-slot:append> </template>
   </v-app-bar>
 </template>
 
 <script setup>
 import { useRouter } from "vue-router";
-import { computed } from "vue";
 
 const router = useRouter();
 

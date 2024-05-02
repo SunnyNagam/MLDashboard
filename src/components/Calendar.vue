@@ -1,6 +1,6 @@
 <template>
-  <v-card class="mx-auto my-10" elevation="2" rounded="lg">
-    <v-toolbar color="teal" dark>
+  <v-card class="mx-auto" elevation="2" rounded="lg">
+    <v-toolbar color="teal">
       <v-btn icon @click="showCalendar = !showCalendar">
         <v-icon>{{
           showCalendar ? "mdi-chevron-up" : "mdi-chevron-down"
@@ -11,9 +11,10 @@
       <v-select
         v-model="viewType"
         :items="types"
-        class="mr-2 w-12"
+        :items-title="types.title"
+        :items-value="types.value"
+        class="mr-2 w-1/12"
         variant="outlined"
-        dense
         hide-details
       ></v-select>
     </v-toolbar>
@@ -25,7 +26,7 @@
     ></v-progress-linear>
 
     <div v-show="showCalendar">
-      <v-sheet class="text-lg">
+      <v-sheet class="text-sm mx-0 mx-sm-4 pb-4">
         <v-calendar
           ref="calendar"
           v-model:now="currentDate"
@@ -92,19 +93,30 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, watch } from "vue";
 import { useApi } from "@/useAPI.js";
 import { VCalendar } from "vuetify/labs/VCalendar";
 import { VBtn } from "vuetify/lib/components/index.mjs";
 
 const { setApiKey, getApiKey } = useApi();
 
+const props = defineProps({
+  collapsed: {
+    type: Boolean,
+    default: false,
+  },
+});
+
 const apiIsLoading = ref(false);
 const calendarEvents = ref([]);
 const showCalendar = ref(true);
 const currentDate = ref([new Date()]);
 const viewType = ref("month");
-const types = ref(["month", "week", "day"]);
+const types = ref([
+  { title: "Month", value: "month" },
+  { title: "Week", value: "week" },
+  { title: "Day", value: "day" },
+]);
 const weekday = ref([0, 1, 2, 3, 4, 5, 6]);
 
 // Modal Data
@@ -150,9 +162,30 @@ const fetchCalendar = async () => {
   apiIsLoading.value = false;
 };
 
-onMounted(() => {
+if (props.collapsed) {
+  showCalendar.value = false;
+}
+
+if (showCalendar.value) {
   fetchCalendar();
-});
+}
+
+watch(
+  () => showCalendar.value,
+  (newValue) => {
+    if (newValue) {
+      fetchCalendar();
+    }
+  }
+);
+
+// watch the collapsed prop
+watch(
+  () => props.collapsed,
+  (newValue) => {
+    showCalendar.value = !newValue;
+  }
+);
 
 // Date Formatting Utility
 const formatDate = (date) => {

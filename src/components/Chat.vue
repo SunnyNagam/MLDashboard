@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mx-auto shadow-lg">
+  <v-card class="mx-auto shadow-lg my-5" rounded="lg">
     <v-toolbar color="deep-purple accent-4" dark>
       <v-toolbar-title>Contextual Assistant</v-toolbar-title>
       <v-spacer></v-spacer>
