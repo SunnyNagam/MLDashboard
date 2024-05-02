@@ -125,12 +125,25 @@ onMounted(() => {
   fetchCalendar();
 });
 
+// Date Formatting Utility
+const formatDate = (date) => {
+  return new Date(date).toLocaleString("en-US", {
+    weekday: "short",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true, // This will use 12-hour format with AM/PM
+  });
+};
+
 // Show Event in Modal
 const showEvent = (event) => {
   selectedEvent.value = {
     title: event.title,
-    start: event.start,
-    end: event.start,
+    start: formatDate(event.start),
+    end: formatDate(event.end),
     allDay: event.allDay,
     link: event.link,
   };
