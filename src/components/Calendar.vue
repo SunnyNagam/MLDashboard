@@ -51,7 +51,7 @@
                   :color="allDay ? 'primary' : undefined"
                   density="compact"
                   :label="allDay"
-                  width="100%"
+                  class="w-full"
                   @click="showEvent(event)"
                 >
                   {{ event.title }}
@@ -77,8 +77,6 @@
           End: {{ selectedEvent.end }}
           <br />
           All Day: {{ selectedEvent.allDay ? "Yes" : "No" }}
-          <br />
-          <br />
         </v-card-subtitle>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -125,14 +123,30 @@ const fetchCalendar = async () => {
     }
   );
   const data = await response.json();
-  calendarEvents.value = data.map((event) => ({
-    id: event.id,
-    title: event.summary,
-    start: new Date(event.start.dateTime || event.start.date),
-    end: new Date(event.end.dateTime || event.end.date),
-    allDay: !event.start.dateTime,
-    link: event.htmlLink,
-  }));
+  // Helper function to parse a local date string into a local Date object
+  const parseGoogleDate = (dateString, isEnd = false) => {
+    if (!dateString.includes("T")) {
+      const dateParts = dateString.split("-");
+      return new Date(
+        parseInt(dateParts[0]), // year
+        parseInt(dateParts[1]) - 1, // month (zero-based)
+        parseInt(dateParts[2]) - (isEnd ? 1 : 0) // day (end dates are exclusive, so subtract 1 day)
+      );
+    }
+    // If it's a datetime string, handle it as a standard date
+    return new Date(dateString);
+  };
+  calendarEvents.value = data.map((event) => {
+    return {
+      id: event.id,
+      title: event.summary,
+      origDate: event.start.date,
+      start: parseGoogleDate(event.start.dateTime || event.start.date),
+      end: parseGoogleDate(event.end.dateTime || event.end.date, true),
+      allDay: !event.start.dateTime,
+      link: event.htmlLink,
+    };
+  });
   apiIsLoading.value = false;
 };
 
