@@ -65,13 +65,13 @@
           All Day: {{ selectedEvent.allDay ? "Yes" : "No" }}
           <br />
           <br />
-          <VBtn :href="selectedEvent.link" target="_blank" :color="primary">
-            <v-icon>mdi-calendar</v-icon>
-            View Event</VBtn
-          >
         </v-card-subtitle>
         <v-card-actions>
           <v-spacer></v-spacer>
+          <v-btn :href="selectedEvent.link" target="_blank" color="primary">
+            <v-icon class="mr-1">mdi-calendar</v-icon>
+            View On GCal
+          </v-btn>
           <v-btn text @click="showEventDialog = false">Close</v-btn>
         </v-card-actions>
       </v-card>
