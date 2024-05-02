@@ -18,41 +18,41 @@
       indeterminate
       class="mx-auto"
     ></v-progress-linear>
-
-    <v-list v-show="showCalendar" class="h-[50vh] overflow-y-auto">
-      <v-list-item-group>
-        <v-list-item v-for="event in calendar" :key="event.id" class="group">
-          <v-list-item-content>
-            <v-list-item-title>{{ event.summary }}</v-list-item-title>
-            <v-list-item-subtitle>
-              {{ formatDate(event.start) }} - {{ formatDate(event.end) }}
-            </v-list-item-subtitle>
-          </v-list-item-content>
-          <template v-slot:append>
-            <v-btn
-              icon
-              href="event.htmlLink"
-              target="_blank"
-              class="invisible group-hover:visible"
-            >
-              <v-icon>mdi-open-in-new</v-icon>
-            </v-btn>
-          </template>
-        </v-list-item>
-      </v-list-item-group>
-    </v-list>
+    <v-select
+      v-model="viewType"
+      :items="types"
+      class="ma-2"
+      label="View Mode"
+      variant="outlined"
+      dense
+      hide-details
+    ></v-select>
+    <v-sheet v-show="showCalendar">
+      <v-calendar
+        ref="calendar"
+        v-model:now="currentDate"
+        :events="calendarEvents"
+        :view-mode="viewType"
+        :weekdays="weekday"
+      ></v-calendar>
+    </v-sheet>
   </v-card>
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
 import { useApi } from "@/useAPI.js";
+import { VCalendar } from "vuetify/labs/VCalendar";
 
 const { setApiKey, getApiKey } = useApi();
 
 const apiIsLoading = ref(false);
-const calendar = ref([]);
+const calendarEvents = ref([]);
 const showCalendar = ref(true);
+const currentDate = ref([new Date()]);
+const viewType = ref("month");
+const types = ref(["month", "week", "day"]);
+const weekday = ref([0, 1, 2, 3, 4, 5, 6]);
 
 const fetchCalendar = async () => {
   apiIsLoading.value = true;
@@ -65,30 +65,17 @@ const fetchCalendar = async () => {
     }
   );
   const data = await response.json();
-  calendar.value = data;
+  calendarEvents.value = data.map((event) => ({
+    title: event.summary,
+    start: new Date(event.start.dateTime || event.start.date),
+    end: new Date(event.end.dateTime || event.end.date),
+    allDay: !event.start.dateTime,
+  }));
   apiIsLoading.value = false;
 };
 
-const formatDate = (dateObj) => {
-  if (dateObj.dateTime) {
-    return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      hour12: true,
-    }).format(new Date(dateObj.dateTime));
-  }
-  return `${new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(new Date(dateObj.date))} (All Day)`;
-};
-
 const toggleSort = () => {
-  calendar.value.reverse();
+  calendarEvents.value.reverse();
 };
 
 onMounted(() => {
