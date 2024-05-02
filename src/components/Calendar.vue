@@ -1,6 +1,6 @@
 <template>
   <v-card class="mx-auto my-10" elevation="2" rounded="lg">
-    <v-toolbar color="primary" dark>
+    <v-toolbar color="teal" dark>
       <v-btn icon @click="showCalendar = !showCalendar">
         <v-icon>{{
           showCalendar ? "mdi-chevron-up" : "mdi-chevron-down"
@@ -35,15 +35,20 @@
           :hide-week-number="true"
         >
           <template v-slot:event="{ day, allDay, event }">
-            <VChip
-              :color="allDay ? 'primary' : undefined"
-              density="compact"
-              :label="allDay"
-              width="100%"
-              @click="showEvent(event)"
-            >
-              {{ event.title }}
-            </VChip>
+            <v-tooltip :text="event.title" location="top center">
+              <template v-slot:activator="{ props }">
+                <VChip
+                  v-bind="props"
+                  :color="allDay ? 'primary' : undefined"
+                  density="compact"
+                  :label="allDay"
+                  width="100%"
+                  @click="showEvent(event)"
+                >
+                  {{ event.title }}
+                </VChip>
+              </template>
+            </v-tooltip>
           </template>
         </v-calendar>
       </v-sheet>
@@ -110,7 +115,6 @@ const fetchCalendar = async () => {
     }
   );
   const data = await response.json();
-  console.log(data[0]);
   calendarEvents.value = data.map((event) => ({
     title: event.summary,
     start: new Date(event.start.dateTime || event.start.date),

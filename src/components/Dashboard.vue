@@ -77,8 +77,8 @@ function handleApiKeySubmit(enteredApiKey) {
       <TodoListCard title="Soon" :collapsed="true" />
       <TodoListCard title="Eventually" :collapsed="true" />
     </div>
-    <Chat :context="chatContext" />
     <Calendar />
+    <Chat :context="chatContext" />
   </v-container>
   <v-dialog v-model="apiKeyModalVisible" persistent max-width="290">
     <v-card>
