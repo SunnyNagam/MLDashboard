@@ -1,6 +1,6 @@
 <template>
   <v-card class="mx-auto" elevation="2" rounded="lg">
-    <v-toolbar color="teal">
+    <v-toolbar color="teal" density="compact">
       <v-btn icon @click="showCalendar = !showCalendar">
         <v-icon>{{
           showCalendar ? "mdi-chevron-up" : "mdi-chevron-down"
@@ -15,6 +15,7 @@
         :items-value="types.value"
         class="mr-2 w-1/12"
         variant="outlined"
+        density="compact"
         hide-details
       ></v-select>
     </v-toolbar>

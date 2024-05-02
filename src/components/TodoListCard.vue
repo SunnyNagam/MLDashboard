@@ -1,6 +1,6 @@
 <template>
   <v-card class="mx-auto" elevation="2" rounded="lg">
-    <v-toolbar color="primary" dark>
+    <v-toolbar color="primary" dark density="compact">
       <v-btn icon @click="showList = !showList">
         <v-icon>{{ showList ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
       </v-btn>

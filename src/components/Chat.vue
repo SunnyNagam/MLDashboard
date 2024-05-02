@@ -1,6 +1,6 @@
 <template>
   <v-card class="mx-auto shadow-lg my-5" rounded="lg">
-    <v-toolbar color="deep-purple accent-4" dark>
+    <v-toolbar color="deep-purple accent-4" dark density="compact">
       <v-toolbar-title>Contextual Assistant</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn icon @click="clearMessages">
@@ -10,7 +10,7 @@
         <v-icon>mdi-information</v-icon>
       </v-btn>
     </v-toolbar>
-    <v-card-text class="h-[50vh] overflow-y-auto">
+    <v-card-text class="h-[21vh] overflow-y-auto">
       <div
         class="space-y-2 py-2"
         v-for="(message, index) in messages.slice(1)"

@@ -1,10 +1,5 @@
 <template>
-  <v-app-bar
-    flat
-    scroll-behavior="hide"
-    scroll-threshold="10"
-    class="bg-primary"
-  >
+  <v-app-bar flat scroll-behavior="hide" class="bg-primary">
     <v-app-bar-title
       class="flex justify-start text-no-wrap"
       style="max-width: 40%"
