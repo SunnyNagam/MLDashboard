@@ -31,3 +31,10 @@ lambda/*/node_modules
 lambda/*/dist
 lambda/*/dist-ssr
 lambda/*/*.zip
+lambda/*.zip
+lambda/fetchCalendar/token.json
+lambda/fetchCalendar/credentials.json
+lambda/layers/*/node_modules
+lambda/layers/*/credentials.json
+lambda/layers/*/token.json
+lambda/layers/*/*.zip
