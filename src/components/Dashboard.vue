@@ -11,6 +11,8 @@ const { setApiKey, getApiKey } = useApi();
 const enteredApiKey = ref("");
 const apiKeyModalVisible = ref(getApiKey() === null || getApiKey() === "");
 const todo = ref({ Now: [{ text: "Loading...", id: "..." }] });
+const calendarEvents = ref([]);
+const otherContext = `The User is named Sunny, and the current date is ${new Date().toDateString()}.`;
 
 async function fetchTodoData() {
   try {
@@ -28,11 +30,44 @@ async function fetchTodoData() {
     console.error("Error fetching data:", error);
   }
 }
+async function fetchCalendar() {
+  const response = await fetch(
+    "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getCal",
+    {
+      headers: {
+        "X-Api-Key": getApiKey(),
+      },
+    }
+  );
+  const data = await response.json();
+  // Helper function to parse a local date string into a local Date object
+  const parseGoogleDate = (dateString, isEnd = false) => {
+    if (!dateString.includes("T")) {
+      const dateParts = dateString.split("-");
+      return new Date(
+        parseInt(dateParts[0]), // year
+        parseInt(dateParts[1]) - 1, // month (zero-based)
+        parseInt(dateParts[2]) - (isEnd ? 1 : 0) // day (end dates are exclusive, so subtract 1 day)
+      );
+    }
+    // If it's a datetime string, handle it as a standard date
+    return new Date(dateString);
+  };
+  calendarEvents.value = data.map((event) => {
+    return {
+      title: event.summary,
+      start: parseGoogleDate(event.start.dateTime || event.start.date),
+      end: parseGoogleDate(event.end.dateTime || event.end.date, true),
+      allDay: !event.start.dateTime,
+    };
+  });
+  calendarEvents.value = calendarEvents.value.slice(0, 10);
+}
 
 function getTodoTexts(todoItems) {
   return todoItems
     .reduce((acc, item) => {
-      acc.push(item.text);
+      acc.push(item.text + "(id: " + item.id + ")");
       if (item.subTasks) {
         acc.push(...item.subTasks.map((subTask) => `- ${subTask.text}`));
       }
@@ -43,11 +78,24 @@ function getTodoTexts(todoItems) {
 }
 
 fetchTodoData();
+fetchCalendar();
 
 const chatContext = computed(
   () =>
-    "Use the following information only if helpful: Items on user's todo list (with steps): \n\n" +
+    "**Items on user's todo list (with steps):** \n\n" +
     getTodoTexts(todo.value.Now)
+);
+const calContext = computed(
+  () =>
+    "**Items on user's Calendar:** \n\n" +
+    calendarEvents.value
+      .map(
+        (event) =>
+          `${
+            event.title
+          } from ${event.start.toLocaleString()} to ${event.end.toLocaleString()}\n`
+      )
+      .join("\n")
 );
 
 function handleApiKeySubmit(enteredApiKey) {
@@ -78,7 +126,9 @@ function handleApiKeySubmit(enteredApiKey) {
         <TodoListCard title="Now" />
         <TodoListCard title="Soon" :collapsed="true" />
         <TodoListCard title="Eventually" :collapsed="true" />
-        <Chat :context="chatContext" />
+        <Chat
+          :context="otherContext + '\n' + chatContext + '\n' + calContext"
+        />
       </v-col>
     </v-row>
   </v-container>

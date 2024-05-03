@@ -65,6 +65,11 @@
           label="Select a model"
           outlined
         ></v-select>
+        <v-switch
+          v-model="callAgent"
+          label="Use Agent"
+          color="deep-purple accent-4"
+        ></v-switch>
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -76,6 +81,9 @@ import ollama from "ollama/browser";
 import VueMarkdown from "vue-markdown-render";
 import OpenAI from "openai";
 import Cookies from "vue-cookies";
+import { useAgent } from "@/useAgent.js";
+
+let { invoke: invokeAgent } = await useAgent("");
 
 const openaiApi = new OpenAI({
   apiKey: Cookies.get("OPEN_ROUTER_API_KEY"),
@@ -99,6 +107,7 @@ const modelChoices = [
   "Ollama3",
 ];
 const dialog = ref(false);
+const callAgent = ref(false);
 
 const messages = ref([
   {
@@ -126,12 +135,13 @@ watch(
 
 watch(
   () => props.context,
-  (newContext, oldContext) => {
+  async (newContext, oldContext) => {
     if (newContext !== oldContext) {
       messages.value[0] = {
         role: "system",
         content: `You are a helpful dashboard and planning assistant. ${newContext}`,
       };
+      ({ invoke: invokeAgent } = await useAgent(newContext));
     }
   }
 );
@@ -176,6 +186,17 @@ async function sendMessageToApi(userMessage) {
   }
 }
 
+async function sendAgentMessage(userMessage) {
+  const agentMessage = {
+    content: "",
+    role: "assistant",
+  };
+  messages.value.push(agentMessage);
+  const res = await invokeAgent(userMessage.content);
+  messages.value[messages.value.length - 1].content = res.output;
+  console.log(res);
+}
+
 function sendMessage() {
   if (userInput.value.trim()) {
     const userMessage = {
@@ -183,7 +204,10 @@ function sendMessage() {
       role: "user",
     };
     messages.value.push(userMessage);
-    sendMessageToApi(userMessage);
+
+    if (callAgent.value) sendAgentMessage(userMessage);
+    else sendMessageToApi(userMessage);
+
     userInput.value = ""; // Clear input after sending
   }
 }

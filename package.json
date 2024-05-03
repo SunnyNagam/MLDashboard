@@ -9,8 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@langchain/community": "^0.0.54",
+    "@langchain/openai": "^0.0.28",
     "@notionhq/client": "^2.2.15",
     "axios": "^1.6.8",
+    "langchain": "^0.1.36",
     "ollama": "^0.5.0",
     "openai": "^4.38.2",
     "vue": "^3.4.21",
