@@ -154,7 +154,7 @@ async function sendMessageToApi(userMessage) {
       }
     } else {
       const response = await ollama.chat({
-        model: "llama3",
+        model: "phi3",
         messages: messages.value,
         stream: true,
       });

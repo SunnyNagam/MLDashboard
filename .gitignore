@@ -38,3 +38,4 @@ lambda/layers/*/node_modules
 lambda/layers/*/credentials.json
 lambda/layers/*/token.json
 lambda/layers/*/*.zip
+.aider*
