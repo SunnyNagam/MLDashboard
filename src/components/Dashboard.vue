@@ -9,7 +9,7 @@ import { useDisplay } from "vuetify";
 const { smAndDown } = useDisplay();
 const { setApiKey, getApiKey } = useApi();
 const enteredApiKey = ref("");
-const apiKeyModalVisible = ref(false);
+const apiKeyModalVisible = ref(getApiKey() === null || getApiKey() === "");
 const todo = ref({ Now: [{ text: "Loading...", id: "..." }] });
 
 async function fetchTodoData() {
