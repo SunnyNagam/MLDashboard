@@ -87,6 +87,9 @@ const tools = [
 
 // Function to update the API key
 export const useAgent = async (context) => {
+  if (!llm) {
+    return { invoke: async () => "No LLM available" };
+  }
   const prompt = ChatPromptTemplate.fromTemplate(`
 You are a highly intelligent personal assistant.
 ${context}
