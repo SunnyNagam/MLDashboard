@@ -9,27 +9,38 @@ import { useApi } from "@/useAPI.js";
 
 const { setApiKey, getApiKey } = useApi();
 
-const llm = new ChatOpenAI(
-  {
-    //model: "openai/gpt-3.5-turbo-0125",
-    model: "meta-llama/llama-3-70b-instruct",
-    //model: "mistralai/mixtral-8x7b-instruct",
-    //model: "mistralai/mistral-7b-instruct:free",
-    temperature: 0.2,
-    maxTokens: 3000,
-    streaming: true,
-    openAIApiKey: Cookies.get("OPEN_ROUTER_API_KEY"),
-  },
-  {
-    basePath: "https://openrouter.ai/api/v1",
-    baseOptions: {
-      headers: {
-        "HTTP-Referer": "https://localhost:3000/",
-        "X-Title": "Langchain.js Testing",
+const openRouterApiKey = Cookies.get("OPEN_ROUTER_API_KEY");
+
+if (!openRouterApiKey) {
+  console.error("OPEN_ROUTER_API_KEY cookie is not defined.");
+  // Handle the missing API key case here
+  // You could return or throw an error, or perhaps initialize `llm` with a mock value
+  //return;
+}
+
+const llm = openRouterApiKey
+  ? new ChatOpenAI(
+      {
+        //model: "openai/gpt-3.5-turbo-0125",
+        model: "meta-llama/llama-3-70b-instruct",
+        //model: "mistralai/mixtral-8x7b-instruct",
+        //model: "mistralai/mistral-7b-instruct:free",
+        temperature: 0.2,
+        maxTokens: 3000,
+        streaming: true,
+        openAIApiKey: Cookies.get("OPEN_ROUTER_API_KEY"),
       },
-    },
-  }
-);
+      {
+        basePath: "https://openrouter.ai/api/v1",
+        baseOptions: {
+          headers: {
+            "HTTP-Referer": "https://localhost:3000/",
+            "X-Title": "Langchain.js Testing",
+          },
+        },
+      }
+    )
+  : null;
 
 const addItem = async (text) => {
   let endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/add?text=${text}`;
