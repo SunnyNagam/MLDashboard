@@ -7,7 +7,7 @@
         <v-icon>mdi-delete</v-icon>
       </v-btn>
       <v-btn icon @click="dialog = true">
-        <v-icon>mdi-information</v-icon>
+        <v-icon>mdi-cog</v-icon>
       </v-btn>
     </v-toolbar>
     <v-card-text class="h-[21vh] overflow-y-auto">
@@ -54,9 +54,9 @@
       ></v-text-field>
     </v-card-actions>
   </v-card>
-  <v-dialog v-model="dialog" max-width="320">
+  <v-dialog v-model="dialog" max-width="600">
     <v-card>
-      <v-card-title class="headline">API Information</v-card-title>
+      <v-card-title class="headline">Chat AI settings</v-card-title>
       <v-card-text>
         Model:
         <v-select
@@ -67,9 +67,18 @@
         ></v-select>
         <v-switch
           v-model="callAgent"
-          label="Use Agent"
+          label="Use Agent (todo list tools enabled)"
           color="deep-purple accent-4"
         ></v-switch>
+        <v-form>
+          <v-text-field
+            v-model="apiKey"
+            label="API Key"
+            outlined
+            hint="Enter your OpenRouter API key"
+          ></v-text-field>
+          <v-btn @click="saveApiKey">Save API Key</v-btn>
+        </v-form>
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -84,6 +93,12 @@ import Cookies from "vue-cookies";
 import { useAgent } from "@/useAgent.js";
 
 let { invoke: invokeAgent } = await useAgent("");
+const apiKey = ref(Cookies.get("OPEN_ROUTER_API_KEY"));
+
+function saveApiKey() {
+  Cookies.set("OPEN_ROUTER_API_KEY", apiKey.value);
+  openaiApi.apiKey = apiKey.value;
+}
 
 const openaiApi = new OpenAI({
   apiKey: Cookies.get("OPEN_ROUTER_API_KEY"),
