@@ -38,4 +38,6 @@ lambda/layers/*/node_modules
 lambda/layers/*/credentials.json
 lambda/layers/*/token.json
 lambda/layers/*/*.zip
+#local.js files in lambdas
+lambda/*/local.js
 .aider*

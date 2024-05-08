@@ -1,7 +1,7 @@
 <template>
   <v-card class="mx-auto shadow-lg my-5" rounded="lg">
     <v-toolbar color="deep-purple accent-4" dark density="compact">
-      <v-toolbar-title>Contextual Assistant</v-toolbar-title>
+      <v-toolbar-title>Larry</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn icon @click="clearMessages">
         <v-icon>mdi-delete</v-icon>
@@ -17,6 +17,7 @@
         :key="message.content"
       >
         <div
+          @click="showMenu(message, index + 1)"
           :class="{
             'text-right': message.role === 'user',
             'text-left': message.role === 'assistant',
@@ -52,7 +53,43 @@
         outlined
         hide-details
       ></v-text-field>
+      <v-btn @click="sendMessage">
+        {{ editingIndex.value !== -1 ? "Save" : "Send" }}
+      </v-btn>
     </v-card-actions>
+    <v-menu v-model="msgMenu" :close-on-content-click="false">
+      <template v-slot:activator="{ props }">
+        <span v-bind="props" />
+      </template>
+
+      <v-card class="w-full rounded-lg shadow-md">
+        <v-card-subtitle class="text-wrap">Message Options</v-card-subtitle>
+        <v-list :v-title="menuItem.message.content">
+          <v-list-item>
+            <template v-slot:append>
+              <v-btn
+                icon="mdi-delete"
+                variant="text"
+                class="flex items-center"
+                @click="deleteMessage(menuItem.index)"
+              ></v-btn>
+              <v-btn
+                icon="mdi-content-copy"
+                variant="text"
+                class="flex items-center"
+                @click="copyToClipboard(menuItem.message.content)"
+              ></v-btn>
+              <v-btn
+                icon="mdi-pencil"
+                variant="text"
+                class="flex items-center"
+                @click="enableEditMode(menuItem.index)"
+              ></v-btn>
+            </template>
+          </v-list-item>
+        </v-list>
+      </v-card>
+    </v-menu>
   </v-card>
   <v-dialog v-model="dialog" max-width="600">
     <v-card>
@@ -67,7 +104,7 @@
         ></v-select>
         <v-switch
           v-model="callAgent"
-          label="Use Agent (todo list tools enabled)"
+          label="Use Agent (beta)"
           color="deep-purple accent-4"
         ></v-switch>
         <v-form>
@@ -94,6 +131,12 @@ import { useAgent } from "@/useAgent.js";
 
 let { invoke: invokeAgent } = await useAgent("");
 const apiKey = ref(Cookies.get("OPEN_ROUTER_API_KEY"));
+const msgMenu = ref(false);
+const menuItem = ref(null);
+const showMenu = (message, index) => {
+  msgMenu.value = !msgMenu.value;
+  menuItem.value = { message, index };
+};
 
 function saveApiKey() {
   Cookies.set("OPEN_ROUTER_API_KEY", apiKey.value);
@@ -119,7 +162,8 @@ const modelChoices = [
   "microsoft/wizardlm-2-8x22b",
   "perplexity/sonar-medium-online",
   "meta-llama/llama-3-8b-instruct",
-  "Ollama3",
+  "Ollama3::phi3",
+  "Ollama3::llama3:8b-instruct-q5_K_M",
 ];
 const dialog = ref(false);
 const callAgent = ref(false);
@@ -138,6 +182,20 @@ const clearMessages = () => {
 
 const lastMessage = ref(null);
 const userInput = ref("");
+const editingIndex = ref(-1); // Index of the message being edited, -1 when not editing
+
+function enableEditMode(index) {
+  editingIndex.value = index;
+  userInput.value = messages.value[index].content; // Load the message content into the input field
+}
+
+function saveEditedMessage() {
+  if (editingIndex.value !== -1) {
+    messages.value[editingIndex.value].content = userInput.value;
+    editingIndex.value = -1; // Reset editing index
+    userInput.value = ""; // Clear input field
+  }
+}
 
 watch(
   () => messages.value,
@@ -163,7 +221,7 @@ watch(
 
 async function sendMessageToApi(userMessage) {
   try {
-    if (selectedModel.value !== "Ollama3") {
+    if (!selectedModel.value.startsWith("Ollama3")) {
       const stream = await openaiApi.chat.completions.create({
         model: selectedModel.value,
         messages: messages.value,
@@ -178,8 +236,9 @@ async function sendMessageToApi(userMessage) {
           part.choices[0]?.delta?.content || "";
       }
     } else {
+      const localModelName = selectedModel.value.split("::")[1];
       const response = await ollama.chat({
-        model: "phi3",
+        model: localModelName,
         messages: messages.value,
         stream: true,
       });
@@ -214,16 +273,28 @@ async function sendAgentMessage(userMessage) {
 
 function sendMessage() {
   if (userInput.value.trim()) {
-    const userMessage = {
-      content: userInput.value,
-      role: "user",
-    };
-    messages.value.push(userMessage);
+    if (editingIndex.value !== -1) {
+      saveEditedMessage();
+    } else {
+      const userMessage = {
+        content: userInput.value,
+        role: "user",
+      };
+      messages.value.push(userMessage);
 
-    if (callAgent.value) sendAgentMessage(userMessage);
-    else sendMessageToApi(userMessage);
+      if (callAgent.value) sendAgentMessage(userMessage);
+      else sendMessageToApi(userMessage);
 
-    userInput.value = ""; // Clear input after sending
+      userInput.value = ""; // Clear input after sending
+    }
   }
+}
+
+function deleteMessage(index) {
+  messages.value.splice(index, 1);
+}
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text);
 }
 </script>

@@ -1,11 +1,13 @@
 import { ChatOpenAI } from "@langchain/openai";
-import { createReactAgent } from "langchain/agents";
+import { createOpenAIFunctionsAgent, createReactAgent } from "langchain/agents";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { AgentExecutor } from "langchain/agents";
 import Cookies from "vue-cookies";
 import { Calculator } from "@langchain/community/tools/calculator";
 import { DynamicTool, DynamicStructuredTool } from "@langchain/core/tools";
 import { useApi } from "@/useAPI.js";
+import { pull } from "langchain/hub";
+import { z } from "zod";
 
 const { setApiKey, getApiKey } = useApi();
 
@@ -21,8 +23,8 @@ if (!openRouterApiKey) {
 const llm = openRouterApiKey
   ? new ChatOpenAI(
       {
-        //model: "openai/gpt-3.5-turbo-0125",
-        model: "meta-llama/llama-3-70b-instruct",
+        model: "openai/gpt-3.5-turbo-0125",
+        //model: "meta-llama/llama-3-70b-instruct",
         //model: "mistralai/mixtral-8x7b-instruct",
         //model: "mistralai/mistral-7b-instruct:free",
         temperature: 0.2,
@@ -42,8 +44,11 @@ const llm = openRouterApiKey
     )
   : null;
 
-const addItem = async (text) => {
+const addItem = async (text, parentId = null) => {
   let endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/add?text=${text}`;
+  if (parentId) {
+    endpoint += `&parent_id=${parentId}`;
+  }
   const response = await fetch(endpoint, {
     headers: {
       "X-Api-Key": getApiKey(),
@@ -65,6 +70,19 @@ const removeItem = async (id) => {
   return "Deleted item";
 };
 
+const addSubTaskTool = new DynamicStructuredTool({
+  name: "Add_SubTask_To_TodoList",
+  description:
+    "Inserts a subitem task under a parent item task in the todo list. Example: { 'text': 'Subtask description', 'parentId': 'parentTaskId' }",
+  schema: z.object({
+    text: z.string().describe("Subtask Title Text"),
+    parentId: z.string().describe("Parent Task ID"),
+  }),
+  func: async ({ text, parentId }) => {
+    return addItem(text, parentId);
+  },
+});
+
 // Define the tools the agent will have access to.
 const tools = [
   new DynamicTool({
@@ -73,15 +91,16 @@ const tools = [
     func: async (input) => "N/A",
   }),
   new DynamicTool({
-    name: "DeleteTaskFromTodoList",
-    description: "Deletes a task (id string) from the todo list",
+    name: "Delete_Task_From_TodoList",
+    description: "Deletes a task (id string required) from the todo list.",
     func: async (input) => removeItem(input),
   }),
   new DynamicTool({
-    name: "AddTaskToTodoList",
-    description: "Inserts a task (string) into the todo list",
+    name: "Add_Task_To_TodoList",
+    description: "Inserts a task (string required) into the todo list.",
     func: async (input) => addItem(input),
   }),
+  addSubTaskTool,
   new Calculator(),
 ];
 
@@ -91,38 +110,18 @@ export const useAgent = async (context) => {
     return { invoke: async () => "No LLM available" };
   }
   const prompt = ChatPromptTemplate.fromTemplate(`
-You are a highly intelligent personal assistant.
-${context}
+  You are a highly intelligent personal assistant.
+  ${context}
+  
+  Be sure to be intelligent and thoughtful while following it accurately.
+  
+  Begin!
+  
+  Sunny: {input}
+  {agent_scratchpad}`);
+  console.log(prompt);
 
-Obey the following instructions as best you can. You have access to the following tools which you may use only if helpful:
-
-{tools}
-
-Use the following format:
-
-Sunny: the input prompt you will be provided to answer
-
-Thought: your current thoughts on the state of your answer and what to do next
-
-Action: the action to take, should be one of the tools ({tool_names})
-
-Action Input: the input to the action
-
-Observation: the result of the action
-
-... (this Thought/Action/Action Input/Observation can repeat N times as needed)
-
-Final Response: (insert the final response to the original input prompt when finished)
-
-Great that's the format, be sure to be intelligent and thoughtful while following it accurately.
-
-Begin!
-
-Sunny: {input}
-
-Thought: {agent_scratchpad}`);
-
-  const agent = await createReactAgent({
+  const agent = await createOpenAIFunctionsAgent({
     llm,
     tools,
     prompt,
@@ -131,7 +130,7 @@ Thought: {agent_scratchpad}`);
   const agentExecutor = new AgentExecutor({
     agent,
     tools,
-    //verbose: true,
+    verbose: true,
     returnIntermediateSteps: true,
   });
 

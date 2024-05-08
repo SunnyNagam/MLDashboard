@@ -39,7 +39,16 @@
           <template v-slot:event="{ day, allDay, event }">
             <v-tooltip
               v-model="showTooltipId[event.id]"
-              :text="event.title"
+              :text="
+                event.title +
+                ' (' +
+                (allDay
+                  ? 'All Day'
+                  : event.start.toLocaleTimeString() +
+                    ' - ' +
+                    event.end.toLocaleTimeString()) +
+                ')'
+              "
               location="top center"
               :open-on-focus="true"
             >
@@ -153,7 +162,6 @@ const fetchCalendar = async () => {
     return {
       id: event.id,
       title: event.summary,
-      origDate: event.start.date,
       start: parseGoogleDate(event.start.dateTime || event.start.date),
       end: parseGoogleDate(event.end.dateTime || event.end.date, true),
       allDay: !event.start.dateTime,

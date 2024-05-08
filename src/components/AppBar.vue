@@ -6,6 +6,7 @@
     >
       <v-btn variant="text" @click="goHome" icon="mdi:mdi-home" />
       <v-btn variant="text" @click="goReddit" icon="mdi:mdi-reddit" />
+      <v-btn variant="text" @click="goGoals" icon="mdi:mdi-check" />
     </v-app-bar-title>
 
     <template v-slot:append> </template>
@@ -22,5 +23,8 @@ const goHome = () => {
 };
 const goReddit = () => {
   router.push({ name: "reddit" });
+};
+const goGoals = () => {
+  router.push({ name: "goals" });
 };
 </script>

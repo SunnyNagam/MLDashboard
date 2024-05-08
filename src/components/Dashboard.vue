@@ -123,18 +123,18 @@ function handleApiKeySubmit(enteredApiKey) {
         <Calendar :collapsed="smAndDown" />
       </v-col>
       <v-col cols="12" sm="4" order-sm="1">
-        <TodoListCard title="Now" />
-        <TodoListCard title="Soon" :collapsed="true" />
-        <TodoListCard title="Eventually" :collapsed="true" />
         <Chat
           :context="otherContext + '\n' + chatContext + '\n' + calContext"
         />
+        <TodoListCard title="Now" />
+        <TodoListCard title="Soon" :collapsed="true" />
+        <TodoListCard title="Eventually" :collapsed="true" />
       </v-col>
     </v-row>
   </v-container>
-  <v-dialog v-model="apiKeyModalVisible" persistent max-width="290">
+  <v-dialog v-model="apiKeyModalVisible" persistent max-width="400">
     <v-card>
-      <v-card-title class="headline">Enter API Key</v-card-title>
+      <v-card-title class="headline">Enter Password (API key):</v-card-title>
       <v-card-text>
         <v-text-field
           v-model="enteredApiKey"
@@ -144,9 +144,13 @@ function handleApiKeySubmit(enteredApiKey) {
           solo
           @keydown.enter="handleApiKeySubmit(enteredApiKey)"
         />
+        <v-card-subtitle class="text-wrap">
+          (This site is intended only for Sunny. Uses API key protected
+          serverless AWS Lambda functions to connect to personalized Google
+          Calendar, Notion, and Reddit use cases)
+        </v-card-subtitle>
       </v-card-text>
       <v-card-actions>
-        <v-spacer></v-spacer>
         <v-btn color="grey darken-1" @click="apiKeyModalVisible = false"
           >Close</v-btn
         >
