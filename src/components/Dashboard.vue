@@ -123,12 +123,12 @@ function handleApiKeySubmit(enteredApiKey) {
         <Calendar :collapsed="smAndDown" />
       </v-col>
       <v-col cols="12" sm="4" order-sm="1">
-        <Chat
-          :context="otherContext + '\n' + chatContext + '\n' + calContext"
-        />
         <TodoListCard title="Now" />
         <TodoListCard title="Soon" :collapsed="true" />
         <TodoListCard title="Eventually" :collapsed="true" />
+        <Chat
+          :context="otherContext + '\n' + chatContext + '\n' + calContext"
+        />
       </v-col>
     </v-row>
   </v-container>

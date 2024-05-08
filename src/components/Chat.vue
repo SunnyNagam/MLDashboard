@@ -54,7 +54,7 @@
         hide-details
       ></v-text-field>
       <v-btn @click="sendMessage">
-        {{ editingIndex.value !== -1 ? "Save" : "Send" }}
+        {{ editingIndex === -1 ? "Send" : "Save" }}
       </v-btn>
     </v-card-actions>
     <v-menu v-model="msgMenu" :close-on-content-click="false">
@@ -71,20 +71,38 @@
                 icon="mdi-delete"
                 variant="text"
                 class="flex items-center"
-                @click="deleteMessage(menuItem.index)"
+                @click="
+                  deleteMessage(menuItem.index);
+                  msgMenu = false;
+                "
               ></v-btn>
               <v-btn
                 icon="mdi-content-copy"
                 variant="text"
                 class="flex items-center"
-                @click="copyToClipboard(menuItem.message.content)"
+                @click="
+                  copyToClipboard(menuItem.message.content);
+                  msgMenu = false;
+                "
               ></v-btn>
               <v-btn
                 icon="mdi-pencil"
                 variant="text"
                 class="flex items-center"
-                @click="enableEditMode(menuItem.index)"
+                @click="
+                  enableEditMode(menuItem.index);
+                  msgMenu = false;
+                "
               ></v-btn>
+              <v-btn
+                @click="
+                  cancelEditMode();
+                  msgMenu = false;
+                "
+                v-if="editingIndex !== -1"
+              >
+                Cancel
+              </v-btn>
             </template>
           </v-list-item>
         </v-list>
@@ -187,6 +205,7 @@ const editingIndex = ref(-1); // Index of the message being edited, -1 when not 
 function enableEditMode(index) {
   editingIndex.value = index;
   userInput.value = messages.value[index].content; // Load the message content into the input field
+  console.log(editingIndex.value);
 }
 
 function saveEditedMessage() {
@@ -195,6 +214,11 @@ function saveEditedMessage() {
     editingIndex.value = -1; // Reset editing index
     userInput.value = ""; // Clear input field
   }
+}
+
+function cancelEditMode() {
+  editingIndex.value = -1;
+  userInput.value = ""; // Clear input field
 }
 
 watch(
