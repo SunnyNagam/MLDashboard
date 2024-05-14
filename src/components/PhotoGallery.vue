@@ -93,17 +93,30 @@ import { Pinecone } from "@pinecone-database/pinecone";
 transformersEnv.allowLocalModels = false;
 
 const env = reactive({
-  useBrowserCache: false,
+  useBrowserCache: true,
 });
 
-const processor = await AutoTokenizer.from_pretrained(
-  "Xenova/clip-vit-base-patch16"
-);
+async function loadModels() {
+  processor = await AutoTokenizer.from_pretrained(
+    "Xenova/clip-vit-base-patch16"
+  );
 
-const text_model = await CLIPTextModelWithProjection.from_pretrained(
-  "Xenova/clip-vit-base-patch16"
-);
+  text_model = await CLIPTextModelWithProjection.from_pretrained(
+    "Xenova/clip-vit-base-patch16"
+  );
+}
 
+let processor, text_model;
+await loadModels();
+
+watch(
+  () => env.useBrowserCache,
+  async (newVal, oldVal) => {
+    if (newVal !== oldVal) {
+      await loadModels();
+    }
+  }
+);
 const searchQuery = ref("a group of friends enjoying the outdoors");
 const photos = ref([]);
 const loading = ref(false);
