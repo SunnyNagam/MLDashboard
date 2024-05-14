@@ -10,6 +10,7 @@
     <v-text-field
       v-model="searchQuery"
       label="Enter search query"
+      @keyup.enter="getPhotosClientSide"
     ></v-text-field>
     <v-row>
       <v-col cols="12" sm="6">
@@ -91,6 +92,10 @@ import {
 import { Pinecone } from "@pinecone-database/pinecone";
 
 transformersEnv.allowLocalModels = false;
+
+if (!caches.has("transformers-cache")) {
+  caches.open("transformers-cache");
+}
 
 const env = reactive({
   useBrowserCache: true,
