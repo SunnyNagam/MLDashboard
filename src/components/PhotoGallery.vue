@@ -1,6 +1,12 @@
 <template>
-  <div class="px-6">
-    <h1>Photo Gallery</h1>
+  <div class="px-6 mt-4">
+    <div class="flex flex-col items-center mb-4">
+      <h1 class="text-h2 font-bold mb-2">
+        <v-icon class="mr-2" @click="console.log('hi :)')">mdi-image</v-icon>
+        Photo Gallery
+      </h1>
+      <h2 class="text-subtitle-1 mb-4">Search for photos using text</h2>
+    </div>
     <v-text-field
       v-model="searchQuery"
       label="Enter search query"
@@ -23,6 +29,7 @@
           label="Number of Results"
           hide-details
           type="number"
+          width="150"
         ></v-text-field>
       </v-col>
     </v-row>
@@ -74,17 +81,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import Cookies from "vue-cookies";
 import {
   AutoTokenizer,
   CLIPTextModelWithProjection,
-  env,
+  env as transformersEnv,
 } from "@xenova/transformers";
 import { Pinecone } from "@pinecone-database/pinecone";
 
-env.allowLocalModels = false;
-env.useBrowserCache = false;
+transformersEnv.allowLocalModels = false;
+
+const env = reactive({
+  useBrowserCache: false,
+});
 
 const processor = await AutoTokenizer.from_pretrained(
   "Xenova/clip-vit-base-patch16"
@@ -94,7 +104,7 @@ const text_model = await CLIPTextModelWithProjection.from_pretrained(
   "Xenova/clip-vit-base-patch16"
 );
 
-const searchQuery = ref("nature");
+const searchQuery = ref("a group of friends enjoying the outdoors");
 const photos = ref([]);
 const loading = ref(false);
 const imageHost =
