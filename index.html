@@ -6,6 +6,11 @@
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.x/css/materialdesignicons.min.css" rel="stylesheet" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SunBoard</title>
+  <script> /* Needed for pinecone library for some reason */
+    if (global === undefined) {
+      var global = window;
+    }
+  </script>
 </head>
 
 <body>

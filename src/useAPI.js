@@ -9,7 +9,7 @@ apiKey.value = Cookies.get("API_KEY") || "";
 export const useApi = () => {
   const setApiKey = (key) => {
     apiKey.value = key;
-    Cookies.set("API_KEY", apiKey.value, { expires: 7 });
+    Cookies.set("API_KEY", apiKey.value);
   };
 
   const getApiKey = () => apiKey.value;
