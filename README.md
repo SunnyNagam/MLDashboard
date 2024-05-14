@@ -1,7 +1,12 @@
-# Vue 3 + Vite
+# Sunny's Dashboard
+Personal site for organization, useful tools, and experimenting/tinkering.
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
 
-## Recommended IDE Setup
+### Dashboard with Notion synced Todo Lists and Google synced Calendar
+<img width="1000" alt="image" src="https://github.com/SunnyNagam/MLDashboard/assets/9154254/5d61064c-b1ed-4442-a20e-823aefd0bbac">
 
-- [VS Code](https://code.visualstudio.com/) + [Vue - Official](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (previously Volar) and disable Vetur
+### Reddit Auto summary of top posts+comments from favorite subreddits
+<img width="1462" alt="image" src="https://github.com/SunnyNagam/MLDashboard/assets/9154254/e9b5eae5-1e4d-4c78-9ee8-535e45d28894">
+
+### AI embedding photos description search
+<img width="600" alt="image" src="https://github.com/SunnyNagam/MLDashboard/assets/9154254/b9c955aa-52fd-470a-b4ef-f29189da043b">
