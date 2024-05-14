@@ -1,39 +1,61 @@
 <template>
   <div class="px-6 mt-4">
-    <div class="flex flex-col items-center mb-4">
+    <div class="flex flex-col items-center mb-4 text-center">
       <h1 class="text-h2 font-bold mb-2">
         <v-icon class="mr-2" @click="console.log('hi :)')">mdi-image</v-icon>
         Photo Gallery
       </h1>
-      <h2 class="text-subtitle-1 mb-4">Search for photos using text</h2>
+      <h2 class="text-subtitle-1 mb-4">
+        Search google photos with AI embeddings
+      </h2>
     </div>
-    <v-text-field
-      v-model="searchQuery"
-      label="Enter search query"
-      @keyup.enter="getPhotosClientSide"
-    ></v-text-field>
     <v-row>
-      <v-col cols="12" sm="6">
-        <v-btn @click="getPhotosClientSide">Search</v-btn>
-        <v-btn @click="showApiKeyModal = true" class="ml-2">Set API Key</v-btn>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col cols="12" sm="6">
-        <v-switch
-          v-model="env.useBrowserCache"
-          label="Enable Browser Cache"
-          density="compact"
-        ></v-switch>
+      <v-col cols="10" sm="11">
         <v-text-field
-          v-model="topK"
-          label="Number of Results"
-          hide-details
-          type="number"
-          width="150"
+          v-model="searchQuery"
+          label="Enter search query"
+          @keyup.enter="getPhotosClientSide"
         ></v-text-field>
       </v-col>
+      <v-col cols="2" sm="1">
+        <v-btn
+          @click="getPhotosClientSide"
+          icon="mdi-magnify"
+          width="56px"
+          height="56px"
+        ></v-btn>
+      </v-col>
     </v-row>
+    <v-expansion-panels>
+      <v-expansion-panel rounded="lg" class="mb-4">
+        <v-expansion-panel-title>Search Options</v-expansion-panel-title>
+        <v-expansion-panel-text class="bg-grey-100">
+          <v-row>
+            <v-col cols="12" sm="6">
+              <v-btn @click="showApiKeyModal = true" class="ml-2"
+                >Set API Key</v-btn
+              >
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="12" sm="6">
+              <v-switch
+                v-model="env.useBrowserCache"
+                label="Enable Browser Cache"
+                density="compact"
+              ></v-switch>
+              <v-text-field
+                v-model="topK"
+                label="Number of Results"
+                hide-details
+                type="number"
+                width="150"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        </v-expansion-panel-text>
+      </v-expansion-panel>
+    </v-expansion-panels>
 
     <v-progress-linear v-if="loading" indeterminate></v-progress-linear>
     <v-row>
@@ -41,7 +63,11 @@
         v-for="photo in photos"
         :key="photo.url"
         class="d-flex child-flex"
-        cols="4"
+        :cols="12"
+        :sm="6"
+        :md="4"
+        :lg="3"
+        :xl="2"
       >
         <v-img
           :src="`${imageHost}${photo.url}`"
