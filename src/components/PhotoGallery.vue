@@ -93,10 +93,6 @@ import { Pinecone } from "@pinecone-database/pinecone";
 
 transformersEnv.allowLocalModels = false;
 
-if (!caches.has("transformers-cache")) {
-  caches.open("transformers-cache");
-}
-
 const env = reactive({
   useBrowserCache: true,
 });
