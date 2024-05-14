@@ -84,7 +84,7 @@ import {
 import { Pinecone } from "@pinecone-database/pinecone";
 
 env.allowLocalModels = false;
-env.useBrowserCache = true;
+env.useBrowserCache = false;
 
 const processor = await AutoTokenizer.from_pretrained(
   "Xenova/clip-vit-base-patch16"
