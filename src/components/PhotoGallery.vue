@@ -32,7 +32,7 @@
         <v-expansion-panel-text class="bg-grey-100">
           <v-row>
             <v-col cols="12" sm="6">
-              <v-btn @click="showApiKeyModal = true" class="ml-2"
+              <v-btn @click="showApiKeyModal = true" variant="tonal"
                 >Set API Key</v-btn
               >
             </v-col>
@@ -44,14 +44,23 @@
                 label="Enable Browser Cache"
                 density="compact"
               ></v-switch>
-              <v-text-field
-                v-model="topK"
-                label="Number of Results"
-                hide-details
-                type="number"
-                width="150"
-              ></v-text-field>
             </v-col>
+          </v-row>
+          <v-row>
+            <v-text-field
+              v-model="topK"
+              label="Number of Results"
+              hide-details
+              type="number"
+              class="mb-4"
+            ></v-text-field>
+          </v-row>
+          <v-row>
+            <v-text-field
+              v-model="filter.people"
+              label="Filter by People"
+              hide-details
+            ></v-text-field>
           </v-row>
         </v-expansion-panel-text>
       </v-expansion-panel>
@@ -152,6 +161,7 @@ const imageHost =
 const showApiKeyModal = ref(false);
 const apiKey = ref("");
 const topK = ref(5);
+const filter = ref({});
 
 const getPhotosClientSide = async () => {
   loading.value = true;
@@ -173,11 +183,12 @@ async function searchPinecone(query, topK) {
   console.log("Embeddings: ", embeddings);
 
   const index = pc.index("photo-search");
-
+  console.log("Filter: ", filter.value);
   const results = await index.query({
     vector: Array.from(embeddings),
     topK: Number(topK),
     includeValues: false,
+    filter: filter.value,
   });
   return results;
 }
