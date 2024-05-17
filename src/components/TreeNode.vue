@@ -2,7 +2,11 @@
   <div class="cmp-tree pl-4 border-l-2 border-zinc-600">
     <v-list-item class="group">
       <template v-slot:prepend>
-        <v-icon v-if="hasChildren" @click="open = !open">
+        <v-icon
+          @click="open = smAndDown ? open : !open"
+          @touchstart="open = !open"
+          class="handle"
+        >
           {{
             zeroChildren
               ? "mdi-minus"
@@ -59,6 +63,8 @@
 <script setup>
 import { ref, computed, watch, defineEmits, defineProps } from "vue";
 import Draggable from "vuedraggable";
+import { useDisplay } from "vuetify";
+const { smAndDown } = useDisplay();
 
 const props = defineProps({
   value: {
