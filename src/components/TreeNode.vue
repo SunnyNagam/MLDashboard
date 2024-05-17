@@ -17,7 +17,8 @@
         </v-icon>
       </template>
       <div class="flex flex-1">
-        <div class="flex-grow">
+        <div class="flex-grow flex items-center">
+          <v-icon v-if="isUrl" @click="openLink"> mdi-link </v-icon>
           <v-textarea
             v-model="localValue.text"
             rows="1"
@@ -104,10 +105,6 @@ const emit = defineEmits(["input"]);
 const open = ref(false);
 const drag = ref(false);
 const localValue = ref(props.value);
-const editableText = ref(localValue.value.text);
-const hasChildren = computed(() => {
-  return props.value.children != null; // && props.value.children.length > 0;
-});
 
 const zeroChildren = computed(() => {
   return props.value.children.length === 0;
@@ -120,19 +117,20 @@ const dragOptions = {
   ghostClass: "ghost",
 };
 
+const isUrl = computed(() => {
+  const urlPattern = new RegExp(
+    "https?://(?:www\\.)?[a-zA-Z0-9./_-]+(?:\\.[a-zA-Z]{2,})(?:/[a-zA-Z0-9./?=&%_-]*)?"
+  );
+  return (
+    urlPattern.test(localValue.value.text) ||
+    (!zeroChildren.value && urlPattern.test(localValue.value.children[0].text))
+  );
+});
+
 watch(
   () => props.value,
   (newValue) => {
     localValue.value = newValue;
-    editableText.value = newValue.text;
-  }
-);
-
-watch(
-  () => open.value,
-  (newValue) => {
-    // console.log(localValue.value);
-    // console.log(props.value);
   }
 );
 
@@ -167,5 +165,24 @@ function addNode() {
   });
   open.value = true;
   emit("input", localValue.value);
+}
+
+function openLink() {
+  const urlPattern = new RegExp(
+    "https?://(?:www\\.)?[a-zA-Z0-9./_-]+(?:\\.[a-zA-Z]{2,})(?:/[a-zA-Z0-9./?=&%_-]*)?"
+  );
+  let match = localValue.value.text.match(urlPattern);
+  if (match) {
+    window.open(match[0], "_blank");
+  } else {
+    match = !zeroChildren.value
+      ? localValue.value.children[0].text.match(urlPattern)
+      : null;
+    if (match) {
+      window.open(match[0], "_blank");
+    } else {
+      console.error("No valid URL found in the text.");
+    }
+  }
 }
 </script>

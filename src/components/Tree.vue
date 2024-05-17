@@ -76,8 +76,10 @@ watch(
 );
 
 function updateValue(value) {
-  localValue.value = value;
-  emit("input", localValue.value);
+  if (Array.isArray(value)) {
+    localValue.value = value;
+    emit("input", localValue.value);
+  }
 }
 
 function updateItem(itemValue) {
