@@ -4,6 +4,7 @@ import { useApi } from "@/useAPI.js";
 import TodoListCard from "@/components/TodoListCard.vue";
 import Chat from "@/components/Chat.vue";
 import Calendar from "@/components/Calendar.vue";
+import TreeNotes from "@/components/TreeNotes.vue";
 import { useDisplay } from "vuetify";
 
 const { smAndDown } = useDisplay();
@@ -120,6 +121,7 @@ function handleApiKeySubmit(enteredApiKey) {
     </v-row>
     <v-row>
       <v-col cols="12" sm="8" order-sm="2">
+        <TreeNotes :collapsed="true" />
         <Calendar :collapsed="smAndDown" />
       </v-col>
       <v-col cols="12" sm="4" order-sm="1">

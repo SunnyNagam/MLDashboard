@@ -160,7 +160,7 @@ const imageHost =
   "https://res.cloudinary.com/dwjzkpvls/image/upload/v1715657866/";
 const showApiKeyModal = ref(false);
 const apiKey = ref("");
-const topK = ref(5);
+const topK = ref(20);
 const filter = ref({});
 
 const getPhotosClientSide = async () => {

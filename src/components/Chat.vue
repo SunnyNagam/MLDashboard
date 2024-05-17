@@ -177,8 +177,8 @@ const props = defineProps({
 const selectedModel = ref("meta-llama/llama-3-8b-instruct");
 const modelChoices = [
   "anthropic/claude-3-haiku",
-  "microsoft/wizardlm-2-8x22b",
-  "perplexity/sonar-medium-online",
+  "google/gemini-flash-1.5",
+  "perplexity/llama-3-sonar-small-32k-online",
   "meta-llama/llama-3-8b-instruct",
   "Ollama3::phi3",
   "Ollama3::llama3:8b-instruct-q5_K_M",
