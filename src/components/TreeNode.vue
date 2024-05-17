@@ -30,8 +30,19 @@
         <div
           class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center invisible group-hover:visible space-x-2 bg-zinc-800 p-2 rounded-lg"
         >
-          <v-icon @click.stop="addNode"> mdi-plus </v-icon>
-          <v-icon @click.stop="deleteNode" color="red"> mdi-delete </v-icon>
+          <v-icon
+            @click.stop="smAndDown ? {} : addNode()"
+            @touchstart="addNode"
+          >
+            mdi-plus
+          </v-icon>
+          <v-icon
+            @click.stop="smAndDown ? {} : deleteNode()"
+            @touchstart="deleteNode"
+            color="red"
+          >
+            mdi-delete
+          </v-icon>
         </div>
       </div>
     </v-list-item>
