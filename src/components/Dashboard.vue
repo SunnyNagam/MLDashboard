@@ -121,13 +121,14 @@ function handleApiKeySubmit(enteredApiKey) {
     </v-row>
     <v-row>
       <v-col cols="12" sm="8" order-sm="2">
-        <TreeNotes :collapsed="true" />
+        <TreeNotes :collapsed="true" class="mb-4" v-if="!smAndDown" />
         <Calendar :collapsed="smAndDown" />
       </v-col>
       <v-col cols="12" sm="4" order-sm="1">
         <TodoListCard title="Now" />
         <TodoListCard title="Soon" :collapsed="true" />
         <TodoListCard title="Eventually" :collapsed="true" />
+        <TreeNotes :collapsed="true" class="mt-4" />
         <Chat
           :context="otherContext + '\n' + chatContext + '\n' + calContext"
         />

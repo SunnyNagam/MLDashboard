@@ -1,11 +1,10 @@
 <template>
-  <v-card class="mx-auto mb-4" elevation="2" rounded="lg">
+  <v-card class="mx-auto" elevation="2" rounded="lg">
     <v-toolbar color="teal" density="compact">
       <v-btn icon @click="showNotes = !showNotes">
         <v-icon>{{ showNotes ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
       </v-btn>
       <v-toolbar-title>Notes</v-toolbar-title>
-      <v-spacer></v-spacer>
       <v-btn @click="fetchNotes"><v-icon>mdi-refresh</v-icon></v-btn>
       <v-btn @click="saveNotes"><v-icon>mdi-content-save</v-icon></v-btn>
       <v-btn @click="addNode"><v-icon>mdi-plus</v-icon></v-btn>
@@ -45,13 +44,6 @@ const props = defineProps({
 const showNotes = ref(true);
 const notes = ref([]);
 
-if (props.collapsed) {
-  showNotes.value = false;
-}
-
-if (showNotes.value) {
-  fetchNotes();
-}
 watch(
   () => showNotes.value,
   (newValue) => {
@@ -89,6 +81,7 @@ const fetchNotes = async () => {
 };
 
 const saveNotes = async () => {
+  apiIsLoading.value = true;
   const response = await fetch(
     "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=Notes",
     {
@@ -102,5 +95,14 @@ const saveNotes = async () => {
   );
   const data = await response.json();
   console.log(data);
+  apiIsLoading.value = false;
 };
+
+if (props.collapsed) {
+  showNotes.value = false;
+}
+
+if (showNotes.value) {
+  fetchNotes();
+}
 </script>
