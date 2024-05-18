@@ -8,7 +8,9 @@
       <v-toolbar-title>{{ title }}</v-toolbar-title>
 
       <v-spacer></v-spacer>
-
+      <v-btn icon @click="addDialog = true">
+        <v-icon>mdi-plus</v-icon>
+      </v-btn>
       <v-btn icon @click="toggleSort">
         <v-icon>mdi-sort-variant</v-icon>
       </v-btn>
@@ -137,7 +139,6 @@
         </v-card-text>
 
         <v-card-actions>
-          <v-spacer></v-spacer>
           <v-btn color="grey darken-1" text @click="addDialog = false"
             >Close</v-btn
           >
@@ -181,6 +182,8 @@ const fetchTodo = async () => {
   );
   const data = await response.json();
   todo.value = data[props.title];
+  sortAsc.value = true;
+  toggleSort();
   apiIsLoading.value = false;
 };
 
@@ -312,11 +315,14 @@ const addItem = async (text) => {
       id: id,
       created: new Date().toISOString(),
       checked: false,
+      subTasks: [],
     };
   }
 
   if (!addParentID.value) {
-    const index = todo.value.findIndex((item) => item.id === addAfterID.value);
+    const index = addAfterID.value
+      ? todo.value.findIndex((item) => item.id === addAfterID.value)
+      : -1;
     todo.value.splice(index + 1, 0, createNewItem(text, data.results[0].id));
   } else {
     todo.value = todo.value.map((todoItem) => {

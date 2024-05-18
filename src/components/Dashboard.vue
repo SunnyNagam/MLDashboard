@@ -128,7 +128,7 @@ function handleApiKeySubmit(enteredApiKey) {
         <TodoListCard title="Now" />
         <TodoListCard title="Soon" :collapsed="true" />
         <TodoListCard title="Eventually" :collapsed="true" />
-        <TreeNotes :collapsed="true" class="mt-4" />
+        <TreeNotes :collapsed="true" class="my-4" />
         <Chat
           :context="otherContext + '\n' + chatContext + '\n' + calContext"
         />

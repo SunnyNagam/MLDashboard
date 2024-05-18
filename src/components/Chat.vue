@@ -1,8 +1,10 @@
 <template>
-  <v-card class="mx-auto shadow-lg my-5" rounded="lg">
-    <v-toolbar color="deep-purple accent-4" dark density="compact">
-      <v-toolbar-title>Larry</v-toolbar-title>
-      <v-spacer></v-spacer>
+  <v-card :class="[$attrs.class, 'mx-auto']" elevation="2" rounded="lg">
+    <v-toolbar color="deep-purple" dark density="compact">
+      <v-btn icon @click="showChat = !showChat">
+        <v-icon>{{ showChat ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
+      </v-btn>
+      <v-toolbar-title>Perplexity</v-toolbar-title>
       <v-btn icon @click="clearMessages">
         <v-icon>mdi-delete</v-icon>
       </v-btn>
@@ -10,53 +12,55 @@
         <v-icon>mdi-cog</v-icon>
       </v-btn>
     </v-toolbar>
-    <v-card-text class="h-[21vh] overflow-y-auto">
-      <div
-        class="space-y-2 py-2"
-        v-for="(message, index) in messages.slice(1)"
-        :key="message.content"
-      >
+    <div v-show="showChat">
+      <v-card-text class="h-[21vh] overflow-y-auto">
         <div
-          @click="showMenu(message, index + 1)"
-          :class="{
-            'text-right': message.role === 'user',
-            'text-left': message.role === 'assistant',
-          }"
+          class="space-y-2 py-2"
+          v-for="(message, index) in messages.slice(1)"
+          :key="message.content"
         >
           <div
+            @click="showMenu(message, index + 1)"
             :class="{
-              'inline-block bg-blue-500 text-white p-2 rounded-l-lg':
-                message.role === 'user',
-              'inline-block bg-gray-900 p-2 rounded-r-lg':
-                message.role === 'assistant',
+              'text-right': message.role === 'user',
+              'text-left': message.role === 'assistant',
             }"
-            :ref="
-              (el) => {
-                if (index === messages.length - 1) lastMessage = el;
-              }
-            "
           >
-            <vue-markdown
-              :source="message.content"
-              :options="{ breaks: true }"
-            />
+            <div
+              :class="{
+                'inline-block bg-blue-500 text-white p-2 rounded-l-lg':
+                  message.role === 'user',
+                'inline-block bg-gray-900 p-2 rounded-r-lg':
+                  message.role === 'assistant',
+              }"
+              :ref="
+                (el) => {
+                  if (index === messages.length - 1) lastMessage = el;
+                }
+              "
+            >
+              <vue-markdown
+                :source="message.content"
+                :options="{ breaks: true }"
+              />
+            </div>
           </div>
         </div>
-      </div>
-    </v-card-text>
-    <v-card-actions>
-      <v-text-field
-        v-model="userInput"
-        label="Type a message..."
-        class="flex-grow-1"
-        @keyup.enter="sendMessage"
-        outlined
-        hide-details
-      ></v-text-field>
-      <v-btn @click="sendMessage">
-        {{ editingIndex === -1 ? "Send" : "Save" }}
-      </v-btn>
-    </v-card-actions>
+      </v-card-text>
+      <v-card-actions>
+        <v-text-field
+          v-model="userInput"
+          label="Type a message..."
+          class="flex-grow-1"
+          @keyup.enter="sendMessage"
+          outlined
+          hide-details
+        ></v-text-field>
+        <v-btn @click="sendMessage">
+          {{ editingIndex === -1 ? "Send" : "Save" }}
+        </v-btn>
+      </v-card-actions>
+    </div>
     <v-menu v-model="msgMenu" :close-on-content-click="false">
       <template v-slot:activator="{ props }">
         <span v-bind="props" />
@@ -147,10 +151,10 @@ import OpenAI from "openai";
 import Cookies from "vue-cookies";
 import { useAgent } from "@/useAgent.js";
 
-let { invoke: invokeAgent } = await useAgent("");
 const apiKey = ref(Cookies.get("OPEN_ROUTER_API_KEY"));
 const msgMenu = ref(false);
 const menuItem = ref(null);
+const showChat = ref(true);
 const showMenu = (message, index) => {
   msgMenu.value = !msgMenu.value;
   menuItem.value = { message, index };
@@ -172,19 +176,29 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  collapsed: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const selectedModel = ref("meta-llama/llama-3-8b-instruct");
+if (props.collapsed) {
+  showChat.value = false;
+}
+
+const selectedModel = ref("perplexity/llama-3-sonar-small-32k-online");
 const modelChoices = [
   "anthropic/claude-3-haiku",
   "google/gemini-flash-1.5",
   "perplexity/llama-3-sonar-small-32k-online",
+  "perplexity/llama-3-sonar-large-32k-online",
   "meta-llama/llama-3-8b-instruct",
   "Ollama3::phi3",
   "Ollama3::llama3:8b-instruct-q5_K_M",
 ];
 const dialog = ref(false);
 const callAgent = ref(false);
+let { invoke: invokeAgent } = callAgent.value ? await useAgent("") : {};
 
 const messages = ref([
   {
@@ -201,6 +215,7 @@ const clearMessages = () => {
 const lastMessage = ref(null);
 const userInput = ref("");
 const editingIndex = ref(-1); // Index of the message being edited, -1 when not editing
+const userContext = ref("");
 
 function enableEditMode(index) {
   editingIndex.value = index;
@@ -238,7 +253,16 @@ watch(
         role: "system",
         content: `You are a helpful dashboard and planning assistant. ${newContext}`,
       };
-      ({ invoke: invokeAgent } = await useAgent(newContext));
+      userContext.value = newContext;
+    }
+  }
+);
+
+watch(
+  () => callAgent.value,
+  async (newVal) => {
+    if (newVal) {
+      ({ invoke: invokeAgent } = await useAgent(userContext.value));
     }
   }
 );

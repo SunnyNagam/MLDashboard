@@ -57,6 +57,7 @@
       v-bind="dragOptions"
       @start="drag = true"
       @end="drag = false"
+      handle=".handle"
     >
       <template #item="{ element }">
         <TreeNode

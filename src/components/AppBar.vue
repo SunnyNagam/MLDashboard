@@ -8,6 +8,11 @@
       <v-btn variant="text" @click="goReddit" icon="mdi:mdi-reddit" />
       <v-btn variant="text" @click="goGoals" icon="mdi:mdi-check" />
       <v-btn variant="text" @click="goPhotos" icon="mdi:mdi-image" />
+      <v-btn
+        variant="text"
+        @click="goExperimental"
+        icon="mdi:mdi-chemical-weapon"
+      />
     </v-app-bar-title>
 
     <template v-slot:append> </template>
@@ -30,5 +35,8 @@ const goGoals = () => {
 };
 const goPhotos = () => {
   router.push({ name: "photos" });
+};
+const goExperimental = () => {
+  router.push({ name: "experimental" });
 };
 </script>

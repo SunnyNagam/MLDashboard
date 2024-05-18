@@ -7,7 +7,6 @@
         }}</v-icon>
       </v-btn>
       <v-toolbar-title>Calendar</v-toolbar-title>
-      <v-spacer></v-spacer>
       <v-select
         v-model="viewType"
         :items="types"
