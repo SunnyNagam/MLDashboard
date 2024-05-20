@@ -97,11 +97,16 @@
             <v-icon class="mr-1">mdi-calendar</v-icon>
             View On GCal
           </v-btn>
+          <v-btn text @click="deleteEvent" color="red">
+            <v-icon class="mr-1">mdi-delete</v-icon>
+            Delete
+          </v-btn>
           <v-btn text @click="showEventDialog = false">Close</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
+    <!-- Add Event Modal -->
     <v-dialog v-model="addDialog" max-width="500px" scroll-strategy="close">
       <v-card>
         <v-card-title class="headline">Add an Event</v-card-title>
@@ -275,6 +280,7 @@ const formatDate = (date) => {
 // Show Event in Modal
 const showEvent = (event) => {
   selectedEvent.value = {
+    id: event.id,
     title: event.title,
     start: formatDate(event.start),
     end: formatDate(event.end),
@@ -286,6 +292,7 @@ const showEvent = (event) => {
 
 // Save New Event
 const saveEvent = async () => {
+  apiIsLoading.value = true;
   const event = {
     title: newEvent.value.title,
     start: new Date(newEvent.value.start).toISOString(),
@@ -315,9 +322,32 @@ const saveEvent = async () => {
 
   if (response.ok) {
     fetchCalendar();
-    addDialog.value = false;
   } else {
     console.error("Failed to save event");
+    apiIsLoading.value = false;
+  }
+};
+
+// Delete Event
+const deleteEvent = async () => {
+  apiIsLoading.value = true;
+  const response = await fetch(
+    `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/deleteCal?id=${selectedEvent.value.id}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Api-Key": getApiKey(),
+      },
+    }
+  );
+
+  if (response.ok) {
+    fetchCalendar();
+    showEventDialog.value = false;
+  } else {
+    console.error("Failed to delete event");
+    apiIsLoading.value = false;
   }
 };
 </script>
