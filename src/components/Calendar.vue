@@ -7,6 +7,9 @@
         }}</v-icon>
       </v-btn>
       <v-toolbar-title>Calendar</v-toolbar-title>
+      <v-btn icon @click="addDialog = true">
+        <v-icon>mdi-plus</v-icon>
+      </v-btn>
       <v-select
         v-model="viewType"
         :items="types"
@@ -98,6 +101,56 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="addDialog" max-width="500px" scroll-strategy="close">
+      <v-card>
+        <v-card-title class="headline">Add an Event</v-card-title>
+        <v-card-text>
+          <v-form ref="addEventForm">
+            <v-text-field
+              v-model="newEvent.title"
+              label="Event Title"
+              required
+            ></v-text-field>
+            <v-row>
+              <v-btn icon @click="menuStart = !menuStart">
+                <v-icon>mdi-calendar</v-icon>
+              </v-btn>
+              <v-text-field
+                v-model="newEvent.start"
+                label="Start Time"
+              ></v-text-field>
+            </v-row>
+            <v-date-picker
+              v-model="newEvent.start"
+              v-if="menuStart"
+              @input="menuStart = false"
+            ></v-date-picker>
+            <v-row>
+              <v-btn icon @click="menuEnd = !menuEnd">
+                <v-icon>mdi-calendar</v-icon>
+              </v-btn>
+              <v-text-field
+                v-model="newEvent.end"
+                label="End Time"
+              ></v-text-field>
+            </v-row>
+            <v-date-picker
+              v-model="newEvent.end"
+              v-if="menuEnd"
+              @input="menuEnd = false"
+            ></v-date-picker>
+            <v-checkbox v-model="newEvent.allDay" label="All Day"></v-checkbox>
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="grey darken-1" text @click="addDialog = false"
+            >Close</v-btn
+          >
+          <v-btn color="primary" text @click="saveEvent">Save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
@@ -117,6 +170,7 @@ const props = defineProps({
 });
 
 const apiIsLoading = ref(false);
+const addDialog = ref(false);
 const calendarEvents = ref([]);
 const showCalendar = ref(true);
 const currentDate = ref([new Date()]);
@@ -132,6 +186,16 @@ const weekday = ref([0, 1, 2, 3, 4, 5, 6]);
 const showEventDialog = ref(false);
 const selectedEvent = ref({});
 const showTooltipId = ref({});
+
+// New Event Data
+const newEvent = ref({
+  title: "",
+  start: new Date(),
+  end: new Date(),
+  allDay: false,
+});
+const menuStart = ref(false);
+const menuEnd = ref(false);
 
 const fetchCalendar = async () => {
   apiIsLoading.value = true;
@@ -218,6 +282,43 @@ const showEvent = (event) => {
     link: event.link,
   };
   showEventDialog.value = true;
+};
+
+// Save New Event
+const saveEvent = async () => {
+  const event = {
+    title: newEvent.value.title,
+    start: new Date(newEvent.value.start).toISOString(),
+    end: new Date(newEvent.value.end).toISOString(),
+    allDay: newEvent.value.allDay,
+  };
+  console.log(event);
+
+  const response = await fetch(
+    `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/addCal?title=${encodeURIComponent(
+      event.title
+    )}&start=${encodeURIComponent(event.start)}&end=${encodeURIComponent(
+      event.end
+    )}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Api-Key": getApiKey(),
+      },
+    }
+  );
+
+  addDialog.value = false;
+  menuEnd.value = false;
+  menuStart.value = false;
+
+  if (response.ok) {
+    fetchCalendar();
+    addDialog.value = false;
+  } else {
+    console.error("Failed to save event");
+  }
 };
 </script>
 

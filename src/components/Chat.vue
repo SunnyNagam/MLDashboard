@@ -45,6 +45,51 @@
               />
             </div>
           </div>
+          <div
+            class="w-full rounded-lg"
+            :class="{
+              'text-right': message.role === 'user',
+              'text-left': message.role === 'assistant',
+            }"
+            v-if="msgMenu && menuItem && menuItem.index === index + 1"
+          >
+            <v-btn
+              icon="mdi-delete"
+              variant="text"
+              class="flex items-center"
+              @click="
+                deleteMessage(menuItem.index);
+                msgMenu = false;
+              "
+            ></v-btn>
+            <v-btn
+              icon="mdi-content-copy"
+              variant="text"
+              class="flex items-center"
+              @click="
+                copyToClipboard(menuItem.message.content);
+                msgMenu = false;
+              "
+            ></v-btn>
+            <v-btn
+              icon="mdi-pencil"
+              variant="text"
+              class="flex items-center"
+              @click="
+                enableEditMode(menuItem.index);
+                msgMenu = false;
+              "
+            ></v-btn>
+            <v-btn
+              @click="
+                cancelEditMode();
+                msgMenu = false;
+              "
+              v-if="editingIndex !== -1"
+            >
+              Cancel
+            </v-btn>
+          </div>
         </div>
       </v-card-text>
       <v-card-actions>
@@ -61,57 +106,6 @@
         </v-btn>
       </v-card-actions>
     </div>
-    <v-menu v-model="msgMenu" :close-on-content-click="false">
-      <template v-slot:activator="{ props }">
-        <span v-bind="props" />
-      </template>
-
-      <v-card class="w-full rounded-lg shadow-md">
-        <v-card-subtitle class="text-wrap">Message Options</v-card-subtitle>
-        <v-list :v-title="menuItem.message.content">
-          <v-list-item>
-            <template v-slot:append>
-              <v-btn
-                icon="mdi-delete"
-                variant="text"
-                class="flex items-center"
-                @click="
-                  deleteMessage(menuItem.index);
-                  msgMenu = false;
-                "
-              ></v-btn>
-              <v-btn
-                icon="mdi-content-copy"
-                variant="text"
-                class="flex items-center"
-                @click="
-                  copyToClipboard(menuItem.message.content);
-                  msgMenu = false;
-                "
-              ></v-btn>
-              <v-btn
-                icon="mdi-pencil"
-                variant="text"
-                class="flex items-center"
-                @click="
-                  enableEditMode(menuItem.index);
-                  msgMenu = false;
-                "
-              ></v-btn>
-              <v-btn
-                @click="
-                  cancelEditMode();
-                  msgMenu = false;
-                "
-                v-if="editingIndex !== -1"
-              >
-                Cancel
-              </v-btn>
-            </template>
-          </v-list-item>
-        </v-list>
-      </v-card>
-    </v-menu>
   </v-card>
   <v-dialog v-model="dialog" max-width="600">
     <v-card>
