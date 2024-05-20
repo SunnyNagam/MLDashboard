@@ -8,6 +8,7 @@
       <v-btn @click="fetchNotes"><v-icon>mdi-refresh</v-icon></v-btn>
       <v-btn @click="saveNotes"><v-icon>mdi-content-save</v-icon></v-btn>
       <v-btn @click="addNode"><v-icon>mdi-plus</v-icon></v-btn>
+      <v-btn @click="undo"><v-icon>mdi-undo</v-icon></v-btn>
     </v-toolbar>
 
     <v-progress-linear
@@ -43,6 +44,7 @@ const props = defineProps({
 });
 const showNotes = ref(true);
 const notes = ref([]);
+const previousNotes = ref([]); // Store previous state for undo
 
 watch(
   () => showNotes.value,
@@ -59,10 +61,17 @@ function updateData(val) {
 }
 
 function addNode() {
+  previousNotes.value = JSON.parse(JSON.stringify(notes.value)); // Save current state
   notes.value.push({
     text: "",
     children: [],
   });
+}
+
+function undo() {
+  if (previousNotes.value.length > 0) {
+    notes.value = JSON.parse(JSON.stringify(previousNotes.value)); // Restore previous state
+  }
 }
 
 const fetchNotes = async () => {
@@ -77,6 +86,7 @@ const fetchNotes = async () => {
   );
   const data = await response.json();
   notes.value = data;
+  previousNotes.value = JSON.parse(JSON.stringify(notes.value)); // Save current state
   apiIsLoading.value = false;
 };
 
@@ -94,6 +104,7 @@ const saveNotes = async () => {
     }
   );
   const data = await response.json();
+  console.log(notes.value);
   console.log(data);
   apiIsLoading.value = false;
 };

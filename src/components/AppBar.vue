@@ -6,7 +6,7 @@
     >
       <v-btn variant="text" @click="goHome" icon="mdi:mdi-home" />
       <v-btn variant="text" @click="goReddit" icon="mdi:mdi-reddit" />
-      <v-btn variant="text" @click="goGoals" icon="mdi:mdi-check" />
+      <v-btn variant="text" @click="goScreen" icon="mdi:mdi-eye" />
       <v-btn variant="text" @click="goPhotos" icon="mdi:mdi-image" />
       <v-btn
         variant="text"
@@ -30,8 +30,8 @@ const goHome = () => {
 const goReddit = () => {
   router.push({ name: "reddit" });
 };
-const goGoals = () => {
-  router.push({ name: "goals" });
+const goScreen = () => {
+  router.push({ name: "screen" });
 };
 const goPhotos = () => {
   router.push({ name: "photos" });
