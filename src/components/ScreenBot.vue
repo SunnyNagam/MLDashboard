@@ -262,7 +262,7 @@ const exportHistory = () => {
     </div>
     <div v-if="history.length" class="mt-4">
       <h2 class="text-h4 font-bold mb-2">Last Response:</h2>
-      <p>{{ history[history.length - 1].response }}</p>
+      <p>{{ history[0].response }}</p>
     </div>
     <v-dialog v-model="dialog" max-width="600">
       <v-card>

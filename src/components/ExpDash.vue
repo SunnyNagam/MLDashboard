@@ -27,22 +27,26 @@ function handleApiKeySubmit(enteredApiKey) {
 }
 
 const components = shallowRef([
-  { id: 3, component: TodoListCard, props: { collapsed: true, class: "mb-4" } },
+  {
+    id: 3,
+    component: TodoListCard,
+    props: { collapsed: false, class: "mb-4" },
+  },
   {
     id: 2,
     component: TreeNotes,
-    props: { collapsed: true, class: "mb-4" },
+    props: { collapsed: false, class: "mb-4" },
   },
   {
     id: 4,
     component: Chat,
     props: {
-      collapsed: true,
+      collapsed: false,
       context: otherContext,
       class: "mb-4",
     },
   },
-  { id: 1, component: Calendar, props: { collapsed: true, class: "mb-4" } },
+  { id: 1, component: Calendar, props: { collapsed: false, class: "mb-4" } },
 ]);
 </script>
 
