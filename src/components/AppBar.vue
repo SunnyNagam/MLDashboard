@@ -8,7 +8,16 @@
       <v-btn variant="text" @click="goReddit" icon="mdi:mdi-reddit" />
       <v-btn variant="text" @click="goScreen" icon="mdi:mdi-eye" />
       <v-btn variant="text" @click="goPhotos" icon="mdi:mdi-image" />
-      <v-btn variant="text" @click="goLanding1" icon="mdi:mdi-image" />
+      <v-btn
+        variant="text"
+        @click="goLanding1"
+        icon="mdi:mdi-airplane-landing"
+      />
+      <v-btn
+        variant="text"
+        @click="goLanding2"
+        icon="mdi:mdi-airplane-landing"
+      />
       <v-btn
         variant="text"
         @click="goExperimental"
@@ -41,6 +50,9 @@ const goExperimental = () => {
   router.push({ name: "experimental" });
 };
 const goLanding1 = () => {
-  router.push({ name: "landing1" });
+  router.push({ name: "landing-simple-test" });
+};
+const goLanding2 = () => {
+  router.push({ name: "landing-more-test" });
 };
 </script>

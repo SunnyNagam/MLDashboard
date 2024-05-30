@@ -155,25 +155,6 @@
         </v-row>
       </v-container>
 
-      <v-parallax :src="imageLink.social_cover" height="180px">
-        <v-container class="d-flex flex-column align-center justify-center">
-          <h2 class="text-white text-xl font-bold text-center mb-4">
-            Follow us on social media:
-          </h2>
-          <v-row justify="center">
-            <v-btn icon class="mx-2">
-              <v-icon x-large>fab fa-facebook-f</v-icon>
-            </v-btn>
-            <v-btn icon class="mx-2">
-              <v-icon x-large>fab fa-twitter</v-icon>
-            </v-btn>
-            <v-btn icon class="mx-2">
-              <v-icon x-large>fab fa-linkedin-in</v-icon>
-            </v-btn>
-          </v-row>
-        </v-container>
-      </v-parallax>
-
       <v-container>
         <v-layout class="d-flex align-center justify-center">
           <v-col class="text-center">

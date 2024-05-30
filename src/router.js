@@ -6,6 +6,7 @@ import ScreenBot from "@/components/ScreenBot.vue";
 import PhotoGallery from "@/components/PhotoGallery.vue";
 import ExpDash from "@/components/ExpDash.vue";
 import Landing1 from "@/components/Landing1Test.vue";
+import Landing2 from "@/components/Landing2Test.vue";
 
 const routes = [
   { path: "/", name: "home", component: Dashboard },
@@ -13,7 +14,16 @@ const routes = [
   { path: "/screen", name: "screen", component: ScreenBot },
   { path: "/photos", name: "photos", component: PhotoGallery },
   { path: "/experimental", name: "experimental", component: ExpDash },
-  { path: "/landing1", name: "landing1", component: Landing1 },
+  {
+    path: "/landing-simple-test",
+    name: "landing-simple-test",
+    component: Landing1,
+  },
+  {
+    path: "/landing-more-test",
+    name: "landing-more-test",
+    component: Landing2,
+  },
 ];
 
 const router = createRouter({
