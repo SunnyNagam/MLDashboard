@@ -22,12 +22,22 @@
             height: 60%;
           "
         >
-          <h1 class="mb-4 text-3xl font-black text-center">
-            ASSK - Leading Oil and Gas Equipment Supplier
+          <h1
+            class="mb-4 text-5xl font-black text-center"
+            style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5)"
+          >
+            ASSK
+          </h1>
+          <h1
+            class="mb-4 text-3xl font-black text-center"
+            style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5)"
+          >
+            Leading Oil and Gas Equipment Supplier
           </h1>
           <v-btn
-            class="bg-blue-500 text-white"
-            large
+            class="bg-blue-500 text-white mt-6"
+            rounded="xl"
+            size="large"
             href="https://www.assk.ca/"
           >
             View Our Product Inventory
@@ -80,12 +90,23 @@
       <v-parallax :src="imageLink.main" height="380px">
         <v-container
           class="d-flex flex-column align-center justify-center text-white"
-          fill-height
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 60%;
+          "
         >
-          <h2 class="text-white text-2xl font-bold mb-3 text-center">
+          <h2
+            class="text-white text-2xl font-bold mb-3 text-center"
+            style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5)"
+          >
             Our Goals
           </h2>
-          <p class="text-white text-center">
+          <p
+            class="text-white text-center"
+            style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5)"
+          >
             At ASSK, our goal is to provide exceptional service and top-notch
             equipment to the oil and gas industry, ensuring efficiency, safety,
             and reliability.
