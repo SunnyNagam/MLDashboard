@@ -198,10 +198,11 @@ const exportHistory = () => {
           <h1 class="text-h2 font-bold mb-2">Surveillance Bot</h1>
         </h1>
         <h2 class="text-subtitle-1 mb-4">
-          Enter a prompt to accompany periodic screenshots or webcam captures to
-          the AI. History stored below. Responding with "ALERT" will trigger a
-          browser alert. Gemini Flash API free tier provides 15/min 1500/day (2
-          hrs of 5 sec/snap per day). Examples:
+          Enter a prompt to accompany screenshare or webcam periodic captures to
+          a M-LLM. History of observations exportable as json. Responding with
+          "ALERT" will trigger a browser alert notification event which can be
+          triggered in the background. Gemini Flash API free tier provides
+          15/min 1500/day (2hrs of 5 sec/snap/day). Examples:
         </h2>
         <ul class="text-subtitle-1 mb-4">
           <li>
@@ -271,9 +272,9 @@ const exportHistory = () => {
           <v-form>
             <v-text-field
               v-model="apiKey"
-              label="OpenRouter API Key"
+              label="Google Gemini API Key"
               outlined
-              hint="Enter your OpenRouter API key"
+              hint="Enter your Google Gemini API key"
             ></v-text-field>
             <v-btn @click="saveApiKey">Save API Key</v-btn>
           </v-form>
