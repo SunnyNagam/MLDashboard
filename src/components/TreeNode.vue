@@ -74,7 +74,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, defineEmits, defineProps } from "vue";
+import { ref, computed, watch } from "vue";
 import Draggable from "vuedraggable";
 import { useDisplay } from "vuetify";
 const { smAndDown } = useDisplay();

@@ -150,7 +150,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref, watch, computed } from "vue";
+import { ref, watch, computed } from "vue";
 import TodoEditDialog from "./TodoEditDialog.vue";
 import { useApi } from "@/useAPI.js";
 

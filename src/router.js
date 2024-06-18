@@ -7,6 +7,7 @@ import PhotoGallery from "@/components/PhotoGallery.vue";
 import ExpDash from "@/components/ExpDash.vue";
 import Landing1 from "@/components/Landing1Test.vue";
 import Landing2 from "@/components/Landing2Test.vue";
+import BITPortfolioBeta from "@/components/BITPortfolioBeta.vue";
 
 const routes = [
   { path: "/", name: "home", component: Dashboard },
@@ -23,6 +24,11 @@ const routes = [
     path: "/landing-more-test",
     name: "landing-more-test",
     component: Landing2,
+  },
+  {
+    path: "/bit-portfolio-beta",
+    name: "bit-portfolio-beta",
+    component: BITPortfolioBeta,
   },
 ];
 

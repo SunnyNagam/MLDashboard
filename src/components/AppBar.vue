@@ -23,6 +23,11 @@
         @click="goExperimental"
         icon="mdi:mdi-chemical-weapon"
       />
+      <v-btn
+        variant="text"
+        @click="goBITPortfolioBeta"
+        icon="mdi:mdi-briefcase"
+      />
     </v-app-bar-title>
 
     <template v-slot:append> </template>
@@ -54,5 +59,8 @@ const goLanding1 = () => {
 };
 const goLanding2 = () => {
   router.push({ name: "landing-more-test" });
+};
+const goBITPortfolioBeta = () => {
+  router.push({ name: "bit-portfolio-beta" });
 };
 </script>

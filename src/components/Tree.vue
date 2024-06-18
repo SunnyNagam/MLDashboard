@@ -27,7 +27,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, defineEmits, defineProps } from "vue";
+import { ref, computed, watch } from "vue";
 import Draggable from "vuedraggable";
 import TreeNode from "@/components/TreeNode.vue";
 
