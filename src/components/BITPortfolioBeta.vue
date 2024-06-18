@@ -211,6 +211,8 @@ import { useTheme } from "vuetify";
 import logo from "@/assets/BITLogoTest.webp";
 import background1 from "@/assets/BIT_background1.webp";
 import trademark1 from "@/assets/portfolioImgs/trademark1.png";
+import mable1 from "@/assets/portfolioImgs/mable1.png";
+import mable2 from "@/assets/portfolioImgs/mable2.png";
 
 const theme = useTheme();
 theme.global.name.value = "light";
@@ -240,11 +242,7 @@ const projects = reactive([
       "A robust inventory management system developed using Vue and AWS tools.",
     description:
       "Fully developed inventory management system for a local business to manage their inventory and sales. Manages 1000s of customer orders a month, with a full managed database for products and users with analytics and full store customization.",
-    images: [
-      "src/assets/portfolioImgs/trademark1.png",
-      "src/assets/BIT_background1.webp",
-      "src/assets/portfolioImgs/trademark1.png",
-    ],
+    images: [trademark1, background1, trademark1],
   },
   {
     name: "Mable's Pantry",
@@ -252,21 +250,13 @@ const projects = reactive([
       "A Squarespace site for a local jam company to sell jams in a marketplace.",
     description:
       "Manages orders, payments, and inventory in a user friendly interface.",
-    images: [
-      "src/assets/portfolioImgs/mable1.png",
-      "src/assets/portfolioImgs/mable2.png",
-    ],
+    images: [mable1, mable2],
   },
   {
     name: "Posh and Pony",
     tagline: "A portfolio site for a wedding photography company.",
     description: "Squarespace site for a local wedding photography company.",
-    images: [
-      "src/assets/portfolioImgs/trademark1.png",
-      "src/assets/BIT_background1.webp",
-      "src/assets/portfolioImgs/mable1.png",
-      "src/assets/portfolioImgs/mable2.png",
-    ],
+    images: [trademark1, background1, mable1, mable2],
   },
 ]);
 
