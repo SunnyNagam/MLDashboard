@@ -124,7 +124,7 @@
               hide-delimiter-background
               cycle
               :interval="3000"
-              height="500"
+              height="auto"
             >
               <v-carousel-item
                 v-for="(image, index) in project.images"
@@ -145,7 +145,7 @@
             <p class="text-xl mb-4">{{ project.tagline }}</p>
             <p class="text-gray-700 mb-6">{{ project.description }}</p>
             <v-btn color="primary" class="align-self-start" rounded
-              >View Project</v-btn
+              >More Details</v-btn
             >
           </v-col>
         </v-row>
@@ -195,32 +195,42 @@
             <h2 class="text-4xl font-bold mb-4">Client Testimonials</h2>
             <p class="text-xl text-gray-700">What our clients say about us</p>
           </v-col>
-          <v-col cols="12" md="10">
-            <v-row>
-              <v-col
-                v-for="testimonial in testimonials"
-                :key="testimonial.name"
-                cols="12"
-                md="6"
-                class="mb-8"
+        </v-row>
+        <v-row justify="center">
+          <v-col
+            v-for="testimonial in testimonials"
+            :key="testimonial.name"
+            cols="12"
+            md="4"
+            class="mb-8"
+          >
+            <v-hover v-slot="{ isHovering, props }">
+              <v-card
+                v-bind="props"
+                :elevation="isHovering ? 8 : 2"
+                :class="{ 'scale-105': isHovering }"
+                class="h-full d-flex flex-column transition-all duration-300"
               >
-                <v-card elevation="2" class="pa-6">
-                  <v-card-text>
-                    <p class="text-lg mb-4">"{{ testimonial.text }}"</p>
-                    <p class="font-medium">{{ testimonial.name }}</p>
-                    <p class="text-gray-600">{{ testimonial.position }}</p>
-                  </v-card-text>
-                </v-card>
-              </v-col>
-            </v-row>
+                <v-card-text class="text-center pa-6">
+                  <p class="text-lg mb-4 font-italic">
+                    "{{ testimonial.text }}"
+                  </p>
+                  <v-divider class="my-4"></v-divider>
+                  <p class="font-weight-bold mb-1">{{ testimonial.name }}</p>
+                  <p class="text-caption text-grey">
+                    {{ testimonial.position }}
+                  </p>
+                </v-card-text>
+              </v-card>
+            </v-hover>
           </v-col>
         </v-row>
       </v-container>
 
       <!-- FAQ Section -->
-      <v-container class="py-16 bg-gray-100">
+      <v-container class="py-16">
         <v-row justify="center">
-          <v-col cols="12" class="text-center mb-12">
+          <v-col cols="12" class="text-center mb-4">
             <h2 class="text-4xl font-bold mb-4">Frequently Asked Questions</h2>
           </v-col>
           <v-col cols="12" md="8">
@@ -302,12 +312,22 @@
           </v-row>
         </v-container>
       </v-footer>
+
+      <!-- Back to Top Button -->
+      <v-btn
+        v-show="showBackToTop"
+        @click="scrollToTop"
+        icon="mdi-arrow-up"
+        color="primary"
+        class="back-to-top-btn"
+        elevation="2"
+      ></v-btn>
     </v-main>
   </v-app>
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, onMounted, onUnmounted } from "vue";
 import ScrollTriggeredAnimatedNumber from "@/components/ScrollTriggeredAnimatedNumber.vue";
 import { useTheme } from "vuetify";
 
@@ -515,9 +535,26 @@ const subscribe = () => {
 const scrollToContact = () => {
   document.getElementById("contact").scrollIntoView({ behavior: "smooth" });
 };
+
+// Back to Top functionality
+const showBackToTop = ref(false);
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+onMounted(() => {
+  window.addEventListener("scroll", () => {
+    showBackToTop.value = window.scrollY > 500;
+  });
+});
+
+onUnmounted(() => {
+  window.removeEventListener("scroll", () => {});
+});
 </script>
 
-<style>
+<style scoped>
 @keyframes blink {
   0%,
   100% {
@@ -534,5 +571,12 @@ const scrollToContact = () => {
 
 .cursor.typing {
   animation: none;
+}
+
+.back-to-top-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 99;
 }
 </style>
