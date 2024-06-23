@@ -52,8 +52,8 @@ const init = () => {
   for (let i = 0; i < 150; i++) {
     const geometry = new THREE.SphereGeometry(
       ((Math.random() + Math.random() + Math.random()) / 3) * 2 + 1,
-      Math.random() * 10 + 1,
-      Math.random() * 10 + 1
+      Math.random() * 9 + 1,
+      Math.random() * 9 + 1
     );
     const pastelColors = [
       0xffc0cb, // Pink
@@ -199,19 +199,6 @@ const onScroll = () => {
 
   // Calculate the scroll progress as a percentage
   const scrollPercent = scrolledPast / containerHeight;
-
-  console.log(
-    "Container Top:",
-    containerTop,
-    "Scrolled Past:",
-    scrolledPast,
-    "Container Height:",
-    containerHeight,
-    "Scroll Percent:",
-    scrollPercent,
-    "Container ID:",
-    props.containerId
-  );
 
   camera.position.z = 30 - scrollPercent * 100;
 };

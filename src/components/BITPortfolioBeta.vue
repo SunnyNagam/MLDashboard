@@ -40,11 +40,11 @@
     <v-main>
       <!-- Hero Section -->
       <v-parallax :src="background2" height="100vh" id="hero-animation">
-        <div class="absolute inset-0 bg-black opacity-10"></div>
+        <div class="absolute inset-0 bg-black opacity-25"></div>
         <v-container class="fill-height">
           <v-row align="center" justify="center">
             <v-col cols="12" md="10" class="text-center">
-              <CoolThreeJSAnimation2
+              <CoolThreeJSAnimation
                 containerId="hero-animation"
                 height="100vh"
               />
@@ -121,28 +121,36 @@
             </p>
           </v-col>
         </v-row>
-        <v-row v-for="project in projects" :key="project.name" class="mb-16">
-          <v-col cols="12" md="7" lg="8">
-            <v-carousel
-              show-arrows="hover"
-              hide-delimiter-background
-              cycle
-              :interval="3000"
-              height="auto"
+        <v-row v-for="project in projects" :key="project.name" class="mb-12">
+          <v-col cols="12" md="8" lg="9">
+            <div
+              :class="{
+                'h-[40vw]': !smAndDown,
+                'h-[20vh]': smAndDown,
+              }"
+              class="overflow-hidden"
             >
-              <v-carousel-item
-                v-for="(image, index) in project.images"
-                :key="index"
-                :src="image"
-                cover
+              <v-carousel
+                show-arrows="hover"
+                hide-delimiter-background
+                cycle
+                :interval="3000"
+                height="auto"
               >
-              </v-carousel-item>
-            </v-carousel>
+                <v-carousel-item
+                  v-for="(image, index) in project.images"
+                  :key="index"
+                  :src="image"
+                  cover
+                >
+                </v-carousel-item>
+              </v-carousel>
+            </div>
           </v-col>
           <v-col
             cols="12"
-            md="5"
-            lg="4"
+            md="4"
+            lg="3"
             class="d-flex flex-column justify-center"
           >
             <h3 class="text-3xl font-bold mb-4">{{ project.name }}</h3>
@@ -157,7 +165,7 @@
 
       <!-- Combined Services and Testimonials Section -->
       <v-parallax :src="background2" height="100vh" id="services-animation">
-        <div class="absolute inset-0 bg-black opacity-10"></div>
+        <div class="absolute inset-0 bg-black opacity-15"></div>
         <v-container class="fill-height">
           <v-row align="center" justify="center">
             <v-col cols="12" md="10" class="text-center">
@@ -173,12 +181,12 @@
                 Our Services
               </h2>
 
-              <v-row>
+              <v-row justify="center">
                 <v-col
                   v-for="service in services"
                   :key="service.title"
                   cols="12"
-                  md="4"
+                  md="3"
                 >
                   <v-hover v-slot="{ isHovering, props }">
                     <v-card
@@ -186,7 +194,7 @@
                       :elevation="isHovering ? 12 : 2"
                       :class="{ 'scale-105': isHovering }"
                       height="300"
-                      class="d-flex flex-col items-center justify-center transition-all duration-300"
+                      class="d-flex flex-col items-center justify-center transition-all duration-300 rounded-xl"
                     >
                       <v-icon
                         size="64"
@@ -194,7 +202,7 @@
                         class="mb-4 transition-colors duration-300"
                         >{{ service.icon }}</v-icon
                       >
-                      <h3 class="text-2xl font-bold mb-2">
+                      <h3 class="text-xl font-bold mb-2">
                         {{ service.title }}
                       </h3>
                       <p class="text-center px-4">{{ service.description }}</p>
@@ -214,7 +222,7 @@
                   v-for="testimonial in testimonials"
                   :key="testimonial.name"
                   cols="12"
-                  md="4"
+                  md="3"
                   class="mb-8"
                 >
                   <v-hover v-slot="{ isHovering, props }">
@@ -222,7 +230,7 @@
                       v-bind="props"
                       :elevation="isHovering ? 8 : 2"
                       :class="{ 'scale-105': isHovering }"
-                      class="h-full d-flex flex-column transition-all duration-300"
+                      class="h-full d-flex flex-column transition-all duration-300 rounded-xl"
                     >
                       <v-card-text class="text-center pa-6">
                         <p class="text-lg mb-4 font-italic">
@@ -349,7 +357,7 @@ import { ref, reactive, onMounted, onUnmounted } from "vue";
 import ScrollTriggeredAnimatedNumber from "@/components/ScrollTriggeredAnimatedNumber.vue";
 import CoolThreeJSAnimation from "@/components/CoolThreeJSAnimation.vue";
 import CoolThreeJSAnimation2 from "./CoolThreeJSAnimation2.vue";
-import { useTheme } from "vuetify";
+import { useTheme, useDisplay } from "vuetify";
 
 // Import assets
 import logo from "@/assets/BITLogoTest.webp";
@@ -362,6 +370,7 @@ import mable2 from "@/assets/portfolioImgs/mable2.png";
 // Set theme
 const theme = useTheme();
 theme.global.name.value = "light";
+const { smAndDown } = useDisplay();
 
 // Reactive state
 const state = reactive({
