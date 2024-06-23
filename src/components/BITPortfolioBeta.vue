@@ -39,11 +39,15 @@
 
     <v-main>
       <!-- Hero Section -->
-      <v-parallax :src="background2" height="100vh">
+      <v-parallax :src="background2" height="100vh" id="hero-animation">
         <div class="absolute inset-0 bg-black opacity-10"></div>
         <v-container class="fill-height">
           <v-row align="center" justify="center">
             <v-col cols="12" md="10" class="text-center">
+              <CoolThreeJSAnimation2
+                containerId="hero-animation"
+                height="100vh"
+              />
               <h1
                 class="text-6xl font-black mb-6 text-white relative z-10 drop-shadow"
               >
@@ -66,7 +70,7 @@
                 elevation="2"
                 rounded
                 @click="scrollToContact"
-                class="text-lg font-medium px-8 py-3 relative z-10"
+                class="text-lg font-medium px-8 py-3 relative z-10 mr-4"
               >
                 Get Started
               </v-btn>
@@ -151,81 +155,95 @@
         </v-row>
       </v-container>
 
-      <!-- Services Section -->
-      <v-container id="services" class="py-16">
-        <v-row justify="center">
-          <v-col cols="12" class="text-center mb-12">
-            <h2 class="text-4xl font-bold mb-4">Our Services</h2>
-            <p class="text-xl text-gray-700">Explore our range of expertise</p>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col
-            v-for="service in services"
-            :key="service.title"
-            cols="12"
-            md="4"
-          >
-            <v-hover v-slot="{ isHovering, props }">
-              <v-card
-                v-bind="props"
-                :elevation="isHovering ? 12 : 2"
-                :class="{ 'scale-105': isHovering }"
-                height="300"
-                class="d-flex flex-col items-center justify-center transition-all duration-300"
-              >
-                <v-icon
-                  size="64"
-                  :color="isHovering ? 'primary' : 'gray'"
-                  class="mb-4 transition-colors duration-300"
-                  >{{ service.icon }}</v-icon
-                >
-                <h3 class="text-2xl font-bold mb-2">{{ service.title }}</h3>
-                <p class="text-center px-4">{{ service.description }}</p>
-              </v-card>
-            </v-hover>
-          </v-col>
-        </v-row>
-      </v-container>
+      <!-- Combined Services and Testimonials Section -->
+      <v-parallax :src="background2" height="100vh" id="services-animation">
+        <div class="absolute inset-0 bg-black opacity-10"></div>
+        <v-container class="fill-height">
+          <v-row align="center" justify="center">
+            <v-col cols="12" md="10" class="text-center">
+              <CoolThreeJSAnimation2
+                containerId="services-animation"
+                height="100vh"
+              />
 
-      <!-- Testimonials Section -->
-      <v-container class="py-16">
-        <v-row justify="center">
-          <v-col cols="12" class="text-center mb-12">
-            <h2 class="text-4xl font-bold mb-4">Client Testimonials</h2>
-            <p class="text-xl text-gray-700">What our clients say about us</p>
-          </v-col>
-        </v-row>
-        <v-row justify="center">
-          <v-col
-            v-for="testimonial in testimonials"
-            :key="testimonial.name"
-            cols="12"
-            md="4"
-            class="mb-8"
-          >
-            <v-hover v-slot="{ isHovering, props }">
-              <v-card
-                v-bind="props"
-                :elevation="isHovering ? 8 : 2"
-                :class="{ 'scale-105': isHovering }"
-                class="h-full d-flex flex-column transition-all duration-300"
+              <!-- Services Section -->
+              <h2
+                class="text-4xl font-bold mb-6 text-white relative z-10 drop-shadow"
               >
-                <v-card-text class="text-center pa-6">
-                  <p class="text-lg mb-4 font-italic">
-                    "{{ testimonial.text }}"
-                  </p>
-                  <v-divider class="my-4"></v-divider>
-                  <p class="font-weight-bold mb-1">{{ testimonial.name }}</p>
-                  <p class="text-caption text-grey">
-                    {{ testimonial.position }}
-                  </p>
-                </v-card-text>
-              </v-card>
-            </v-hover>
-          </v-col>
-        </v-row>
-      </v-container>
+                Our Services
+              </h2>
+
+              <v-row>
+                <v-col
+                  v-for="service in services"
+                  :key="service.title"
+                  cols="12"
+                  md="4"
+                >
+                  <v-hover v-slot="{ isHovering, props }">
+                    <v-card
+                      v-bind="props"
+                      :elevation="isHovering ? 12 : 2"
+                      :class="{ 'scale-105': isHovering }"
+                      height="300"
+                      class="d-flex flex-col items-center justify-center transition-all duration-300"
+                    >
+                      <v-icon
+                        size="64"
+                        :color="isHovering ? 'primary' : 'gray'"
+                        class="mb-4 transition-colors duration-300"
+                        >{{ service.icon }}</v-icon
+                      >
+                      <h3 class="text-2xl font-bold mb-2">
+                        {{ service.title }}
+                      </h3>
+                      <p class="text-center px-4">{{ service.description }}</p>
+                    </v-card>
+                  </v-hover>
+                </v-col>
+              </v-row>
+
+              <!-- Testimonials Section -->
+              <h2
+                class="text-4xl font-bold mb-6 text-white relative z-10 drop-shadow mt-16"
+              >
+                Client Testimonials
+              </h2>
+              <v-row justify="center">
+                <v-col
+                  v-for="testimonial in testimonials"
+                  :key="testimonial.name"
+                  cols="12"
+                  md="4"
+                  class="mb-8"
+                >
+                  <v-hover v-slot="{ isHovering, props }">
+                    <v-card
+                      v-bind="props"
+                      :elevation="isHovering ? 8 : 2"
+                      :class="{ 'scale-105': isHovering }"
+                      class="h-full d-flex flex-column transition-all duration-300"
+                    >
+                      <v-card-text class="text-center pa-6">
+                        <p class="text-lg mb-4 font-italic">
+                          "{{ testimonial.text }}"
+                        </p>
+                        <v-divider class="my-4"></v-divider>
+                        <p class="font-weight-bold mb-1">
+                          {{ testimonial.name }}
+                        </p>
+                        <p class="text-caption text-grey">
+                          {{ testimonial.position }}
+                        </p>
+                      </v-card-text>
+                    </v-card>
+                  </v-hover>
+                </v-col>
+              </v-row>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-parallax>
 
       <!-- FAQ Section -->
       <v-container class="py-16">
@@ -329,6 +347,8 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from "vue";
 import ScrollTriggeredAnimatedNumber from "@/components/ScrollTriggeredAnimatedNumber.vue";
+import CoolThreeJSAnimation from "@/components/CoolThreeJSAnimation.vue";
+import CoolThreeJSAnimation2 from "./CoolThreeJSAnimation2.vue";
 import { useTheme } from "vuetify";
 
 // Import assets

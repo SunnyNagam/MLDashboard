@@ -20,6 +20,7 @@
     "langchain": "^0.1.36",
     "ollama": "^0.5.0",
     "openai": "^4.38.2",
+    "three": "^0.165.0",
     "vue": "^3.4.21",
     "vue-cookies": "^1.8.4",
     "vue-markdown-render": "^2.1.1",
