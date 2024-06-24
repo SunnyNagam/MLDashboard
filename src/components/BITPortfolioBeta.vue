@@ -39,7 +39,7 @@
 
     <v-main>
       <!-- Hero Section -->
-      <v-parallax :src="background2" height="100vh" id="hero-animation">
+      <v-parallax :src="background3" height="100vh" id="hero-animation">
         <div class="absolute inset-0 bg-black opacity-25"></div>
         <v-container class="fill-height">
           <v-row align="center" justify="center">
@@ -164,12 +164,12 @@
       </v-container>
 
       <!-- Combined Services and Testimonials Section -->
-      <v-parallax :src="background2" height="100vh" id="services-animation">
+      <v-parallax :src="background1" height="100vh" id="services-animation">
         <div class="absolute inset-0 bg-black opacity-15"></div>
         <v-container class="fill-height">
           <v-row align="center" justify="center">
             <v-col cols="12" md="10" class="text-center">
-              <CoolThreeJSAnimation2
+              <CoolThreeJSAnimation
                 containerId="services-animation"
                 height="100vh"
               />
@@ -356,13 +356,13 @@
 import { ref, reactive, onMounted, onUnmounted } from "vue";
 import ScrollTriggeredAnimatedNumber from "@/components/ScrollTriggeredAnimatedNumber.vue";
 import CoolThreeJSAnimation from "@/components/CoolThreeJSAnimation.vue";
-import CoolThreeJSAnimation2 from "./CoolThreeJSAnimation2.vue";
 import { useTheme, useDisplay } from "vuetify";
 
 // Import assets
 import logo from "@/assets/BITLogoTest.webp";
 import background1 from "@/assets/BIT_background1.webp";
 import background2 from "@/assets/BIT_background2.webp";
+import background3 from "@/assets/BIT_background3.webp";
 import trademark1 from "@/assets/portfolioImgs/trademark1.png";
 import mable1 from "@/assets/portfolioImgs/mable1.png";
 import mable2 from "@/assets/portfolioImgs/mable2.png";
@@ -456,13 +456,13 @@ const projects = reactive([
       "A Squarespace site for a local jam company to sell jams in a marketplace.",
     description:
       "Manages orders, payments, and inventory in a user friendly interface.",
-    images: [mable1, mable2, background2],
+    images: [mable1, mable2, background3],
   },
   {
     name: "Posh and Pony",
     tagline: "A portfolio site for a wedding photography company.",
     description: "Squarespace site for a local wedding photography company.",
-    images: [trademark1, background1, mable1, background2],
+    images: [trademark1, background3, mable1, background1],
   },
 ]);
 
