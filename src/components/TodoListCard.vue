@@ -68,6 +68,9 @@
                   mdi-delete
                 </v-icon>
                 <v-icon @click.stop="editItem(item)"> mdi-pencil </v-icon>
+                <v-icon @click.stop="defer(item.id)">
+                  mdi-timer-outline
+                </v-icon>
               </div>
             </div>
           </v-list-item>
@@ -275,6 +278,27 @@ const saveEdit = async (text, id, item) => {
 const removeItem = async (id) => {
   apiIsLoading.value = true;
   const endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/delete?block_id=${id}`;
+  const response = await fetch(endpoint, {
+    headers: {
+      "X-Api-Key": getApiKey(),
+    },
+  });
+  const data = await response.json();
+  todo.value = todo.value.filter((todo) => todo.id !== id);
+  todo.value = todo.value.map((todo) =>
+    todo.subTasks
+      ? {
+          ...todo,
+          subTasks: todo.subTasks.filter((subTask) => subTask.id !== id),
+        }
+      : todo
+  );
+  apiIsLoading.value = false;
+};
+
+const defer = async (id) => {
+  apiIsLoading.value = true;
+  const endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/delete?block_id=${id}&defer=true`;
   const response = await fetch(endpoint, {
     headers: {
       "X-Api-Key": getApiKey(),
