@@ -407,7 +407,13 @@ const startSwipe = (itemId, clientX) => {
 const updateSwipe = (itemId, clientX) => {
   if (swipeStartX.value[itemId] !== undefined) {
     const diff = clientX - swipeStartX.value[itemId];
-    swipeState.value[itemId] = diff < 0 ? "left" : "right";
+    const screenWidth = window.innerWidth;
+    const tolerance = screenWidth * 0.05;
+    if (Math.abs(diff) > tolerance) {
+      swipeState.value[itemId] = diff < 0 ? "left" : "right";
+    } else {
+      swipeState.value[itemId] = "none";
+    }
   }
 };
 
