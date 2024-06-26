@@ -28,17 +28,25 @@
           <v-list-item
             v-bind="props"
             class="group"
-            @click="toggleExpanded(item.id)"
+            :class="{
+              'swipe-left-active': swipeState[item.id] === 'left',
+              'swipe-right-active': swipeState[item.id] === 'right',
+            }"
+            v-touch:swipe.left="() => defer(item.id)"
+            v-touch:swipe.right="() => removeItem(item.id)"
+            @touchstart="(e) => startSwipe(item.id, e.touches[0].clientX)"
+            @touchmove="(e) => updateSwipe(item.id, e.touches[0].clientX)"
+            @touchend="() => endSwipe(item.id)"
           >
             <template v-slot:prepend>
-              <v-icon>
+              <v-icon @click.stop="toggleExpanded(item.id)">
                 {{
                   isExpanded(item.id) ? "mdi-chevron-up" : "mdi-chevron-down"
                 }}
               </v-icon>
             </template>
             <template v-slot:append> </template>
-            <div class="flex flex-1">
+            <div class="flex flex-1" @click="editItem(item)">
               <div class="flex-grow">
                 <v-list-item-title>{{ item.text }}</v-list-item-title>
                 <v-list-item-subtitle>
@@ -67,7 +75,6 @@
                 <v-icon @click.stop="removeItem(item.id)" color="red">
                   mdi-delete
                 </v-icon>
-                <v-icon @click.stop="editItem(item)"> mdi-pencil </v-icon>
                 <v-icon @click.stop="defer(item.id)">
                   mdi-timer-outline
                 </v-icon>
@@ -80,6 +87,16 @@
           v-for="subTask in item.subTasks"
           :key="subTask.id"
           class="group"
+          :class="{
+            'swipe-left-active': swipeState[subTask.id] === 'left',
+            'swipe-right-active': swipeState[subTask.id] === 'right',
+          }"
+          @click="editItem(subTask)"
+          v-touch:swipe.left="() => defer(subTask.id)"
+          v-touch:swipe.right="() => removeItem(subTask.id)"
+          @touchstart="(e) => startSwipe(subTask.id, e.touches[0].clientX)"
+          @touchmove="(e) => updateSwipe(subTask.id, e.touches[0].clientX)"
+          @touchend="() => endSwipe(subTask.id)"
         >
           <template v-slot:prepend="{ isActive }">
             <v-list-item-action start>
@@ -113,7 +130,6 @@
               <v-icon @click.stop="removeItem(subTask.id)" color="red">
                 mdi-delete
               </v-icon>
-              <v-icon @click.stop="editItem(subTask)">mdi-pencil</v-icon>
             </div>
           </template>
         </v-list-item>
@@ -379,4 +395,38 @@ const toggleItem = async (parent_id, task_id, text, checked) => {
   });
   const data = await response.json();
 };
+
+const swipeState = ref({});
+const swipeStartX = ref({});
+
+const startSwipe = (itemId, clientX) => {
+  swipeStartX.value[itemId] = clientX;
+  swipeState.value[itemId] = null;
+};
+
+const updateSwipe = (itemId, clientX) => {
+  if (swipeStartX.value[itemId] !== undefined) {
+    const diff = clientX - swipeStartX.value[itemId];
+    swipeState.value[itemId] = diff < 0 ? "left" : "right";
+  }
+};
+
+const endSwipe = (itemId) => {
+  delete swipeState.value[itemId];
+  delete swipeStartX.value[itemId];
+};
 </script>
+
+<style scoped>
+.v-list-item {
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.swipe-left-active {
+  background-color: rgba(236, 203, 58, 0.2); /* Yellow for defer */
+}
+
+.swipe-right-active {
+  background-color: rgba(255, 0, 0, 0.2); /* Red for delete */
+}
+</style>

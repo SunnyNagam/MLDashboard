@@ -4,6 +4,7 @@ import App from "./App.vue";
 // Vuetify
 import "vuetify/styles";
 import { createVuetify } from "vuetify";
+import Vue3TouchEvents from "vue3-touch-events";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 // Icons
@@ -26,4 +27,5 @@ const vuetify = createVuetify({
 const app = createApp(App);
 app.use(vuetify);
 app.use(router);
+app.use(Vue3TouchEvents);
 app.mount("#app");

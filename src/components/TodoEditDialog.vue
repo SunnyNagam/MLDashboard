@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="editDialog" max-width="500px" scroll-strategy="close">
+  <v-dialog v-model="editDialog" max-width="500px" @click:outside="toggle">
     <v-card>
       <v-card-title class="headline"> Edit item </v-card-title>
       <v-card-text>
@@ -60,5 +60,6 @@ const saveEdit = () => {
 
 const toggle = () => {
   emit("toggle", false);
+  editDialog.value = false;
 };
 </script>
