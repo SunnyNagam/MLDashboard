@@ -121,7 +121,7 @@ function handleApiKeySubmit(enteredApiKey) {
     </v-row>
     <v-row>
       <v-col cols="12" sm="8" order-sm="2">
-        <Calendar :collapsed="smAndDown" />
+        <Calendar :collapsed="smAndDown" class="mb-4" />
         <TreeNotes :collapsed="true" class="mb-4" v-if="!smAndDown" />
       </v-col>
       <v-col cols="12" sm="4" order-sm="1">
@@ -148,13 +148,13 @@ function handleApiKeySubmit(enteredApiKey) {
           @keydown.enter="handleApiKeySubmit(enteredApiKey)"
         />
         <v-card-subtitle class="text-wrap">
-          (This site is intended only for Sunny. Uses API key protected
+          (This site is intended for personal use. Uses API key protected
           serverless AWS Lambda functions to connect to personalized Google
-          Calendar, Notion, and Reddit use cases)
+          Calendar, Notion, and Reddit based tools)
         </v-card-subtitle>
       </v-card-text>
       <v-card-actions>
-        <v-btn color="grey darken-1" @click="apiKeyModalVisible = false"
+        <v-btn color="grey darken-4" @click="apiKeyModalVisible = false"
           >Close</v-btn
         >
         <v-btn color="primary" @click="handleApiKeySubmit(enteredApiKey)"

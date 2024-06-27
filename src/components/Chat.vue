@@ -1,6 +1,11 @@
 <template>
   <v-card :class="[$attrs.class, 'mx-auto']" elevation="2" rounded="lg">
-    <v-toolbar color="deep-purple" dark density="compact">
+    <v-toolbar
+      color="grey-darken-4"
+      dark
+      density="compact"
+      :border="showChat ? 'md' : 'none'"
+    >
       <v-btn icon @click="showChat = !showChat">
         <v-icon>{{ showChat ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
       </v-btn>
