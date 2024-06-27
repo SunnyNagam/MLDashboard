@@ -33,10 +33,7 @@
           <v-list-item
             v-bind="props"
             class="group"
-            :class="{
-              'swipe-left-active': swipeState[item.id] === 'left',
-              'swipe-right-active': swipeState[item.id] === 'right',
-            }"
+            :style="getSwipeStyle(item.id)"
             v-touch:swipe.left="() => defer(item.id)"
             v-touch:swipe.right="() => removeItem(item.id)"
             @touchstart="(e) => startSwipe(item.id, e.touches[0].clientX)"
@@ -92,10 +89,7 @@
           v-for="subTask in item.subTasks"
           :key="subTask.id"
           class="group"
-          :class="{
-            'swipe-left-active': swipeState[subTask.id] === 'left',
-            'swipe-right-active': swipeState[subTask.id] === 'right',
-          }"
+          :style="getSwipeStyle(subTask.id)"
           @click="editItem(subTask)"
           v-touch:swipe.left="() => defer(subTask.id)"
           v-touch:swipe.right="() => removeItem(subTask.id)"
@@ -403,18 +397,25 @@ const toggleItem = async (parent_id, task_id, text, checked) => {
 
 const swipeState = ref({});
 const swipeStartX = ref({});
+const swipeProgress = ref({});
 
 const startSwipe = (itemId, clientX) => {
   swipeStartX.value[itemId] = clientX;
   swipeState.value[itemId] = null;
+  swipeProgress.value[itemId] = 0;
 };
 
 const updateSwipe = (itemId, clientX) => {
   if (swipeStartX.value[itemId] !== undefined) {
     const diff = clientX - swipeStartX.value[itemId];
     const screenWidth = window.innerWidth;
-    const tolerance = screenWidth * 0.05;
-    if (Math.abs(diff) > tolerance) {
+    const maxSwipeDistance = screenWidth * 0.3; // 30% of screen width
+    swipeProgress.value[itemId] = Math.min(
+      Math.abs(diff) / maxSwipeDistance,
+      1
+    );
+
+    if (Math.abs(diff) > screenWidth * 0.05) {
       swipeState.value[itemId] = diff < 0 ? "left" : "right";
     } else {
       swipeState.value[itemId] = "none";
@@ -422,22 +423,37 @@ const updateSwipe = (itemId, clientX) => {
   }
 };
 
+const getSwipeStyle = (itemId) => {
+  const progress = swipeProgress.value[itemId] || 0;
+  const state = swipeState.value[itemId];
+
+  if (state === "left") {
+    // Radial gradient
+    return {
+      background: `radial-gradient(circle at right, rgba(236, 203, 58, ${
+        progress * 0.7
+      }), transparent)`,
+    };
+  } else if (state === "right") {
+    // Conic gradient
+    return {
+      background: `radial-gradient(circle at right, rgba(255, 0, 0, ${
+        progress * 0.7
+      }), transparent)`,
+    };
+  }
+  return {};
+};
+
 const endSwipe = (itemId) => {
   delete swipeState.value[itemId];
   delete swipeStartX.value[itemId];
+  delete swipeProgress.value[itemId];
 };
 </script>
 
 <style scoped>
 .v-list-item {
-  transition: transform 0.3s ease, background-color 0.3s ease;
-}
-
-.swipe-left-active {
-  background-color: rgba(236, 203, 58, 0.2); /* Yellow for defer */
-}
-
-.swipe-right-active {
-  background-color: rgba(255, 0, 0, 0.2); /* Red for delete */
+  transition: background 0.1s ease;
 }
 </style>
