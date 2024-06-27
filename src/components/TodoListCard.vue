@@ -437,7 +437,7 @@ const getSwipeStyle = (itemId) => {
   } else if (state === "right") {
     // Conic gradient
     return {
-      background: `radial-gradient(circle at right, rgba(255, 0, 0, ${
+      background: `radial-gradient(circle at left, rgba(255, 0, 0, ${
         progress * 0.7
       }), transparent)`,
     };
