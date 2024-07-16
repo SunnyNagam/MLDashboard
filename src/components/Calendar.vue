@@ -218,6 +218,7 @@ const fetchCalendar = async () => {
     }
   );
   const data = await response.json();
+  console.log(data);
   // Helper function to parse a local date string into a local Date object
   const parseGoogleDate = (dateString, isEnd = false) => {
     if (!dateString.includes("T")) {
@@ -304,7 +305,13 @@ const saveEvent = async () => {
     end: new Date(newEvent.value.end).toISOString(),
     allDay: newEvent.value.allDay,
   };
-  console.log(event);
+
+  if (event.allDay) {
+    const startDate = new Date(event.start);
+    const endDate = new Date(event.end);
+    event.start = endDate.toISOString().split("T")[0];
+    event.end = startDate.toISOString().split("T")[0];
+  }
 
   const response = await fetch(
     `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/addCal?title=${encodeURIComponent(

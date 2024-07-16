@@ -5,6 +5,7 @@ import TodoListCard from "@/components/TodoListCard.vue";
 import Chat from "@/components/Chat.vue";
 import Calendar from "@/components/Calendar.vue";
 import TreeNotes from "@/components/TreeNotes.vue";
+import Woosh from "./Woosh.vue";
 import { useDisplay } from "vuetify";
 
 const { smAndDown } = useDisplay();
@@ -128,7 +129,7 @@ function handleApiKeySubmit(enteredApiKey) {
         <TodoListCard title="Now" />
         <TodoListCard title="Soon" :collapsed="true" />
         <TodoListCard title="Eventually" :collapsed="true" />
-        <TreeNotes :collapsed="true" class="my-4" />
+        <Woosh :collapsed="false" class="my-4" />
         <Chat
           :context="otherContext + '\n' + chatContext + '\n' + calContext"
         />
