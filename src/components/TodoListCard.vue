@@ -356,7 +356,8 @@ const removeItem = async (id) => {
 
 const defer = async (id) => {
   apiIsLoading.value = true;
-  const endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/delete?block_id=${id}&defer=true`;
+  const deferParam = props.title === "Now" ? "defer=true" : "deferWeek=true";
+  const endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/delete?block_id=${id}&${deferParam}`;
   const response = await fetch(endpoint, {
     headers: {
       "X-Api-Key": getApiKey(),
@@ -403,7 +404,8 @@ const deferItems = async () => {
 
   apiIsLoading.value = true;
   const ids = selectedItems.value.join(",");
-  const endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/delete?block_id=${ids}&defer=true`;
+  const deferParam = props.title === "Now" ? "defer=true" : "deferWeek=true";
+  const endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/delete?block_id=${ids}&${deferParam}`;
 
   try {
     await fetch(endpoint, {
