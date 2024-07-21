@@ -19,6 +19,23 @@
       <v-btn icon @click="toggleSort">
         <v-icon>mdi-sort-variant</v-icon>
       </v-btn>
+      <v-btn icon @click="toggleSelectionMode">
+        <v-icon>mdi-checkbox-multiple-marked-outline</v-icon>
+      </v-btn>
+      <v-btn
+        icon
+        @click="removeItems"
+        v-if="selectionMode && selectedItems.length > 0"
+      >
+        <v-icon color="red">mdi-delete</v-icon>
+      </v-btn>
+      <v-btn
+        icon
+        @click="deferItems"
+        v-if="selectionMode && selectedItems.length > 0"
+      >
+        <v-icon>mdi-timer-outline</v-icon>
+      </v-btn>
     </v-toolbar>
     <v-progress-linear
       v-if="apiIsLoading"
@@ -41,14 +58,29 @@
             @touchend="() => endSwipe(item.id)"
           >
             <template v-slot:prepend>
-              <v-icon @click.stop="toggleExpanded(item.id)">
+              <v-checkbox
+                v-if="selectionMode"
+                v-model="selectedItems"
+                :value="item.id"
+                @click.stop
+              ></v-checkbox>
+              <v-icon v-else @click.stop="toggleExpanded(item.id)">
                 {{
                   isExpanded(item.id) ? "mdi-chevron-up" : "mdi-chevron-down"
                 }}
               </v-icon>
             </template>
             <template v-slot:append> </template>
-            <div class="flex flex-1" @click="editItem(item)">
+            <div
+              class="flex flex-1"
+              @click="
+                !selectionMode
+                  ? editItem(item)
+                  : selectedItems.includes(item.id)
+                  ? selectedItems.splice(selectedItems.indexOf(item.id), 1)
+                  : selectedItems.push(item.id)
+              "
+            >
               <div class="flex-grow">
                 <v-list-item-title>{{ item.text }}</v-list-item-title>
                 <v-list-item-subtitle>
@@ -56,6 +88,7 @@
                 </v-list-item-subtitle>
               </div>
               <div
+                v-if="!selectionMode"
                 class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center invisible group-hover:visible space-x-2 bg-zinc-800 p-2 rounded-lg"
               >
                 <v-icon
@@ -234,6 +267,16 @@ const addAfterID = ref(null);
 const addParentID = ref(null);
 const newItemText = ref("");
 
+const selectionMode = ref(false);
+const selectedItems = ref([]);
+
+const toggleSelectionMode = () => {
+  selectionMode.value = !selectionMode.value;
+  if (!selectionMode.value) {
+    selectedItems.value = [];
+  }
+};
+
 if (props.collapsed) {
   showList.value = false;
 }
@@ -330,6 +373,62 @@ const defer = async (id) => {
       : todo
   );
   apiIsLoading.value = false;
+};
+
+const removeItems = async () => {
+  if (selectedItems.value.length === 0) return;
+
+  apiIsLoading.value = true;
+  const ids = selectedItems.value.join(",");
+  const endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/delete?block_id=${ids}`;
+
+  try {
+    await fetch(endpoint, {
+      headers: {
+        "X-Api-Key": getApiKey(),
+      },
+    });
+    updateLocalStateAfterRemoval(selectedItems.value);
+    selectedItems.value = [];
+    selectionMode.value = false;
+  } catch (error) {
+    console.error("Error removing items:", error);
+  } finally {
+    apiIsLoading.value = false;
+  }
+};
+
+const deferItems = async () => {
+  if (selectedItems.value.length === 0) return;
+
+  apiIsLoading.value = true;
+  const ids = selectedItems.value.join(",");
+  const endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/delete?block_id=${ids}&defer=true`;
+
+  try {
+    await fetch(endpoint, {
+      headers: {
+        "X-Api-Key": getApiKey(),
+      },
+    });
+    updateLocalStateAfterRemoval(selectedItems.value);
+    selectedItems.value = [];
+    selectionMode.value = false;
+  } catch (error) {
+    console.error("Error deferring items:", error);
+  } finally {
+    apiIsLoading.value = false;
+  }
+};
+
+const updateLocalStateAfterRemoval = (idsToRemove) => {
+  todo.value = todo.value.filter((item) => !idsToRemove.includes(item.id));
+  todo.value = todo.value.map((item) => ({
+    ...item,
+    subTasks: item.subTasks
+      ? item.subTasks.filter((subTask) => !idsToRemove.includes(subTask.id))
+      : [],
+  }));
 };
 
 const addItem = async (text) => {
