@@ -40,4 +40,6 @@ lambda/layers/*/token.json
 lambda/layers/*/*.zip
 #local.js files in lambdas
 lambda/*/local.js
+wooshScripts/*.csv
+wooshScripts/*.json
 .aider*
