@@ -16,9 +16,6 @@
       <v-btn icon @click="addDialog = true">
         <v-icon>mdi-plus</v-icon>
       </v-btn>
-      <v-btn icon @click="toggleSort">
-        <v-icon>mdi-sort-variant</v-icon>
-      </v-btn>
       <v-btn icon @click="toggleSelectionMode">
         <v-icon>mdi-checkbox-multiple-marked-outline</v-icon>
       </v-btn>
@@ -64,23 +61,14 @@
                 :value="item.id"
                 @click.stop
               ></v-checkbox>
-              <v-icon v-else @click.stop="toggleExpanded(item.id)">
+              <v-icon v-else @click="toggleExpanded(item.id)">
                 {{
                   isExpanded(item.id) ? "mdi-chevron-up" : "mdi-chevron-down"
                 }}
               </v-icon>
             </template>
             <template v-slot:append> </template>
-            <div
-              class="flex flex-1"
-              @click="
-                !selectionMode
-                  ? editItem(item)
-                  : selectedItems.includes(item.id)
-                  ? selectedItems.splice(selectedItems.indexOf(item.id), 1)
-                  : selectedItems.push(item.id)
-              "
-            >
+            <div class="flex flex-1" @click="handleItemClick(item)">
               <div class="flex-grow">
                 <v-list-item-title>{{ item.text }}</v-list-item-title>
                 <v-list-item-subtitle>
@@ -91,20 +79,10 @@
                 v-if="!selectionMode"
                 class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center invisible group-hover:visible space-x-2 bg-zinc-800 p-2 rounded-lg"
               >
-                <v-icon
-                  @click.stop="
-                    addDialog = true;
-                    addAfterID = item.id;
-                  "
-                >
+                <v-icon @click.stop="openAddDialog(item.id, null)">
                   mdi-table-row-plus-after
                 </v-icon>
-                <v-icon
-                  @click.stop="
-                    addDialog = true;
-                    addParentID = item.id;
-                  "
-                >
+                <v-icon @click.stop="openAddDialog(null, item.id)">
                   mdi-plus
                 </v-icon>
                 <v-icon @click.stop="removeItem(item.id)" color="red">
@@ -150,13 +128,7 @@
             <div
               class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center invisible group-hover:visible space-x-2 bg-zinc-800 p-2 rounded-lg"
             >
-              <v-icon
-                @click.stop="
-                  addDialog = true;
-                  addAfterID = subTask.id;
-                  addParentID = item.id;
-                "
-              >
+              <v-icon @click.stop="openAddDialog(subTask.id, item.id)">
                 mdi-table-row-plus-after
               </v-icon>
               <v-icon @click.stop="removeItem(subTask.id)" color="red">
@@ -233,8 +205,6 @@ const fetchTodo = async () => {
   );
   const data = await response.json();
   todo.value = data[props.title];
-  sortAsc.value = true;
-  toggleSort();
   apiIsLoading.value = false;
 };
 
@@ -248,18 +218,6 @@ const toggleExpanded = (itemId) => {
 };
 
 const isExpanded = computed(() => (itemId) => !!expandedItems.value[itemId]);
-
-const sortAsc = ref(true);
-const toggleSort = () => {
-  sortAsc.value = !sortAsc.value;
-  todo.value.sort((a, b) => {
-    if (sortAsc.value) {
-      return new Date(a.created) - new Date(b.created);
-    } else {
-      return new Date(b.created) - new Date(a.created);
-    }
-  });
-};
 
 const showList = ref(true);
 const addDialog = ref(false);
@@ -550,6 +508,25 @@ const endSwipe = (itemId) => {
   delete swipeState.value[itemId];
   delete swipeStartX.value[itemId];
   delete swipeProgress.value[itemId];
+};
+
+const handleItemClick = (item) => {
+  if (!selectionMode) {
+    editItem(item);
+  } else {
+    const index = selectedItems.value.indexOf(item.id);
+    if (index > -1) {
+      selectedItems.value.splice(index, 1);
+    } else {
+      selectedItems.value.push(item.id);
+    }
+  }
+};
+
+const openAddDialog = (afterID, parentID) => {
+  addDialog.value = true;
+  addAfterID.value = afterID;
+  addParentID.value = parentID;
 };
 </script>
 

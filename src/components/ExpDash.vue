@@ -1,11 +1,14 @@
 <script setup>
-import { ref, computed, shallowRef } from "vue";
-import { useApi } from "@/useAPI.js";
 import TodoListCard from "@/components/TodoListCard.vue";
 import Chat from "@/components/Chat.vue";
 import Calendar from "@/components/Calendar.vue";
 import TreeNotes from "@/components/TreeNotes.vue";
-import { useDisplay } from "vuetify";
+import WooshFriendsTest from "@/components/WooshFriendsTest.vue";
+import Woosh from "./Woosh.vue";
+
+import { ref, computed, shallowRef } from "vue";
+import { useApi } from "@/useAPI.js";
+import { useTheme, useDisplay } from "vuetify";
 import draggable from "vuedraggable";
 
 const { smAndDown } = useDisplay();
@@ -13,7 +16,48 @@ const { setApiKey, getApiKey } = useApi();
 const enteredApiKey = ref("");
 const apiKeyModalVisible = ref(getApiKey() === null || getApiKey() === "");
 
+const theme = useTheme();
+theme.global.name.value = "dark";
+
 const otherContext = `The User is named Sunny, and the current date is ${new Date().toDateString()}.`;
+
+const list1 = shallowRef([
+  {
+    name: "Todo List",
+    component: TodoListCard,
+    props: { collapsed: false },
+  },
+  { name: "Tree Notes", component: TreeNotes },
+  {
+    name: "Todo List",
+    component: TodoListCard,
+    props: { title: "Soon", collapsed: true },
+  },
+  {
+    name: "Woosh",
+    component: Woosh,
+  },
+]);
+
+const list2 = shallowRef([
+  { name: "Calendar", component: Calendar, props: { collapsed: false } },
+  {
+    name: "Chat",
+    component: Chat,
+    props: {
+      collapsed: true,
+      context: otherContext,
+      class: "mb-4",
+    },
+  },
+  {
+    name: "WooshFriendsTest",
+    component: WooshFriendsTest,
+    props: {
+      collapsed: true,
+    },
+  },
+]);
 
 function logoClick() {
   apiKeyModalVisible.value = true;
@@ -22,32 +66,8 @@ function logoClick() {
 function handleApiKeySubmit(enteredApiKey) {
   setApiKey(enteredApiKey);
   apiKeyModalVisible.value = false;
-  // refresh page
   window.location.reload();
 }
-
-const components = shallowRef([
-  {
-    id: 3,
-    component: TodoListCard,
-    props: { collapsed: false, class: "mb-4" },
-  },
-  {
-    id: 2,
-    component: TreeNotes,
-    props: { collapsed: false, class: "mb-4" },
-  },
-  {
-    id: 4,
-    component: Chat,
-    props: {
-      collapsed: false,
-      context: otherContext,
-      class: "mb-4",
-    },
-  },
-  { id: 1, component: Calendar, props: { collapsed: false, class: "mb-4" } },
-]);
 </script>
 
 <template>
@@ -61,16 +81,19 @@ const components = shallowRef([
       </v-col>
     </v-row>
     <v-row>
-      <v-col cols="12">
-        <draggable
-          v-model="components"
-          group="components"
-          animation="200"
-          item-key="id"
-          handle=".v-toolbar"
-        >
+      <v-col cols="6">
+        <draggable v-model="list1" group="components" item-key="id">
           <template #item="{ element }">
-            <div>
+            <div class="py-2">
+              <component :is="element.component" v-bind="element.props" />
+            </div>
+          </template>
+        </draggable>
+      </v-col>
+      <v-col cols="6">
+        <draggable v-model="list2" group="components" item-key="id">
+          <template #item="{ element }">
+            <div class="py-2">
               <component :is="element.component" v-bind="element.props" />
             </div>
           </template>

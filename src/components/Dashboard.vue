@@ -7,7 +7,10 @@ import Calendar from "@/components/Calendar.vue";
 import TreeNotes from "@/components/TreeNotes.vue";
 import WooshFriendsTest from "@/components/WooshFriendsTest.vue";
 import Woosh from "./Woosh.vue";
-import { useDisplay } from "vuetify";
+import { useTheme, useDisplay } from "vuetify";
+
+const theme = useTheme();
+theme.global.name.value = "dark";
 
 const { smAndDown } = useDisplay();
 const { setApiKey, getApiKey } = useApi();

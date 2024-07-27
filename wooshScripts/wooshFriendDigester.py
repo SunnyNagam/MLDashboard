@@ -93,7 +93,7 @@ def process_notes(csv_file):
             model="openai/gpt-4o-mini",
             messages=[{"role": "system", "content": prompt}],
             response_format={"type": "json_object"},
-            top_p=0.05
+            top_p=0.10
         )
 
         updates = json.loads(response.choices[0].message.content)
