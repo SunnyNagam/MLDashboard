@@ -3,7 +3,10 @@ import { ref } from "vue";
 import { useTheme } from "vuetify";
 import VueMarkdown from "vue-markdown-render";
 import Groq from "groq-sdk";
+import { useApi } from "@/useAPI.js";
+import Tree from "@/components/Tree.vue";
 import Cookies from "vue-cookies";
+const { setApiKey, getApiKey } = useApi();
 
 const markdownText = ref(`Enter text here`);
 const activeTab = ref(0);
@@ -24,16 +27,38 @@ const groq = new Groq({
   dangerouslyAllowBrowser: true,
 });
 
+const notes = ref([]);
+
+const fetchGroqApiKey = async () => {
+  const response = await fetch(
+    "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=Notes",
+    {
+      headers: {
+        "X-Api-Key": getApiKey(),
+      },
+    }
+  );
+  const data = await response.json();
+  notes.value = data.filter((item) => item.text === "API keys");
+  notes.value = notes.value[0].children.filter((item) => item.text === "Groq");
+};
+
+fetchGroqApiKey();
+
 function saveGroqApiKey() {
   if (newGroqApiKey.value) {
     Cookies.set("GROQ_API_KEY", newGroqApiKey.value);
+    groqApiKey = newGroqApiKey.value;
     dialog.value = false;
   }
 }
 
 async function updateMarkdownWithGroq() {
   try {
-    undoHistory.value.push(markdownText.value);
+    undoHistory.value.push({
+      text: markdownText.value,
+      instruction: instruction.value,
+    });
     redoHistory.value = [];
 
     const chatCompletion = await groq.chat.completions.create({
@@ -61,15 +86,28 @@ async function updateMarkdownWithGroq() {
 
 function undoLastChange() {
   if (undoHistory.value.length > 0) {
-    redoHistory.value.push(markdownText.value);
-    markdownText.value = undoHistory.value.pop();
+    redoHistory.value.push({
+      text: markdownText.value,
+      instruction: instruction.value,
+    }); // Store current instruction
+    const lastChange = undoHistory.value.pop();
+    markdownText.value = lastChange.text;
+    instruction.value = lastChange.instruction; // Restore instruction
+    console.log(lastChange);
+    console.log(undoHistory.value);
+    console.log(redoHistory.value);
   }
 }
 
 function redoLastChange() {
   if (redoHistory.value.length > 0) {
-    undoHistory.value.push(markdownText.value);
-    markdownText.value = redoHistory.value.pop();
+    undoHistory.value.push({
+      text: markdownText.value,
+      instruction: instruction.value,
+    }); // Store current instruction
+    const lastRedo = redoHistory.value.pop();
+    markdownText.value = lastRedo.text;
+    instruction.value = lastRedo.instruction; // Restore instruction
   }
 }
 </script>
@@ -129,6 +167,13 @@ function redoLastChange() {
             outlined
           ></v-text-field>
         </v-card-text>
+        <tree
+          v-model="notes"
+          :data="notes"
+          group="notesParent"
+          @input="updateData"
+        >
+        </tree>
         <v-card-actions>
           <v-btn @click="saveGroqApiKey">Save</v-btn>
           <v-btn @click="dialog = false">Cancel</v-btn>

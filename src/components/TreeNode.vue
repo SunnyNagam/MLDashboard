@@ -44,6 +44,12 @@
           >
             mdi-delete
           </v-icon>
+          <v-icon
+            @click.stop="smAndDown ? {} : copyToClipboard()"
+            @touchstart="copyToClipboard"
+          >
+            mdi-content-copy
+          </v-icon>
         </div>
       </div>
     </v-list-item>
@@ -186,4 +192,21 @@ function openLink() {
     }
   }
 }
+
+function copyToClipboard() {
+  const textToCopy = localValue.value.text;
+  navigator.clipboard
+    .writeText(textToCopy)
+    .then(() => {
+      console.log("Text copied to clipboard");
+    })
+    .catch((err) => {
+      console.error("Failed to copy text: ", err);
+    });
+}
 </script>
+<style scoped>
+.handle {
+  padding-top: 0px;
+}
+</style>
