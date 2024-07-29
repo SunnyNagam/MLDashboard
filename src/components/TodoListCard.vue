@@ -511,7 +511,7 @@ const endSwipe = (itemId) => {
 };
 
 const handleItemClick = (item) => {
-  if (!selectionMode) {
+  if (!selectionMode.value) {
     editItem(item);
   } else {
     const index = selectedItems.value.indexOf(item.id);
