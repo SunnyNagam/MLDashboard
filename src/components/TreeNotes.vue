@@ -6,7 +6,7 @@
       density="compact"
       :border="showNotes ? 'md' : 'none'"
     >
-      <v-btn icon @click="showNotes = !showNotes">
+      <v-btn icon @click="toggleNotes">
         <v-icon>{{ showNotes ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
       </v-btn>
       <v-toolbar-title>Notes</v-toolbar-title>
@@ -22,100 +22,78 @@
       class="mx-auto"
     ></v-progress-linear>
 
-    <div v-show="showNotes">
-      <tree
-        v-model="notes"
-        :data="notes"
-        group="notesParent"
-        @input="updateData"
-      >
-      </tree>
-    </div>
+    <tree
+      v-show="showNotes"
+      v-model="notes"
+      :data="notes"
+      group="notesParent"
+    ></tree>
   </v-card>
 </template>
 
 <script setup>
 import { ref, watch } from "vue";
-import { VBtn } from "vuetify/lib/components/index.mjs";
 import Tree from "@/components/Tree.vue";
 import { useApi } from "@/useAPI.js";
-const { setApiKey, getApiKey } = useApi();
 
-const props = defineProps({
-  collapsed: {
-    type: Boolean,
-    default: false,
-  },
-});
-const showNotes = ref(true);
+const { getApiKey } = useApi();
+const props = defineProps({ collapsed: { type: Boolean, default: false } });
+
+const showNotes = ref(!props.collapsed);
 const notes = ref([]);
-const previousNotes = ref([]); // Store previous state for undo
-
-watch(
-  () => showNotes.value,
-  (newValue) => {
-    if (newValue) {
-      fetchNotes();
-    }
-  }
-);
+const previousNotes = ref([]);
 const apiIsLoading = ref(false);
 
-function updateData(val) {
-  notes.value = val;
+watch(showNotes, (newValue) => newValue && fetchNotes());
+
+function toggleNotes() {
+  showNotes.value = !showNotes.value;
 }
 
 function addNode() {
-  previousNotes.value = JSON.parse(JSON.stringify(notes.value)); // Save current state
-  notes.value.push({
-    text: "",
-    children: [],
-  });
+  previousNotes.value = JSON.parse(JSON.stringify(notes.value));
+  notes.value.push({ text: "", children: [] });
 }
 
 function undo() {
   if (previousNotes.value.length > 0) {
-    notes.value = JSON.parse(JSON.stringify(previousNotes.value)); // Restore previous state
+    notes.value = JSON.parse(JSON.stringify(previousNotes.value));
   }
 }
 
-const fetchNotes = async () => {
+async function fetchNotes() {
   apiIsLoading.value = true;
-  const response = await fetch(
-    "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=Notes",
-    {
-      headers: {
-        "X-Api-Key": getApiKey(),
-      },
-    }
-  );
-  const data = await response.json();
-  notes.value = data;
-  previousNotes.value = JSON.parse(JSON.stringify(notes.value)); // Save current state
-  apiIsLoading.value = false;
-};
+  try {
+    const response = await fetch(
+      "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=Notes",
+      {
+        headers: { "X-Api-Key": getApiKey() },
+      }
+    );
+    notes.value = await response.json();
+    previousNotes.value = JSON.parse(JSON.stringify(notes.value));
+  } finally {
+    apiIsLoading.value = false;
+  }
+}
 
-const saveNotes = async () => {
+async function saveNotes() {
   apiIsLoading.value = true;
-  const response = await fetch(
-    "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=Notes",
-    {
-      method: "PUT",
-      headers: {
-        "X-Api-Key": getApiKey(),
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(notes.value),
-    }
-  );
-  const data = await response.json();
-  console.log(notes.value);
-  console.log(data);
-  apiIsLoading.value = false;
-};
-
-if (props.collapsed) {
-  showNotes.value = false;
+  try {
+    await fetch(
+      "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=Notes",
+      {
+        method: "PUT",
+        headers: {
+          "X-Api-Key": getApiKey(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(notes.value),
+      }
+    );
+  } finally {
+    apiIsLoading.value = false;
+  }
 }
 
 if (showNotes.value) {

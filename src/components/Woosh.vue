@@ -56,13 +56,13 @@
           <v-list-item
             v-for="note in displayNotes"
             :key="note.id || note.timetaken"
+            @click="showFullNote(note)"
           >
-            <v-list-item-content>
-              <v-list-item-title>{{ note.text }}</v-list-item-title>
-              <v-list-item-subtitle>
-                {{ formatDateTime(note.timetaken) }} ({{ note.category }})
-              </v-list-item-subtitle>
-            </v-list-item-content>
+            <v-list-item-title>{{ note.text }}</v-list-item-title>
+            <v-list-item-subtitle>
+              {{ formatDateTime(note.timetaken) }}
+              {{ note.category !== "unspecified" ? ` (${note.category})` : "" }}
+            </v-list-item-subtitle>
           </v-list-item>
         </v-list>
         <div v-else-if="notesLoaded">No notes found.</div>
@@ -120,6 +120,32 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="fullNoteDialog" max-width="500px">
+      <v-card v-if="selectedNote">
+        <v-card-title>Full Note</v-card-title>
+        <v-card-text>
+          <p><strong>Text:</strong> {{ selectedNote.text }}</p>
+          <p>
+            <strong>Category:</strong>
+            {{ selectedNote.category || "Unspecified" }}
+          </p>
+          <p>
+            <strong>Date:</strong> {{ formatDateTime(selectedNote.timetaken) }}
+          </p>
+          <p v-if="selectedNote.score !== undefined">
+            <strong>Relevance Score:</strong>
+            {{ selectedNote.score.toFixed(2) }}
+          </p>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue-darken-1" text @click="fullNoteDialog = false"
+            >Close</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
@@ -150,6 +176,9 @@ const startDate = ref("");
 const endDate = ref("");
 const searchQuery = ref("");
 const topK = ref("");
+
+const fullNoteDialog = ref(false);
+const selectedNote = ref(null);
 
 const displayNotes = computed(() => {
   if (Array.isArray(notes.value)) {
@@ -266,6 +295,11 @@ async function fetchNotes() {
   } finally {
     apiIsLoading.value = false;
   }
+}
+
+function showFullNote(note) {
+  selectedNote.value = note;
+  fullNoteDialog.value = true;
 }
 </script>
 

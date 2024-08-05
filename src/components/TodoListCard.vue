@@ -19,6 +19,9 @@
       <v-btn icon @click="toggleSelectionMode">
         <v-icon>mdi-checkbox-multiple-marked-outline</v-icon>
       </v-btn>
+      <v-btn icon @click="openRandomItemDialog">
+        <v-icon>mdi-dice-3</v-icon>
+      </v-btn>
       <v-btn
         icon
         @click="removeItems"
@@ -32,6 +35,9 @@
         v-if="selectionMode && selectedItems.length > 0"
       >
         <v-icon>mdi-timer-outline</v-icon>
+      </v-btn>
+      <v-btn icon @click="openHistoryDialog">
+        <v-icon>mdi-history</v-icon>
       </v-btn>
     </v-toolbar>
     <v-progress-linear
@@ -48,7 +54,7 @@
             v-bind="props"
             class="group"
             :style="getSwipeStyle(item.id)"
-            v-touch:swipe.left="() => defer(item.id)"
+            v-touch:swipe.left="() => deferItem(item.id)"
             v-touch:swipe.right="() => removeItem(item.id)"
             @touchstart="(e) => startSwipe(item.id, e.touches[0].clientX)"
             @touchmove="(e) => updateSwipe(item.id, e.touches[0].clientX)"
@@ -88,7 +94,7 @@
                 <v-icon @click.stop="removeItem(item.id)" color="red">
                   mdi-delete
                 </v-icon>
-                <v-icon @click.stop="defer(item.id)">
+                <v-icon @click.stop="deferItem(item.id)">
                   mdi-timer-outline
                 </v-icon>
               </div>
@@ -101,8 +107,8 @@
           :key="subTask.id"
           class="group"
           :style="getSwipeStyle(subTask.id)"
-          @click="editItem(subTask)"
-          v-touch:swipe.left="() => defer(subTask.id)"
+          @click="toggleEditing(subTask)"
+          v-touch:swipe.left="() => deferItem(subTask.id)"
           v-touch:swipe.right="() => removeItem(subTask.id)"
           @touchstart="(e) => startSwipe(subTask.id, e.touches[0].clientX)"
           @touchmove="(e) => updateSwipe(subTask.id, e.touches[0].clientX)"
@@ -169,6 +175,72 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="randomItemDialog" max-width="500px">
+      <v-card v-if="randomItem">
+        <v-card-title class="headline">Random Todo Item</v-card-title>
+        <v-card-text>
+          <v-text-field
+            v-model="randomItem.text"
+            label="Item text"
+            @keyup.enter="saveRandomItemEdit"
+          ></v-text-field>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" @click="drawRandomItem">Draw Another</v-btn>
+          <v-btn color="success" @click="saveRandomItemEdit">Save</v-btn>
+          <v-btn color="error" @click="deleteRandomItem">Delete</v-btn>
+          <v-btn color="warning" @click="deferRandomItem">Defer</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn color="grey darken-1" text @click="randomItemDialog = false"
+            >Close</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="historyDialog" max-width="500px">
+      <v-card>
+        <v-card-title class="headline">Completed Tasks History</v-card-title>
+        <v-card-text>
+          <v-date-picker v-model="selectedDate" class="mb-4"></v-date-picker>
+          <v-card outlined>
+            <v-card-title class="text-h6">
+              Tasks completed on
+              {{
+                new Date(selectedDate).toLocaleDateString("en-US", {
+                  timeZone: "America/Denver",
+                })
+              }}:
+            </v-card-title>
+            <v-card-text>
+              <v-list dense>
+                <v-list-item
+                  v-for="(task, index) in historicalTasks"
+                  :key="index"
+                >
+                  <template v-slot:prepend>
+                    <v-icon color="success">mdi-check-circle</v-icon>
+                  </template>
+                  <v-list-item-title>{{ task }}</v-list-item-title>
+                </v-list-item>
+                <v-list-item v-if="historicalTasks.length === 0">
+                  <v-list-item-title class="text-subtitle-1 font-italic"
+                    >No tasks completed on this day.</v-list-item-title
+                  >
+                </v-list-item>
+              </v-list>
+            </v-card-text>
+          </v-card>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="grey darken-1" text @click="historyDialog = false"
+            >Close</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
@@ -178,7 +250,6 @@ import TodoEditDialog from "./TodoEditDialog.vue";
 import { useApi } from "@/useAPI.js";
 
 const { setApiKey, getApiKey } = useApi();
-const apiIsLoading = ref(false);
 
 const props = defineProps({
   title: {
@@ -192,20 +263,145 @@ const props = defineProps({
 });
 
 const todo = ref([{ text: "Loading...", id: "..." }]);
+const apiIsLoading = ref(false);
+const showList = ref(!props.collapsed);
+const addDialog = ref(false);
+const editDialog = ref(false);
+const editDialogItem = ref({});
+const randomItemDialog = ref(false);
+const randomItem = ref(null);
+const historyDialog = ref(false);
+const historicalTasks = ref([]);
+const selectedDate = ref(
+  new Date(
+    new Date().toLocaleString("en-US", {
+      timeZone: "America/Denver",
+    })
+  )
+);
 
-const fetchTodo = async () => {
+// Simplified API calls
+const apiCall = async (endpoint, method = "GET", body = null) => {
   apiIsLoading.value = true;
-  const response = await fetch(
-    `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/fetch?list_name=${props.title}`,
-    {
-      headers: {
-        "X-Api-Key": getApiKey(),
-      },
-    }
+  try {
+    const response = await fetch(endpoint, {
+      method,
+      headers: { "X-Api-Key": getApiKey() },
+      body: body ? JSON.stringify(body) : null,
+    });
+    return await response.json();
+  } finally {
+    apiIsLoading.value = false;
+  }
+};
+
+// Simplified CRUD operations
+const fetchTodo = () =>
+  apiCall(
+    `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/fetch?list_name=${props.title}`
+  ).then((data) => (todo.value = data[props.title]));
+
+const addItem = async (text, afterId = null, parentId = null) => {
+  let endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/add?text=${text}`;
+  if (afterId) endpoint += `&after_id=${afterId}`;
+  if (parentId) endpoint += `&parent_id=${parentId}`;
+
+  const data = await apiCall(endpoint);
+  updateLocalStateAfterAdd(text, data.results[0].id, afterId, parentId);
+};
+
+const editItem = async (text, id, checked) => {
+  let endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/edit?text=${text}&block_id=${id}`;
+  if (checked !== undefined) endpoint += `&todoToggle=${checked}`;
+
+  await apiCall(endpoint);
+  updateLocalStateAfterEdit({ id, text, checked });
+};
+
+const removeItem = async (id) => {
+  await apiCall(
+    `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/delete?block_id=${id}`
   );
-  const data = await response.json();
-  todo.value = data[props.title];
-  apiIsLoading.value = false;
+  updateLocalStateAfterRemoval([id]);
+};
+
+const deferItem = async (id) => {
+  const deferParam = props.title === "Now" ? "defer=true" : "deferWeek=true";
+  await apiCall(
+    `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/delete?block_id=${id}&${deferParam}`
+  );
+  updateLocalStateAfterRemoval([id]);
+};
+
+// Batch operations
+const batchOperation = async (operation, ids) => {
+  if (ids.length === 0) return;
+  const idsString = ids.join(",");
+  const endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/delete?block_id=${idsString}${
+    operation === "defer"
+      ? `&${props.title === "Now" ? "defer=true" : "deferWeek=true"}`
+      : ""
+  }`;
+  await apiCall(endpoint);
+  updateLocalStateAfterRemoval(ids);
+  selectedItems.value = [];
+  selectionMode.value = false;
+};
+
+const removeItems = () => batchOperation("remove", selectedItems.value);
+const deferItems = () => batchOperation("defer", selectedItems.value);
+
+// Local state update functions
+const updateLocalStateAfterAdd = (text, id, afterId, parentId) => {
+  const newItem = {
+    text,
+    id,
+    created: new Date().toISOString(),
+    checked: false,
+    subTasks: [],
+  };
+  if (!parentId) {
+    const index = afterId
+      ? todo.value.findIndex((item) => item.id === afterId)
+      : -1;
+    todo.value.splice(index + 1, 0, newItem);
+  } else {
+    todo.value = todo.value.map((item) => {
+      if (item.id === parentId) {
+        const subIndex = item.subTasks.findIndex(
+          (subTask) => subTask.id === afterId
+        );
+        item.subTasks.splice(subIndex + 1, 0, newItem);
+      }
+      return item;
+    });
+  }
+};
+
+const updateLocalStateAfterEdit = (editedItem) => {
+  todo.value = todo.value.map((item) => {
+    if (item.id === editedItem.id) return { ...item, ...editedItem };
+    if (item.subTasks) {
+      return {
+        ...item,
+        subTasks: item.subTasks.map((subTask) =>
+          subTask.id === editedItem.id ? { ...subTask, ...editedItem } : subTask
+        ),
+      };
+    }
+    return item;
+  });
+};
+
+const updateLocalStateAfterRemoval = (idsToRemove) => {
+  todo.value = todo.value
+    .filter((item) => !idsToRemove.includes(item.id))
+    .map((item) => ({
+      ...item,
+      subTasks: item.subTasks
+        ? item.subTasks.filter((subTask) => !idsToRemove.includes(subTask.id))
+        : [],
+    }));
 };
 
 const expandedItems = ref({});
@@ -219,12 +415,6 @@ const toggleExpanded = (itemId) => {
 
 const isExpanded = computed(() => (itemId) => !!expandedItems.value[itemId]);
 
-const showList = ref(true);
-const addDialog = ref(false);
-const addAfterID = ref(null);
-const addParentID = ref(null);
-const newItemText = ref("");
-
 const selectionMode = ref(false);
 const selectedItems = ref([]);
 
@@ -235,27 +425,10 @@ const toggleSelectionMode = () => {
   }
 };
 
-if (props.collapsed) {
-  showList.value = false;
-}
-
-if (showList.value) {
-  fetchTodo();
-}
-
-watch(
-  () => showList.value,
-  (newValue) => {
-    if (newValue) {
-      fetchTodo();
-    }
-  }
-);
-
-const editDialog = ref(false);
-const editDialogItem = ref({});
-
-const editItem = (item) => {
+const newItemText = ref("");
+const addAfterID = ref(null);
+const addParentID = ref(null);
+const toggleEditing = (item) => {
   if (item) {
     editDialogItem.value = item;
     editDialog.value = true;
@@ -263,195 +436,8 @@ const editItem = (item) => {
 };
 
 const saveEdit = async (text, id, item) => {
-  apiIsLoading.value = true;
   editDialog.value = false;
-  let endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/edit?text=${text}&block_id=${id}`;
-  if (item.checked != undefined) {
-    endpoint += `&todoToggle=${item.checked}`;
-  }
-  const response = await fetch(endpoint, {
-    headers: {
-      "X-Api-Key": getApiKey(),
-    },
-  });
-  const data = await response.json();
-  const parentIndex = todo.value.findIndex(
-    (todo) => todo.id === data.parent.block_id
-  );
-  if (parentIndex !== -1) {
-    const subtaskIndex = todo.value[parentIndex].subTasks.findIndex(
-      (subTask) => subTask.id === item.id
-    );
-    todo.value[parentIndex].subTasks[subtaskIndex].text = text;
-  } else {
-    todo.value = todo.value.map((todo) =>
-      todo.id === id ? { ...todo, text: text } : todo
-    );
-  }
-  apiIsLoading.value = false;
-};
-
-const removeItem = async (id) => {
-  apiIsLoading.value = true;
-  const endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/delete?block_id=${id}`;
-  const response = await fetch(endpoint, {
-    headers: {
-      "X-Api-Key": getApiKey(),
-    },
-  });
-  const data = await response.json();
-  todo.value = todo.value.filter((todo) => todo.id !== id);
-  todo.value = todo.value.map((todo) =>
-    todo.subTasks
-      ? {
-          ...todo,
-          subTasks: todo.subTasks.filter((subTask) => subTask.id !== id),
-        }
-      : todo
-  );
-  apiIsLoading.value = false;
-};
-
-const defer = async (id) => {
-  apiIsLoading.value = true;
-  const deferParam = props.title === "Now" ? "defer=true" : "deferWeek=true";
-  const endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/delete?block_id=${id}&${deferParam}`;
-  const response = await fetch(endpoint, {
-    headers: {
-      "X-Api-Key": getApiKey(),
-    },
-  });
-  const data = await response.json();
-  todo.value = todo.value.filter((todo) => todo.id !== id);
-  todo.value = todo.value.map((todo) =>
-    todo.subTasks
-      ? {
-          ...todo,
-          subTasks: todo.subTasks.filter((subTask) => subTask.id !== id),
-        }
-      : todo
-  );
-  apiIsLoading.value = false;
-};
-
-const removeItems = async () => {
-  if (selectedItems.value.length === 0) return;
-
-  apiIsLoading.value = true;
-  const ids = selectedItems.value.join(",");
-  const endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/delete?block_id=${ids}`;
-
-  try {
-    await fetch(endpoint, {
-      headers: {
-        "X-Api-Key": getApiKey(),
-      },
-    });
-    updateLocalStateAfterRemoval(selectedItems.value);
-    selectedItems.value = [];
-    selectionMode.value = false;
-  } catch (error) {
-    console.error("Error removing items:", error);
-  } finally {
-    apiIsLoading.value = false;
-  }
-};
-
-const deferItems = async () => {
-  if (selectedItems.value.length === 0) return;
-
-  apiIsLoading.value = true;
-  const ids = selectedItems.value.join(",");
-  const deferParam = props.title === "Now" ? "defer=true" : "deferWeek=true";
-  const endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/delete?block_id=${ids}&${deferParam}`;
-
-  try {
-    await fetch(endpoint, {
-      headers: {
-        "X-Api-Key": getApiKey(),
-      },
-    });
-    updateLocalStateAfterRemoval(selectedItems.value);
-    selectedItems.value = [];
-    selectionMode.value = false;
-  } catch (error) {
-    console.error("Error deferring items:", error);
-  } finally {
-    apiIsLoading.value = false;
-  }
-};
-
-const updateLocalStateAfterRemoval = (idsToRemove) => {
-  todo.value = todo.value.filter((item) => !idsToRemove.includes(item.id));
-  todo.value = todo.value.map((item) => ({
-    ...item,
-    subTasks: item.subTasks
-      ? item.subTasks.filter((subTask) => !idsToRemove.includes(subTask.id))
-      : [],
-  }));
-};
-
-const addItem = async (text) => {
-  apiIsLoading.value = true;
-  let endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/add?text=${text}`;
-  if (addAfterID.value) {
-    endpoint += `&after_id=${addAfterID.value}`;
-  }
-  if (addParentID.value) {
-    endpoint += `&parent_id=${addParentID.value}`;
-  }
-  const response = await fetch(endpoint, {
-    headers: {
-      "X-Api-Key": getApiKey(),
-    },
-  });
-  const data = await response.json();
-
-  function createNewItem(text, id) {
-    return {
-      text: text,
-      id: id,
-      created: new Date().toISOString(),
-      checked: false,
-      subTasks: [],
-    };
-  }
-
-  if (!addParentID.value) {
-    const index = addAfterID.value
-      ? todo.value.findIndex((item) => item.id === addAfterID.value)
-      : -1;
-    todo.value.splice(index + 1, 0, createNewItem(text, data.results[0].id));
-  } else {
-    todo.value = todo.value.map((todoItem) => {
-      if (todoItem.id === addParentID.value) {
-        const subIndex = todoItem.subTasks.findIndex(
-          (subTask) => subTask.id === addAfterID.value
-        );
-        todoItem.subTasks.splice(
-          subIndex + 1,
-          0,
-          createNewItem(text, data.results[0].id)
-        );
-      }
-      return todoItem;
-    });
-  }
-  newItemText.value = "";
-  addDialog.value = false;
-  addAfterID.value = null;
-  addParentID.value = null;
-  apiIsLoading.value = false;
-};
-
-const toggleItem = async (parent_id, task_id, text, checked) => {
-  const endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/edit?text=${text}&block_id=${task_id}&todoToggle=${checked}`;
-  const response = await fetch(endpoint, {
-    headers: {
-      "X-Api-Key": getApiKey(),
-    },
-  });
-  const data = await response.json();
+  await editItem(text, id, item.checked);
 };
 
 const swipeState = ref({});
@@ -512,7 +498,7 @@ const endSwipe = (itemId) => {
 
 const handleItemClick = (item) => {
   if (!selectionMode.value) {
-    editItem(item);
+    toggleEditing(item);
   } else {
     const index = selectedItems.value.indexOf(item.id);
     if (index > -1) {
@@ -528,6 +514,88 @@ const openAddDialog = (afterID, parentID) => {
   addAfterID.value = afterID;
   addParentID.value = parentID;
 };
+
+const openRandomItemDialog = () => {
+  drawRandomItem();
+  randomItemDialog.value = true;
+};
+
+const drawRandomItem = () => {
+  const allItems = todo.value.flatMap((item) => [item]);
+  console.log(allItems.map((item) => item.text));
+  if (allItems.length > 0) {
+    const randomIndex = Math.floor(Math.random() * allItems.length);
+    randomItem.value = allItems[randomIndex];
+  } else {
+    randomItem.value = null;
+  }
+};
+
+const deleteRandomItem = async () => {
+  if (randomItem.value) {
+    await removeItem(randomItem.value.id);
+    drawRandomItem();
+  }
+};
+
+const deferRandomItem = async () => {
+  if (randomItem.value) {
+    await deferItem(randomItem.value.id);
+    drawRandomItem();
+  }
+};
+
+const saveRandomItemEdit = async () => {
+  if (randomItem.value) {
+    await editItem(
+      randomItem.value.text,
+      randomItem.value.id,
+      randomItem.value.checked
+    );
+    // Update the local state
+    updateLocalStateAfterEdit(randomItem.value);
+  }
+};
+
+const fetchHistoricalTasks = async (date) => {
+  try {
+    const response = await fetch(
+      `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getHistoryTodo?date=${date}`,
+      {
+        headers: { "X-Api-Key": getApiKey() },
+      }
+    );
+    const data = await response.json();
+    historicalTasks.value = data.tasks || [];
+  } catch (error) {
+    console.error("Error fetching historical tasks:", error);
+  }
+};
+
+const openHistoryDialog = () => {
+  const localDate = new Date(
+    selectedDate.value.toLocaleString("en-US", { timeZone: "America/Denver" })
+  );
+  const formattedDate = `${localDate.getFullYear()}-${String(
+    localDate.getMonth() + 1
+  ).padStart(2, "0")}-${String(localDate.getDate()).padStart(2, "0")}`;
+  fetchHistoricalTasks(formattedDate);
+  historyDialog.value = true;
+};
+
+watch(selectedDate, (newDate) => {
+  fetchHistoricalTasks(newDate.toISOString().split("T")[0]);
+});
+
+// Watchers and lifecycle hooks
+watch(
+  () => showList.value,
+  (newValue) => {
+    if (newValue) fetchTodo();
+  }
+);
+
+if (showList.value) fetchTodo();
 </script>
 
 <style scoped>

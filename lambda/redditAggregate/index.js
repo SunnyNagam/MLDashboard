@@ -49,21 +49,24 @@ const fetchTopComments = async (sub, article) => {
   }
 };
 
-// Function to store data in DynamoDB
-const storeData = async (data, timeFrame = "day") => {
+// Modified function to store data in DynamoDB
+const storeData = async (subredditData, timeFrame = "day") => {
   const command = new PutCommand({
     TableName: "RedditSummary",
     Item: {
       timeFrame: timeFrame,
-      data: data,
+      subreddit: subredditData.subreddit,
+      data: subredditData.posts,
     },
   });
 
   try {
     const response = await docClient.send(command);
-    console.log("Data stored:", response);
   } catch (error) {
-    console.error("Error storing data:", error);
+    console.error(
+      `Error storing data for subreddit ${subredditData.subreddit}:`,
+      error
+    );
     throw error;
   }
 };
@@ -79,12 +82,13 @@ exports.handler = async (event) => {
     "personalfinancecanada",
     "mlscaling",
     "singularity",
+    "GenZ",
   ]; // Modify as needed
-  let aggregatedData = [];
   const timeFrame = event.queryStringParameters
     ? event.queryStringParameters.timeFrame
     : "day";
   console.log(timeFrame);
+
   try {
     for (const subreddit of subreddits) {
       let postsData = [];
@@ -99,19 +103,22 @@ exports.handler = async (event) => {
           comments: comments,
         });
       }
-      aggregatedData.push({
-        subreddit: subreddit,
-        posts: postsData,
-      });
-    }
 
-    // Store the aggregated data once per day
-    await storeData(aggregatedData, timeFrame);
-    //console.log(JSON.stringify(aggregatedData));
+      // Store data for each subreddit separately
+      await storeData(
+        {
+          subreddit: subreddit,
+          posts: postsData,
+        },
+        timeFrame
+      );
+    }
 
     return {
       statusCode: 200,
-      body: JSON.stringify("Data fetched and stored successfully!"),
+      body: JSON.stringify(
+        "Data fetched and stored successfully for all subreddits!"
+      ),
     };
   } catch (error) {
     return {

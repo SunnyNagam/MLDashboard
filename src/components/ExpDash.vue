@@ -3,6 +3,7 @@ import TodoListCard from "@/components/TodoListCard.vue";
 import Chat from "@/components/Chat.vue";
 import Calendar from "@/components/Calendar.vue";
 import TreeNotes from "@/components/TreeNotes.vue";
+import TodoAITreeDisp from "@/components/TodoAITreeDisp.vue";
 import WooshFriendsTest from "@/components/WooshFriendsTest.vue";
 import Woosh from "./Woosh.vue";
 
@@ -41,6 +42,11 @@ const list1 = shallowRef([
 
 const list2 = shallowRef([
   { name: "Calendar", component: Calendar, props: { collapsed: false } },
+  {
+    name: "Todo AI Tree",
+    component: TodoAITreeDisp,
+    props: { collapsed: true },
+  },
   {
     name: "Chat",
     component: Chat,

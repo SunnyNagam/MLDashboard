@@ -49,6 +49,10 @@ function saveGroqApiKey() {
   if (newGroqApiKey.value) {
     Cookies.set("GROQ_API_KEY", newGroqApiKey.value);
     groqApiKey = newGroqApiKey.value;
+    groq = new Groq({
+      apiKey: groqApiKey,
+      dangerouslyAllowBrowser: true,
+    });
     dialog.value = false;
   }
 }
@@ -66,7 +70,7 @@ async function updateMarkdownWithGroq() {
         {
           role: "system",
           content:
-            "You are a helpful assistant that modifies a document based on user instructions.You will always return the full complete resulting document and nothing else.",
+            "You are a helpful assistant that modifies a document based on user instructions. You will always return the full complete resulting modified document and nothing else.",
         },
         {
           role: "user",

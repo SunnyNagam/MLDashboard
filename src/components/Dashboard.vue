@@ -5,6 +5,7 @@ import TodoListCard from "@/components/TodoListCard.vue";
 import Chat from "@/components/Chat.vue";
 import Calendar from "@/components/Calendar.vue";
 import TreeNotes from "@/components/TreeNotes.vue";
+import TodoAITreeDisp from "@/components/TodoAITreeDisp.vue";
 import WooshFriendsTest from "@/components/WooshFriendsTest.vue";
 import Woosh from "./Woosh.vue";
 import { useTheme, useDisplay } from "vuetify";
@@ -128,6 +129,7 @@ function handleApiKeySubmit(enteredApiKey) {
       <v-col cols="12" sm="8" order-sm="2">
         <Calendar :collapsed="smAndDown" class="mb-4" />
         <TreeNotes :collapsed="true" class="mb-4" v-if="!smAndDown" />
+        <TodoAITreeDisp :collapsed="true" class="mb-4" />
         <WooshFriendsTest :collapsed="true" class="mb-4" v-if="!smAndDown" />
       </v-col>
       <v-col cols="12" sm="4" order-sm="1">
