@@ -9,11 +9,19 @@
       <v-btn icon @click="showChat = !showChat">
         <v-icon>{{ showChat ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
       </v-btn>
-      <v-toolbar-title>Perplexity</v-toolbar-title>
+      <v-toolbar-title
+        >Perplexity ({{ selectedModel.split("/")[1] }})</v-toolbar-title
+      >
       <v-btn icon @click="clearMessages">
         <v-icon>mdi-delete</v-icon>
       </v-btn>
-      <v-btn icon @click="dialog = true">
+      <v-btn
+        icon
+        @click="
+          fetchOpenRouterApiKey();
+          dialog = true;
+        "
+      >
         <v-icon>mdi-cog</v-icon>
       </v-btn>
     </v-toolbar>
@@ -138,6 +146,13 @@
           <v-btn @click="saveApiKey">Save API Key</v-btn>
         </v-form>
       </v-card-text>
+      <tree
+        v-model="notes"
+        :data="notes"
+        group="notesParent"
+        @input="updateData"
+      >
+      </tree>
     </v-card>
   </v-dialog>
 </template>
@@ -147,6 +162,9 @@ import { ref, watch } from "vue";
 import ollama from "ollama/browser";
 import VueMarkdown from "vue-markdown-render";
 import OpenAI from "openai";
+import Tree from "@/components/Tree.vue";
+import { useApi } from "@/useAPI.js";
+const { getApiKey } = useApi();
 import Cookies from "vue-cookies";
 import { useAgent } from "@/useAgent.js";
 
@@ -170,6 +188,25 @@ const openaiApi = new OpenAI({
   dangerouslyAllowBrowser: true,
 });
 
+const notes = ref([]);
+
+const fetchOpenRouterApiKey = async () => {
+  const response = await fetch(
+    "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=Notes",
+    {
+      headers: {
+        "X-Api-Key": getApiKey(),
+      },
+    }
+  );
+  const data = await response.json();
+  notes.value = data.filter((item) => item.text === "API keys");
+  notes.value = notes.value[0].children.filter(
+    (item) => item.text === "OpenRouter"
+  );
+  console.log(notes.value);
+};
+
 const props = defineProps({
   context: {
     type: String,
@@ -185,15 +222,17 @@ if (props.collapsed) {
   showChat.value = false;
 }
 
-const selectedModel = ref("perplexity/llama-3-sonar-small-32k-online");
+const selectedModel = ref("perplexity/llama-3.1-sonar-small-128k-online");
 const modelChoices = [
-  "anthropic/claude-3-haiku",
-  "google/gemini-flash-1.5",
-  "perplexity/llama-3-sonar-small-32k-online",
-  "perplexity/llama-3-sonar-large-32k-online",
-  "meta-llama/llama-3-8b-instruct",
-  "Ollama3::phi3",
-  "Ollama3::llama3:8b-instruct-q5_K_M",
+  "anthropic/claude-3.5-sonnet",
+  "openai/gpt-4o-mini",
+  "openai/gpt-4o-turbo",
+  "perplexity/llama-3.1-sonar-small-128k-online",
+  "perplexity/llama-3.1-sonar-large-128k-online",
+  "deepseek/deepseek-chat",
+  "google/gemma-2-9b-it:free",
+  "Ollama3/phi3:latest",
+  "Ollama3/llama3.1:latest",
 ];
 const dialog = ref(false);
 const callAgent = ref(false);
@@ -283,7 +322,7 @@ async function sendMessageToApi(userMessage) {
           part.choices[0]?.delta?.content || "";
       }
     } else {
-      const localModelName = selectedModel.value.split("::")[1];
+      const localModelName = selectedModel.value.split("/")[1];
       const response = await ollama.chat({
         model: localModelName,
         messages: messages.value,
