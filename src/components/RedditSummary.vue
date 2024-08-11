@@ -4,6 +4,7 @@ import { useApi } from "@/useAPI.js";
 
 const { getApiKey } = useApi();
 const imgRegex = /\.(jpg|jpeg|png|gif|bmp|webp|tiff|svg)(\?.*)?$/i;
+const lastUpdated = ref(new Date());
 
 const getReddit = async () => {
   loading.value = true;
@@ -18,8 +19,17 @@ const getReddit = async () => {
     .then((response) => response.json())
     .then((data) => {
       redditData.value = data;
-      //console.log(redditData.value[0].posts[0].description);
-      //console.log(decodeHtml(redditData.value[0].posts[0].description));
+      const updatedAt = new Date(data[0].updatedAt);
+      const timeDiff = Math.abs(Date.now() - updatedAt.getTime());
+      const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+      if (days > 0) {
+        lastUpdated.value = `${days} days ago`;
+      } else {
+        const hours = Math.floor(
+          (timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        );
+        lastUpdated.value = `${hours} hours ago`;
+      }
       loading.value = false;
     })
     .catch((error) => console.log("Error fetching data:", error));
@@ -88,6 +98,9 @@ watch(selectedTimeframe, () => {
         variant="outlined"
         class="w-full md:w-1/2"
       ></v-select>
+      <v-chip class="ml-4" color="primary" text-color="white">
+        Updated: {{ lastUpdated }}
+      </v-chip>
     </div>
     <v-progress-linear
       v-if="loading"

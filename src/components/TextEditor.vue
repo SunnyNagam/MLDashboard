@@ -12,7 +12,7 @@ const markdownText = ref(`Enter text here`);
 const activeTab = ref(0);
 const instruction = ref("");
 
-const groqApiKey = Cookies.get("GROQ_API_KEY");
+let groqApiKey = Cookies.get("GROQ_API_KEY");
 const dialog = ref(false);
 const newGroqApiKey = ref("");
 
