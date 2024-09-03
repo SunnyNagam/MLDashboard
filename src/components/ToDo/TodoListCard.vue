@@ -19,7 +19,13 @@
       <v-btn icon @click="toggleSelectionMode">
         <v-icon>mdi-checkbox-multiple-marked-outline</v-icon>
       </v-btn>
-      <v-btn icon @click="openRandomItemDialog">
+      <v-btn
+        icon
+        @click="
+          randomItemDialog = true;
+          drawRandomItem();
+        "
+      >
         <v-icon>mdi-dice-3</v-icon>
       </v-btn>
       <v-btn
@@ -36,7 +42,7 @@
       >
         <v-icon>mdi-timer-outline</v-icon>
       </v-btn>
-      <v-btn icon @click="openHistoryDialog">
+      <v-btn icon @click="historyDialog = true">
         <v-icon>mdi-history</v-icon>
       </v-btn>
     </v-toolbar>
@@ -149,77 +155,22 @@
     <TodoEditDialog
       :active="editDialog"
       :item="editDialogItem"
-      @save="saveEdit"
+      @save="editItem"
       @toggle="editDialog = $event"
     ></TodoEditDialog>
 
     <TodoAddDialog v-model:active="addDialog" @save="addItem"></TodoAddDialog>
 
-    <v-dialog v-model="randomItemDialog" max-width="500px">
-      <v-card v-if="randomItem">
-        <v-card-title class="headline">Random Todo Item</v-card-title>
-        <v-card-text>
-          <v-text-field
-            v-model="randomItem.text"
-            label="Item text"
-            @keyup.enter="saveRandomItemEdit"
-          ></v-text-field>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn color="primary" @click="drawRandomItem">Draw Another</v-btn>
-          <v-btn color="success" @click="saveRandomItemEdit">Save</v-btn>
-          <v-btn color="error" @click="deleteRandomItem">Delete</v-btn>
-          <v-btn color="warning" @click="deferRandomItem">Defer</v-btn>
-          <v-spacer></v-spacer>
-          <v-btn color="grey darken-1" text @click="randomItemDialog = false"
-            >Close</v-btn
-          >
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <RandomItemDialog
+      v-model:active="randomItemDialog"
+      :item="randomItem"
+      @save="editItem"
+      @delete="removeItem"
+      @defer="deferItem"
+      @drawAnother="drawRandomItem"
+    ></RandomItemDialog>
 
-    <v-dialog v-model="historyDialog" max-width="500px">
-      <v-card>
-        <v-card-title class="headline">Completed Tasks History</v-card-title>
-        <v-card-text>
-          <v-date-picker v-model="selectedDate" class="mb-4"></v-date-picker>
-          <v-card outlined>
-            <v-card-title class="text-h6">
-              Tasks completed on
-              {{
-                new Date(selectedDate).toLocaleDateString("en-US", {
-                  timeZone: "America/Denver",
-                })
-              }}:
-            </v-card-title>
-            <v-card-text>
-              <v-list dense>
-                <v-list-item
-                  v-for="(task, index) in historicalTasks"
-                  :key="index"
-                >
-                  <template v-slot:prepend>
-                    <v-icon color="success">mdi-check-circle</v-icon>
-                  </template>
-                  <v-list-item-title>{{ task }}</v-list-item-title>
-                </v-list-item>
-                <v-list-item v-if="historicalTasks.length === 0">
-                  <v-list-item-title class="text-subtitle-1 font-italic"
-                    >No tasks completed on this day.</v-list-item-title
-                  >
-                </v-list-item>
-              </v-list>
-            </v-card-text>
-          </v-card>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="grey darken-1" text @click="historyDialog = false"
-            >Close</v-btn
-          >
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <HistoryDialog v-model:active="historyDialog"></HistoryDialog>
   </v-card>
 </template>
 
@@ -227,9 +178,10 @@
 import { ref, watch, computed } from "vue";
 import TodoEditDialog from "./TodoEditDialog.vue";
 import TodoAddDialog from "./TodoAddDialog.vue";
+import RandomItemDialog from "./RandomItemDialog.vue";
+import HistoryDialog from "./HistoryDialog.vue";
 import { useApi } from "@/useAPI.js";
-
-const { setApiKey, getApiKey } = useApi();
+const { getApiKey } = useApi();
 
 const props = defineProps({
   title: {
@@ -251,18 +203,9 @@ const editDialogItem = ref({});
 const randomItemDialog = ref(false);
 const randomItem = ref(null);
 const historyDialog = ref(false);
-const historicalTasks = ref([]);
-const selectedDate = ref(
-  new Date(
-    new Date().toLocaleString("en-US", {
-      timeZone: "America/Denver",
-    })
-  )
-);
 
 const BASE_URL = "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod";
 
-// Simplified API calls
 const apiCall = async (endpoint, method = "GET", body = null) => {
   apiIsLoading.value = true;
   try {
@@ -277,7 +220,6 @@ const apiCall = async (endpoint, method = "GET", body = null) => {
   }
 };
 
-// Simplified CRUD operations
 const fetchTodo = () =>
   apiCall(`${BASE_URL}/fetch?list_name=${props.title}`).then(
     (data) => (todo.value = data[props.title])
@@ -296,6 +238,7 @@ const addItem = async (text, afterId = null, parentId = null) => {
 };
 
 const editItem = async (text, id, checked) => {
+  editDialog.value = false;
   let endpoint = `${BASE_URL}/edit?text=${text}&block_id=${id}`;
   if (checked !== undefined) endpoint += `&todoToggle=${checked}`;
 
@@ -375,6 +318,7 @@ const updateLocalStateAfterEdit = (editedItem) => {
 };
 
 const updateLocalStateAfterRemoval = (idsToRemove) => {
+  drawRandomItem();
   todo.value = todo.value
     .filter((item) => !idsToRemove.includes(item.id))
     .map((item) => ({
@@ -383,6 +327,12 @@ const updateLocalStateAfterRemoval = (idsToRemove) => {
         ? item.subTasks.filter((subTask) => !idsToRemove.includes(subTask.id))
         : [],
     }));
+};
+
+const openAddDialog = (afterID, parentID) => {
+  addDialog.value = true;
+  addAfterID.value = afterID;
+  addParentID.value = parentID;
 };
 
 const expandedItems = ref({});
@@ -406,7 +356,6 @@ const toggleSelectionMode = () => {
   }
 };
 
-const newItemText = ref("");
 const addAfterID = ref(null);
 const addParentID = ref(null);
 const toggleEditing = (item) => {
@@ -414,11 +363,6 @@ const toggleEditing = (item) => {
     editDialogItem.value = item;
     editDialog.value = true;
   }
-};
-
-const saveEdit = async (text, id, item) => {
-  editDialog.value = false;
-  await editItem(text, id, item.checked);
 };
 
 const swipeState = ref({});
@@ -490,82 +434,18 @@ const handleItemClick = (item) => {
   }
 };
 
-const openAddDialog = (afterID, parentID) => {
-  addDialog.value = true;
-  addAfterID.value = afterID;
-  addParentID.value = parentID;
-};
-
-const openRandomItemDialog = () => {
-  drawRandomItem();
-  randomItemDialog.value = true;
-};
-
 const drawRandomItem = () => {
-  const allItems = todo.value.flatMap((item) => [item]);
-  console.log(allItems.map((item) => item.text));
-  if (allItems.length > 0) {
-    const randomIndex = Math.floor(Math.random() * allItems.length);
-    randomItem.value = allItems[randomIndex];
-  } else {
-    randomItem.value = null;
+  if (randomItemDialog.value) {
+    const allItems = todo.value.flatMap((item) => [item, ...item.subTasks]);
+    if (allItems.length > 0) {
+      const randomIndex = Math.floor(Math.random() * allItems.length);
+      randomItem.value = { ...allItems[randomIndex] };
+    } else {
+      randomItem.value = null;
+    }
   }
 };
 
-const deleteRandomItem = async () => {
-  if (randomItem.value) {
-    await removeItem(randomItem.value.id);
-    drawRandomItem();
-  }
-};
-
-const deferRandomItem = async () => {
-  if (randomItem.value) {
-    await deferItem(randomItem.value.id);
-    drawRandomItem();
-  }
-};
-
-const saveRandomItemEdit = async () => {
-  if (randomItem.value) {
-    await editItem(
-      randomItem.value.text,
-      randomItem.value.id,
-      randomItem.value.checked
-    );
-    // Update the local state
-    updateLocalStateAfterEdit(randomItem.value);
-  }
-};
-
-const fetchHistoricalTasks = async (date) => {
-  try {
-    const response = await fetch(`${BASE_URL}/getHistoryTodo?date=${date}`, {
-      headers: { "X-Api-Key": getApiKey() },
-    });
-    const data = await response.json();
-    historicalTasks.value = data.tasks || [];
-  } catch (error) {
-    console.error("Error fetching historical tasks:", error);
-  }
-};
-
-const openHistoryDialog = () => {
-  const localDate = new Date(
-    selectedDate.value.toLocaleString("en-US", { timeZone: "America/Denver" })
-  );
-  const formattedDate = `${localDate.getFullYear()}-${String(
-    localDate.getMonth() + 1
-  ).padStart(2, "0")}-${String(localDate.getDate()).padStart(2, "0")}`;
-  fetchHistoricalTasks(formattedDate);
-  historyDialog.value = true;
-};
-
-watch(selectedDate, (newDate) => {
-  fetchHistoricalTasks(newDate.toISOString().split("T")[0]);
-});
-
-// Watchers and lifecycle hooks
 watch(
   () => showList.value,
   (newValue) => {
@@ -575,9 +455,3 @@ watch(
 
 if (showList.value) fetchTodo();
 </script>
-
-<style scoped>
-.v-list-item {
-  transition: background 0.1s ease;
-}
-</style>

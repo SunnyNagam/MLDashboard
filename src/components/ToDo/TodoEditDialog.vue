@@ -54,7 +54,7 @@ const editItemText = ref(props.item.text);
 const editItemId = ref(props.item.id);
 
 const saveEdit = () => {
-  emit("save", editItemText.value, editItemId.value, editItem.value);
+  emit("save", editItemText.value, editItemId.value, editItem.value.checked);
   toggle();
 };
 
