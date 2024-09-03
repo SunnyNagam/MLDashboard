@@ -136,14 +136,18 @@
           label="Use Agent (beta)"
           color="deep-purple accent-4"
         ></v-switch>
-        <v-form>
+        <v-form class="mt-4">
           <v-text-field
             v-model="apiKey"
             label="API Key"
             outlined
             hint="Enter your OpenRouter API key"
+            clearable
+            dense
           ></v-text-field>
-          <v-btn @click="saveApiKey">Save API Key</v-btn>
+          <v-btn @click="saveApiKey" color="primary" class="mt-2" elevation="2">
+            Save API Key
+          </v-btn>
         </v-form>
       </v-card-text>
       <tree
@@ -151,6 +155,7 @@
         :data="notes"
         group="notesParent"
         @input="updateData"
+        class="mt-4"
       >
       </tree>
     </v-card>
@@ -191,20 +196,25 @@ const openaiApi = new OpenAI({
 const notes = ref([]);
 
 const fetchOpenRouterApiKey = async () => {
-  const response = await fetch(
-    "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=Notes",
-    {
-      headers: {
-        "X-Api-Key": getApiKey(),
-      },
+  try {
+    const response = await fetch(
+      "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=Notes",
+      { headers: { "X-Api-Key": getApiKey() } }
+    );
+    const data = await response.json();
+
+    if (Array.isArray(data) && data.length > 0) {
+      const apiKeys = data.find((item) => item.text === "API keys");
+      notes.value =
+        apiKeys?.children?.filter((item) => item.text === "OpenRouter") || [];
+    } else {
+      console.error("Unexpected data format:", data);
     }
-  );
-  const data = await response.json();
-  notes.value = data.filter((item) => item.text === "API keys");
-  notes.value = notes.value[0].children.filter(
-    (item) => item.text === "OpenRouter"
-  );
-  console.log(notes.value);
+
+    console.log(notes.value);
+  } catch (error) {
+    console.error("Error fetching API key:", error);
+  }
 };
 
 const props = defineProps({

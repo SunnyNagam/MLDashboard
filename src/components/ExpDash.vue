@@ -1,5 +1,5 @@
 <script setup>
-import TodoListCard from "@/components/TodoListCard.vue";
+import TodoListCard from "@/components/ToDo/TodoListCard.vue";
 import Chat from "@/components/Chat.vue";
 import Calendar from "@/components/Calendar.vue";
 import TreeNotes from "@/components/TreeNotes.vue";

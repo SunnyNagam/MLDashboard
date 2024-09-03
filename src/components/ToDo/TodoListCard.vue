@@ -153,28 +153,7 @@
       @toggle="editDialog = $event"
     ></TodoEditDialog>
 
-    <v-dialog v-model="addDialog" max-width="500px" scroll-strategy="close">
-      <v-card>
-        <v-card-title class="headline">Add a new item</v-card-title>
-
-        <v-card-text>
-          <v-text-field
-            v-model="newItemText"
-            label="New item"
-            autofocus
-            solo
-            @keydown.enter="addItem(newItemText)"
-          ></v-text-field>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-btn color="grey darken-1" text @click="addDialog = false"
-            >Close</v-btn
-          >
-          <v-btn color="primary" text @click="addItem(newItemText)">Save</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <TodoAddDialog v-model:active="addDialog" @save="addItem"></TodoAddDialog>
 
     <v-dialog v-model="randomItemDialog" max-width="500px">
       <v-card v-if="randomItem">
@@ -247,6 +226,7 @@
 <script setup>
 import { ref, watch, computed } from "vue";
 import TodoEditDialog from "./TodoEditDialog.vue";
+import TodoAddDialog from "./TodoAddDialog.vue";
 import { useApi } from "@/useAPI.js";
 
 const { setApiKey, getApiKey } = useApi();
@@ -280,6 +260,8 @@ const selectedDate = ref(
   )
 );
 
+const BASE_URL = "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod";
+
 // Simplified API calls
 const apiCall = async (endpoint, method = "GET", body = null) => {
   apiIsLoading.value = true;
@@ -297,12 +279,15 @@ const apiCall = async (endpoint, method = "GET", body = null) => {
 
 // Simplified CRUD operations
 const fetchTodo = () =>
-  apiCall(
-    `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/fetch?list_name=${props.title}`
-  ).then((data) => (todo.value = data[props.title]));
+  apiCall(`${BASE_URL}/fetch?list_name=${props.title}`).then(
+    (data) => (todo.value = data[props.title])
+  );
 
 const addItem = async (text, afterId = null, parentId = null) => {
-  let endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/add?text=${text}`;
+  addDialog.value = false;
+  addAfterID.value = null;
+  addParentID.value = null;
+  let endpoint = `${BASE_URL}/add?text=${text}`;
   if (afterId) endpoint += `&after_id=${afterId}`;
   if (parentId) endpoint += `&parent_id=${parentId}`;
 
@@ -311,7 +296,7 @@ const addItem = async (text, afterId = null, parentId = null) => {
 };
 
 const editItem = async (text, id, checked) => {
-  let endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/edit?text=${text}&block_id=${id}`;
+  let endpoint = `${BASE_URL}/edit?text=${text}&block_id=${id}`;
   if (checked !== undefined) endpoint += `&todoToggle=${checked}`;
 
   await apiCall(endpoint);
@@ -319,17 +304,13 @@ const editItem = async (text, id, checked) => {
 };
 
 const removeItem = async (id) => {
-  await apiCall(
-    `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/delete?block_id=${id}`
-  );
+  await apiCall(`${BASE_URL}/delete?block_id=${id}`);
   updateLocalStateAfterRemoval([id]);
 };
 
 const deferItem = async (id) => {
   const deferParam = props.title === "Now" ? "defer=true" : "deferWeek=true";
-  await apiCall(
-    `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/delete?block_id=${id}&${deferParam}`
-  );
+  await apiCall(`${BASE_URL}/delete?block_id=${id}&${deferParam}`);
   updateLocalStateAfterRemoval([id]);
 };
 
@@ -337,7 +318,7 @@ const deferItem = async (id) => {
 const batchOperation = async (operation, ids) => {
   if (ids.length === 0) return;
   const idsString = ids.join(",");
-  const endpoint = `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/delete?block_id=${idsString}${
+  const endpoint = `${BASE_URL}/delete?block_id=${idsString}${
     operation === "defer"
       ? `&${props.title === "Now" ? "defer=true" : "deferWeek=true"}`
       : ""
@@ -559,12 +540,9 @@ const saveRandomItemEdit = async () => {
 
 const fetchHistoricalTasks = async (date) => {
   try {
-    const response = await fetch(
-      `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getHistoryTodo?date=${date}`,
-      {
-        headers: { "X-Api-Key": getApiKey() },
-      }
-    );
+    const response = await fetch(`${BASE_URL}/getHistoryTodo?date=${date}`, {
+      headers: { "X-Api-Key": getApiKey() },
+    });
     const data = await response.json();
     historicalTasks.value = data.tasks || [];
   } catch (error) {
