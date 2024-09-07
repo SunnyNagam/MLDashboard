@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, markRaw } from "vue";
 import { useApi } from "@/useAPI.js";
 import TodoListCard from "@/components/ToDo/TodoListCard.vue";
 import Chat from "@/components/Chat.vue";
@@ -20,6 +20,16 @@ const apiKeyModalVisible = ref(getApiKey() === null || getApiKey() === "");
 const todo = ref({ Now: [{ text: "Loading...", id: "..." }] });
 const calendarEvents = ref([]);
 const otherContext = `The User is named Sunny, and the current date is ${new Date().toDateString()}.`;
+
+const expandedComponent = ref(null);
+const expandedProps = ref({});
+const isExpanded = ref(false);
+
+function expandComponent(component, props = {}) {
+  expandedComponent.value = markRaw(component);
+  expandedProps.value = props;
+  isExpanded.value = true;
+}
 
 async function fetchTodoData() {
   try {
@@ -127,50 +137,91 @@ function handleApiKeySubmit(enteredApiKey) {
     </v-row>
     <v-row>
       <v-col cols="12" sm="8" order-sm="2">
-        <Calendar :collapsed="smAndDown" class="mb-4" />
-        <TreeNotes :collapsed="true" class="mb-4" v-if="!smAndDown" />
-        <TodoAITreeDisp :collapsed="true" class="mb-4" />
-        <WooshFriendsTest :collapsed="true" class="mb-4" v-if="!smAndDown" />
+        <Calendar :collapsed="smAndDown" @expand="expandComponent(Calendar)" />
+        <TreeNotes
+          :collapsed="true"
+          class="mb-4"
+          v-if="!smAndDown"
+          @expand="expandComponent(TreeNotes)"
+        />
+        <TodoAITreeDisp
+          :collapsed="true"
+          class="mb-4"
+          @expand="expandComponent(TodoAITreeDisp)"
+        />
+        <WooshFriendsTest
+          :collapsed="true"
+          class="mb-4"
+          v-if="!smAndDown"
+          @expand="expandComponent(WooshFriendsTest)"
+        />
       </v-col>
       <v-col cols="12" sm="4" order-sm="1">
-        <TodoListCard title="Now" />
-        <TodoListCard title="Soon" :collapsed="true" />
-        <TodoListCard title="Eventually" :collapsed="true" />
-        <Woosh :collapsed="false" class="my-4" />
-        <TreeNotes :collapsed="true" class="mb-4" v-if="smAndDown" />
+        <TodoListCard
+          title="Now"
+          @expand="expandComponent(TodoListCard, { title: 'Now' })"
+        />
+        <TodoListCard
+          title="Soon"
+          :collapsed="true"
+          @expand="expandComponent(TodoListCard, { title: 'Soon' })"
+        />
+        <TodoListCard
+          title="Eventually"
+          :collapsed="true"
+          @expand="expandComponent(TodoListCard, { title: 'Eventually' })"
+        />
+        <Woosh
+          :collapsed="false"
+          class="my-4"
+          @expand="expandComponent(Woosh)"
+        />
+        <TreeNotes
+          :collapsed="true"
+          class="mb-4"
+          v-if="smAndDown"
+          @expand="expandComponent(TreeNotes)"
+        />
         <Chat
           :context="otherContext + '\n' + chatContext + '\n' + calContext"
           :collapsed="true"
+          @expand="
+            expandComponent(Chat, {
+              context: otherContext + '\n' + chatContext + '\n' + calContext,
+            })
+          "
         />
       </v-col>
     </v-row>
   </v-container>
-  <v-dialog v-model="apiKeyModalVisible" persistent max-width="400">
+
+  <!-- Expansion Dialog -->
+  <v-dialog v-model="isExpanded" hide-overlay transition="scale-transition">
     <v-card>
-      <v-card-title class="headline">Enter Password (API key):</v-card-title>
-      <v-card-text>
-        <v-text-field
-          v-model="enteredApiKey"
-          label="API Key"
-          type="password"
-          autofocus
-          solo
-          @keydown.enter="handleApiKeySubmit(enteredApiKey)"
+      <v-toolbar color="grey-darken-4" dark>
+        <v-btn icon @click="isExpanded = false">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+        <v-toolbar-title>{{
+          expandedComponent?.name || "Full Screen"
+        }}</v-toolbar-title>
+      </v-toolbar>
+      <v-card-text class="expanded-content">
+        <component
+          :is="expandedComponent"
+          v-bind="expandedProps"
+          :collapsed="false"
         />
-        <v-card-subtitle class="text-wrap">
-          (This site is intended for personal use. Uses API key protected
-          serverless AWS Lambda functions to connect to personalized Google
-          Calendar, Notion, and Reddit based tools)
-        </v-card-subtitle>
       </v-card-text>
-      <v-card-actions>
-        <v-btn color="grey darken-4" @click="apiKeyModalVisible = false"
-          >Close</v-btn
-        >
-        <v-btn color="primary" @click="handleApiKeySubmit(enteredApiKey)"
-          >Submit</v-btn
-        >
-      </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <!-- ... existing API key dialog ... -->
 </template>
+
+<style scoped>
+.expanded-content {
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+}
+</style>

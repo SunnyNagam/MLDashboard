@@ -23,6 +23,9 @@
       <v-btn @click="toggleModel">
         <v-icon>{{ useInstantModel ? "mdi-flash" : "mdi-brain" }}</v-icon>
       </v-btn>
+      <v-btn icon @click="$emit('expand')">
+        <v-icon>mdi-arrow-expand</v-icon>
+      </v-btn>
     </v-toolbar>
 
     <v-progress-linear

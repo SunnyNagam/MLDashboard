@@ -24,6 +24,9 @@
       >
         <v-icon>mdi-cog</v-icon>
       </v-btn>
+      <v-btn icon @click="$emit('expand')">
+        <v-icon>mdi-arrow-expand</v-icon>
+      </v-btn>
     </v-toolbar>
     <div v-show="showChat">
       <v-card-text class="h-[21vh] overflow-y-auto">
@@ -120,6 +123,7 @@
       </v-card-actions>
     </div>
   </v-card>
+
   <v-dialog v-model="dialog" max-width="600">
     <v-card>
       <v-card-title class="headline">Chat AI settings</v-card-title>

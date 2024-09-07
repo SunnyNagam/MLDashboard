@@ -25,6 +25,9 @@
         density="compact"
         hide-details
       ></v-select>
+      <v-btn icon @click="$emit('expand')">
+        <v-icon>mdi-arrow-expand</v-icon>
+      </v-btn>
     </v-toolbar>
 
     <v-progress-linear

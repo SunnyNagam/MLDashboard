@@ -13,6 +13,9 @@
       <v-btn @click="fetchNotes"><v-icon>mdi-refresh</v-icon></v-btn>
       <v-btn @click="saveNote"><v-icon>mdi-send</v-icon></v-btn>
       <v-btn @click="openSearchModal"><v-icon>mdi-magnify</v-icon></v-btn>
+      <v-btn icon @click="$emit('expand')">
+        <v-icon>mdi-arrow-expand</v-icon>
+      </v-btn>
     </v-toolbar>
 
     <v-progress-linear

@@ -45,6 +45,9 @@
       <v-btn icon @click="historyDialog = true">
         <v-icon>mdi-history</v-icon>
       </v-btn>
+      <v-btn icon @click="$emit('expand')">
+        <v-icon>mdi-arrow-expand</v-icon>
+      </v-btn>
     </v-toolbar>
     <v-progress-linear
       v-if="apiIsLoading"
