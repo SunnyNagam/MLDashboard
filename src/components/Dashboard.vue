@@ -216,7 +216,34 @@ function handleApiKeySubmit(enteredApiKey) {
     </v-card>
   </v-dialog>
 
-  <!-- ... existing API key dialog ... -->
+  <v-dialog v-model="apiKeyModalVisible" persistent max-width="400">
+    <v-card>
+      <v-card-title class="headline">Enter Password (API key):</v-card-title>
+      <v-card-text>
+        <v-text-field
+          v-model="enteredApiKey"
+          label="API Key"
+          type="password"
+          autofocus
+          solo
+          @keydown.enter="handleApiKeySubmit(enteredApiKey)"
+        />
+        <v-card-subtitle class="text-wrap">
+          (This site is intended for personal use. Uses API key protected
+          serverless AWS Lambda functions to connect to personalized Google
+          Calendar, Notion, and Reddit based tools)
+        </v-card-subtitle>
+      </v-card-text>
+      <v-card-actions>
+        <v-btn color="grey darken-4" @click="apiKeyModalVisible = false"
+          >Close</v-btn
+        >
+        <v-btn color="primary" @click="handleApiKeySubmit(enteredApiKey)"
+          >Submit</v-btn
+        >
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <style scoped>
