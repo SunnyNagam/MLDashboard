@@ -1,11 +1,12 @@
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue"; // Added watch
 import { useTheme } from "vuetify";
 import VueMarkdown from "vue-markdown-render";
 import Groq from "groq-sdk";
 import { useApi } from "@/useAPI.js";
 import Tree from "@/components/Tree.vue";
 import Cookies from "vue-cookies";
+
 const { setApiKey, getApiKey } = useApi();
 
 const markdownText = ref(`Enter text here`);
@@ -14,7 +15,7 @@ const instruction = ref("");
 
 let groqApiKey = Cookies.get("GROQ_API_KEY");
 const dialog = ref(false);
-const newGroqApiKey = ref("");
+let newGroqApiKey = ref("");
 
 const undoHistory = ref([]);
 const redoHistory = ref([]);
@@ -29,6 +30,10 @@ const groq = new Groq({
 
 const notes = ref([]);
 
+// Added apiIsLoading for saveDocument and fetchDocument
+const apiIsLoading = ref(false);
+
+// Function to fetch Groq API Key
 const fetchGroqApiKey = async () => {
   const response = await fetch(
     "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=Notes",
@@ -45,6 +50,7 @@ const fetchGroqApiKey = async () => {
 
 fetchGroqApiKey();
 
+// Function to save Groq API Key
 function saveGroqApiKey() {
   if (newGroqApiKey.value) {
     Cookies.set("GROQ_API_KEY", newGroqApiKey.value);
@@ -57,6 +63,7 @@ function saveGroqApiKey() {
   }
 }
 
+// Function to update Markdown with Groq
 async function updateMarkdownWithGroq() {
   try {
     undoHistory.value.push({
@@ -88,6 +95,7 @@ async function updateMarkdownWithGroq() {
   }
 }
 
+// Function to undo last change
 function undoLastChange() {
   if (undoHistory.value.length > 0) {
     redoHistory.value.push({
@@ -103,6 +111,7 @@ function undoLastChange() {
   }
 }
 
+// Function to redo last change
 function redoLastChange() {
   if (redoHistory.value.length > 0) {
     undoHistory.value.push({
@@ -114,6 +123,58 @@ function redoLastChange() {
     instruction.value = lastRedo.instruction; // Restore instruction
   }
 }
+
+// **Added Functions Below**
+
+// Function to save the current document to the server
+async function saveDocument() {
+  apiIsLoading.value = true;
+  try {
+    await fetch(
+      "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=Document",
+      {
+        method: "PUT",
+        headers: {
+          "X-Api-Key": getApiKey(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: markdownText.value }),
+      }
+    );
+  } catch (error) {
+    console.error("Error saving document:", error);
+  } finally {
+    apiIsLoading.value = false;
+  }
+}
+
+// Function to load the current document from the server
+async function loadDocument() {
+  apiIsLoading.value = true;
+  try {
+    const response = await fetch(
+      "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=Document",
+      {
+        headers: {
+          "X-Api-Key": getApiKey(),
+        },
+      }
+    );
+    const data = await response.json();
+    markdownText.value = data.text || "Enter text here";
+  } catch (error) {
+    console.error("Error loading document:", error);
+  } finally {
+    apiIsLoading.value = false;
+  }
+}
+
+// Watcher to save the document after every edit
+watch(markdownText, (newVal, oldVal) => {
+  if (newVal !== oldVal) {
+    saveDocument();
+  }
+});
 </script>
 
 <template>
@@ -125,6 +186,13 @@ function redoLastChange() {
         Groq
       </h2>
     </div>
+
+    <!-- Added Progress Bar for API Loading -->
+    <v-progress-linear
+      v-if="apiIsLoading"
+      indeterminate
+      class="mx-auto mb-4"
+    ></v-progress-linear>
 
     <v-text-field
       v-model="instruction"
@@ -141,22 +209,43 @@ function redoLastChange() {
     <v-tabs v-model="activeTab">
       <v-tab>Editor</v-tab>
       <v-tab>Preview</v-tab>
-      <v-btn
-        icon
-        @click="undoLastChange"
-        :disabled="undoHistory.length === 0"
-        title="Undo last change"
-      >
-        <v-icon>mdi-undo</v-icon>
-      </v-btn>
-      <v-btn
-        icon
-        @click="redoLastChange"
-        :disabled="redoHistory.length === 0"
-        title="Redo last change"
-      >
-        <v-icon>mdi-redo</v-icon>
-      </v-btn>
+      <!-- Buttons Container -->
+      <div class="flex items-center ml-auto">
+        <v-btn
+          icon
+          @click="undoLastChange"
+          :disabled="undoHistory.length === 0"
+          title="Undo last change"
+        >
+          <v-icon>mdi-undo</v-icon>
+        </v-btn>
+        <v-btn
+          icon
+          @click="redoLastChange"
+          :disabled="redoHistory.length === 0"
+          title="Redo last change"
+        >
+          <v-icon>mdi-redo</v-icon>
+        </v-btn>
+        <!-- Added Save Button -->
+        <v-btn
+          icon
+          @click="saveDocument"
+          :disabled="apiIsLoading"
+          title="Save Document"
+        >
+          <v-icon>mdi-content-save</v-icon>
+        </v-btn>
+        <!-- Added Load Button -->
+        <v-btn
+          icon
+          @click="loadDocument"
+          :disabled="apiIsLoading"
+          title="Load Document"
+        >
+          <v-icon>mdi-content-paste</v-icon>
+        </v-btn>
+      </div>
     </v-tabs>
 
     <v-btn @click="dialog = true" v-if="!groqApiKey">Set Groq API Key</v-btn>
