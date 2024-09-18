@@ -184,7 +184,7 @@ function handleApiKeySubmit(enteredApiKey) {
         />
         <Chat
           :context="otherContext + '\n' + chatContext + '\n' + calContext"
-          :collapsed="true"
+          :collapsed="false"
           @expand="
             expandComponent(Chat, {
               context: otherContext + '\n' + chatContext + '\n' + calContext,

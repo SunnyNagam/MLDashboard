@@ -10,7 +10,7 @@
         <v-icon>{{ showChat ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
       </v-btn>
       <v-toolbar-title
-        >Perplexity ({{ selectedModel.split("/")[1] }})</v-toolbar-title
+        >Chat ({{ selectedModel.split("/")[1] }})</v-toolbar-title
       >
       <v-btn icon @click="clearMessages">
         <v-icon>mdi-delete</v-icon>
@@ -129,12 +129,13 @@
       <v-card-title class="headline">Chat AI settings</v-card-title>
       <v-card-text>
         Model:
-        <v-select
+        <v-combobox
           :items="modelChoices"
           v-model="selectedModel"
-          label="Select a model"
+          label="Select or enter a model"
           outlined
-        ></v-select>
+          clearable
+        ></v-combobox>
         <v-switch
           v-model="callAgent"
           label="Use Agent (beta)"
@@ -167,17 +168,18 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import ollama from "ollama/browser";
 import VueMarkdown from "vue-markdown-render";
 import OpenAI from "openai";
 import Tree from "@/components/Tree.vue";
 import { useApi } from "@/useAPI.js";
-const { getApiKey } = useApi();
 import Cookies from "vue-cookies";
 import { useAgent } from "@/useAgent.js";
 
-const apiKey = ref(Cookies.get("OPEN_ROUTER_API_KEY"));
+const { getApiKey } = useApi();
+
+const apiKey = ref("");
 const msgMenu = ref(false);
 const menuItem = ref(null);
 const showChat = ref(true);
@@ -186,18 +188,7 @@ const showMenu = (message, index) => {
   menuItem.value = { message, index };
 };
 
-function saveApiKey() {
-  Cookies.set("OPEN_ROUTER_API_KEY", apiKey.value);
-  openaiApi.apiKey = apiKey.value;
-}
-
-const openaiApi = new OpenAI({
-  apiKey: Cookies.get("OPEN_ROUTER_API_KEY"),
-  baseURL: "https://openrouter.ai/api/v1",
-  dangerouslyAllowBrowser: true,
-});
-
-const notes = ref([]);
+const openaiApi = ref(null); // Initialize as null; will set after fetching API key
 
 const fetchOpenRouterApiKey = async () => {
   try {
@@ -206,20 +197,36 @@ const fetchOpenRouterApiKey = async () => {
       { headers: { "X-Api-Key": getApiKey() } }
     );
     const data = await response.json();
-
+    console.log(data);
     if (Array.isArray(data) && data.length > 0) {
       const apiKeys = data.find((item) => item.text === "API keys");
-      notes.value =
-        apiKeys?.children?.filter((item) => item.text === "OpenRouter") || [];
+      const openRouterKey = apiKeys?.children?.find(
+        (item) => item.text === "OpenRouter"
+      );
+      if (openRouterKey) {
+        apiKey.value = openRouterKey.children[0].text;
+        Cookies.set("OPEN_ROUTER_API_KEY", apiKey.value);
+        openaiApi.value = new OpenAI({
+          apiKey: apiKey.value,
+          baseURL: "https://openrouter.ai/api/v1",
+          dangerouslyAllowBrowser: true,
+        });
+        console.log("OpenRouter API key has been set successfully.");
+      } else {
+        console.error("OpenRouter API key not found in notes.");
+      }
     } else {
       console.error("Unexpected data format:", data);
     }
-
-    console.log(notes.value);
   } catch (error) {
-    console.error("Error fetching API key:", error);
+    console.error("Error fetching OpenRouter API key:", error);
   }
 };
+
+// Automatically fetch and apply the OpenRouter API key on component mount
+onMounted(() => {
+  fetchOpenRouterApiKey();
+});
 
 const props = defineProps({
   context: {
@@ -239,6 +246,7 @@ if (props.collapsed) {
 const selectedModel = ref("perplexity/llama-3.1-sonar-small-128k-online");
 const modelChoices = [
   "anthropic/claude-3.5-sonnet",
+  "openai/o1-mini",
   "openai/gpt-4o-mini",
   "openai/gpt-4o-turbo",
   "perplexity/llama-3.1-sonar-small-128k-online",
@@ -258,6 +266,7 @@ const messages = ref([
     content: `You are a proactive and helpful dashboard and planning assistant. ${props.context}`,
   },
 ]);
+
 const clearMessages = () => {
   messages.value = messages.value.filter(
     (message, index) => message.role === "system" && index === 0
@@ -320,9 +329,18 @@ watch(
 );
 
 async function sendMessageToApi(userMessage) {
+  if (!openaiApi.value) {
+    console.error("OpenAI API is not initialized.");
+    messages.value.push({
+      content: "API is not initialized. Please try again later.",
+      role: "assistant",
+    });
+    return;
+  }
+
   try {
     if (!selectedModel.value.startsWith("Ollama3")) {
-      const stream = await openaiApi.chat.completions.create({
+      const stream = await openaiApi.value.chat.completions.create({
         model: selectedModel.value,
         messages: messages.value,
         stream: true,

@@ -51,7 +51,7 @@ const list2 = shallowRef([
     name: "Chat",
     component: Chat,
     props: {
-      collapsed: true,
+      collapsed: false,
       context: otherContext,
       class: "mb-4",
     },
@@ -88,7 +88,12 @@ function handleApiKeySubmit(enteredApiKey) {
     </v-row>
     <v-row>
       <v-col cols="6">
-        <draggable v-model="list1" group="components" item-key="id">
+        <draggable
+          v-model="list1"
+          group="components"
+          item-key="id"
+          handle=".v-toolbar"
+        >
           <template #item="{ element }">
             <div class="py-2">
               <component :is="element.component" v-bind="element.props" />
@@ -97,7 +102,12 @@ function handleApiKeySubmit(enteredApiKey) {
         </draggable>
       </v-col>
       <v-col cols="6">
-        <draggable v-model="list2" group="components" item-key="id">
+        <draggable
+          v-model="list2"
+          group="components"
+          item-key="id"
+          handle=".v-toolbar"
+        >
           <template #item="{ element }">
             <div class="py-2">
               <component :is="element.component" v-bind="element.props" />
