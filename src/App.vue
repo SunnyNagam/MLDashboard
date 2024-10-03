@@ -1,11 +1,17 @@
 <script setup>
-import { RouterView } from "vue-router";
+import { RouterView, useRoute } from "vue-router";
 import AppBar from "@/components/AppBar.vue";
+import { computed } from "vue";
+
+const route = useRoute();
+const isLanding2TestRoute = computed(
+  () => route.name === "landing-simple-test-2"
+);
 </script>
 
 <template>
   <v-layout>
-    <AppBar />
+    <AppBar v-if="!isLanding2TestRoute" />
     <v-main>
       <RouterView />
     </v-main>

@@ -6,6 +6,7 @@ import ScreenBot from "@/components/ScreenBot.vue";
 import PhotoGallery from "@/components/PhotoGallery.vue";
 import ExpDash from "@/components/ExpDash.vue";
 import Landing1 from "@/components/Landing1Test.vue";
+import Landing2 from "@/components/Landing2Test.vue";
 import BITPortfolioBeta from "@/components/BITPortfolioBeta.vue";
 import TextEditor from "@/components/TextEditor.vue";
 
@@ -19,6 +20,11 @@ const routes = [
     path: "/landing-simple-test",
     name: "landing-simple-test",
     component: Landing1,
+  },
+  {
+    path: "/landing-simple-test-2",
+    name: "landing-simple-test-2",
+    component: Landing2,
   },
   {
     path: "/bit-portfolio-beta",

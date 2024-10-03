@@ -131,7 +131,7 @@ function handleApiKeySubmit(enteredApiKey) {
           <v-icon @click="apiKeyModalVisible = true"
             >mdi-white-balance-sunny</v-icon
           >
-          Sunny's Dashboard
+          Sunny's Dashboard :)
         </h1>
       </v-col>
     </v-row>
