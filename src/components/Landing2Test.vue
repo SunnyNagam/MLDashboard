@@ -193,8 +193,6 @@
         </v-row>
       </v-container>
 
-      <!-- Features Section (Refined as About Us) -->
-
       <!-- Testimonials Section -->
       <v-container class="my-10 py-10 bg-white" id="testimonials">
         <v-row justify="center">

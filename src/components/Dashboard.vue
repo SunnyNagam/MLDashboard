@@ -137,7 +137,11 @@ function handleApiKeySubmit(enteredApiKey) {
     </v-row>
     <v-row>
       <v-col cols="12" sm="8" order-sm="2">
-        <Calendar :collapsed="smAndDown" @expand="expandComponent(Calendar)" />
+        <Calendar
+          :collapsed="smAndDown"
+          class="mb-4"
+          @expand="expandComponent(Calendar)"
+        />
         <TreeNotes
           :collapsed="true"
           class="mb-4"

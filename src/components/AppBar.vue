@@ -18,11 +18,7 @@
       />
       <v-btn variant="text" @click="goScreen" icon="mdi:mdi-eye" />
       <v-btn variant="text" @click="goPhotos" icon="mdi:mdi-image" />
-      <v-btn
-        variant="text"
-        @click="goLanding1"
-        icon="mdi:mdi-airplane-landing"
-      />
+      <v-btn variant="text" @click="goLanding1" icon="mdi:mdi-barrel" />
       <v-btn
         variant="text"
         @click="goLanding2"
@@ -60,10 +56,10 @@ const goExperimental = () => {
   router.push({ name: "experimental" });
 };
 const goLanding1 = () => {
-  router.push({ name: "landing-simple-test" });
+  router.push({ name: "landing-beta" });
 };
 const goLanding2 = () => {
-  router.push({ name: "landing-simple-test-2" });
+  router.push({ name: "landing" });
 };
 const goBITPortfolioBeta = () => {
   router.push({ name: "bit-portfolio-beta" });

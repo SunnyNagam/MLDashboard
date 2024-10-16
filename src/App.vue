@@ -4,14 +4,12 @@ import AppBar from "@/components/AppBar.vue";
 import { computed } from "vue";
 
 const route = useRoute();
-const isLanding2TestRoute = computed(
-  () => route.name === "landing-simple-test-2"
-);
+const isLandingRoute = computed(() => route.name?.startsWith("landing"));
 </script>
 
 <template>
   <v-layout>
-    <AppBar v-if="!isLanding2TestRoute" />
+    <AppBar v-if="!isLandingRoute" />
     <v-main>
       <RouterView />
     </v-main>
