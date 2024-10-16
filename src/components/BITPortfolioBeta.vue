@@ -157,7 +157,7 @@
             <p class="text-xl mb-4">{{ project.tagline }}</p>
             <p class="text-gray-700 mb-6">{{ project.description }}</p>
             <a
-              href="/src/assets/testguide.html"
+              href="@/assets/testguide.html"
               target="_blank"
               rel="noopener noreferrer"
             >
