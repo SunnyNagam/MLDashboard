@@ -156,9 +156,15 @@
             <h3 class="text-3xl font-bold mb-4">{{ project.name }}</h3>
             <p class="text-xl mb-4">{{ project.tagline }}</p>
             <p class="text-gray-700 mb-6">{{ project.description }}</p>
-            <v-btn color="primary" class="align-self-start" rounded
-              >More Details</v-btn
+            <a
+              href="/src/assets/testguide.html"
+              target="_blank"
+              rel="noopener noreferrer"
             >
+              <v-btn color="primary" class="align-self-start" rounded
+                >More Details</v-btn
+              >
+            </a>
           </v-col>
         </v-row>
       </v-container>
