@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boardwalk Prep Guide</title>
+    <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+    <div class="stackedit__html">
+        <h1 id="boardwalk-web-technologies-preparation-guide">Boardwalk Web Technologies Preparation Guide</h1>
+        <h2 id="table-of-contents">Table of Contents</h2>
+        <ol>
+            <li><a href="#introduction">Introduction</a></li>
+            <li><a href="#technologies-used">Technologies Used</a></li>
+            <li><a href="#project-structure">Boardwalk Project Structure</a>
+                <ul>
+                    <li><a href="#components">Components</a></li>
+                    <li><a href="#views">Views</a></li>
+                    <li><a href="#routing">Routing</a></li>
+                    <li><a href="#state-management">State Management</a></li>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#backend-configuration">Backend Configuration</a></li>
+                    <li><a href="#entry-points">Entry Points</a></li>
+                    <li><a href="#common-models">Common Models</a></li>
+                </ul>
+            </li>
+            <li><a href="#key-features-and-functionalities">Key Features and Functionalities</a></li>
+            <li><a href="#important-aspects-to-highlight-in-your-interview">Important Aspects to Highlight in Your
+                    Interview</a></li>
+            <li><a href="#preparation-tips-for-your-interview">Preparation Tips for Your Interview</a></li>
+            <li><a href="#recaps-of-main-technologies-used">Recaps of Main Technologies Used</a>
+                <ul>
+                    <li><a href="#vuejs-3">Vue.js 3</a></li>
+                    <li><a href="#vuetify">Vuetify</a></li>
+                    <li><a href="#tailwind-css">Tailwind CSS</a></li>
+                    <li><a href="#vue-router">Vue Router</a></li>
+                    <li><a href="#pinia">Pinia</a></li>
+                    <li><a href="#aws-amplify">AWS Amplify</a></li>
+                    <li><a href="#graphql">GraphQL</a></li>
+                    <li><a href="#vite">Vite</a></li>
+                </ul>
+            </li>
+            <li><a href="#conclusion">Conclusion</a></li>
+        </ol>
+        <h2 id="introduction">Introduction</h2>
+        <p>This guide provides a comprehensive overview of your Vue.js application, highlighting the key technologies,
+            project structure, and important functionalities.</p>
+        <h2 id="technologies-used">Technologies Used</h2>
+        <ul>
+            <li><strong>Vue.js 3</strong>: Progressive JavaScript framework for building user interfaces.</li>
+            <li><strong>TypeScript</strong>: Superset of JavaScript adding static typing.</li>
+            <li><strong>Vuetify</strong>: Material Design component framework for Vue.js.</li>
+            <li><strong>Tailwind CSS</strong>: Utility-first CSS framework for rapid UI development.</li>
+            <li><strong>Pinia</strong>: State management library for Vue.js.</li>
+            <li><strong>Vue Router</strong>: Official router for Vue.js.</li>
+            <li><strong>Vue Query</strong>: Data-fetching library for managing server state.</li>
+            <li><strong>AWS Amplify</strong>: Tools and services for building secure, scalable applications.</li>
+            <li><strong>AWS CDK (Cloud Development Kit)</strong>: Infrastructure as code tool for defining cloud
+                resources.</li>
+            <li><strong>Chart.js</strong>: JavaScript library for data visualization.</li>
+            <li><strong>Vite</strong>: Build tool and development server for modern web projects.</li>
+        </ul>
+        <h2 id="boardwalk-project-structure">Boardwalk Project Structure</h2>
+        <p>The project follows a typical structure for a Vue.js application, organized into components, views, services,
+            and configuration files.</p>
+        <h3 id="components">Components</h3>
+        <h4 id="adminnavbar.vue">1. <strong>AdminNavBar.vue</strong></h4>
+        <ul>
+            <li><strong>Path</strong>: <code>src/components/AdminNavBar.vue</code></li>
+            <li><strong>Description</strong>: Navigation bar tailored for admin users. Dynamically displays navigation
+                items based on user roles, including options like Products, Users, Orders, etc. Conditionally adds a
+                “Migrations” item for developers.</li>
+        </ul>
+        <h4 id="appbar.vue">2. <strong>AppBar.vue</strong></h4>
+        <ul>
+            <li><strong>Path</strong>: <code>src/components/AppBar.vue</code></li>
+            <li><strong>Description</strong>: The main application bar that includes navigation buttons such as Home,
+                Admin (visible only to admins), Cart, and Profile. Displays the number of items in the cart.</li>
+        </ul>
+        <h4 id="itemcard.vue">3. <strong>ItemCard.vue</strong></h4>
+        <ul>
+            <li><strong>Path</strong>: <code>src/components/ItemCard.vue</code></li>
+            <li><strong>Description</strong>: Displays individual product details, including images, prices, sizes, and
+                stock information. Allows users to select size and quantity, and add items to the cart. Handles custom
+                fields if required.</li>
+        </ul>
+        <h4 id="cartitem.vue">4. <strong>CartItem.vue</strong></h4>
+        <ul>
+            <li><strong>Path</strong>: <code>src/components/CartItem.vue</code></li>
+            <li><strong>Description</strong>: Represents items in the shopping cart. Enables quantity adjustments,
+                viewing product details, and deleting items. Integrates with the cart management services.</li>
+        </ul>
+        <h4 id="authwrapper.vue">5. <strong>AuthWrapper.vue</strong></h4>
+        <ul>
+            <li><strong>Path</strong>: <code>src/components/Auth/AuthWrapper.vue</code></li>
+            <li><strong>Description</strong>: Wraps around the application to handle authentication using AWS Amplify.
+                Ensures that routes requiring authentication are protected and redirects unauthorized users accordingly.
+            </li>
+        </ul>
+        <h3 id="views">Views</h3>
+        <h4 id="storefront-views">Storefront Views</h4>
+        <h5 id="personalinfoview.vue"><strong>PersonalInfoView.vue</strong></h5>
+        <ul>
+            <li><strong>Path</strong>: <code>src/views/Storefront/PersonalInfoView.vue</code></li>
+            <li><strong>Description</strong>: Collects personal information from users during the checkout process.
+                Validates input fields and navigates to the review page upon successful submission.</li>
+        </ul>
+        <h4 id="admin-views">Admin Views</h4>
+        <h5 id="adminreportsview.vue"><strong>AdminReportsView.vue</strong></h5>
+        <ul>
+            <li><strong>Path</strong>: <code>src/views/Admin/AdminReportsView.vue</code></li>
+            <li><strong>Description</strong>: Displays various reports and analytics for administrators. Includes
+                dashboards with charts (using Chart.js), data tables for processing fees, and options to export data as
+                CSV files.</li>
+        </ul>
+        <h3 id="routing">Routing</h3>
+        <ul>
+            <li><strong>File</strong>: <code>src/router/index.ts</code></li>
+            <li><strong>Description</strong>: Configures application routes, including nested routes for admin sections.
+                Implements route guards to restrict access based on user roles (e.g., admin, developer). Handles
+                redirections and ensures that authenticated users can access protected routes.</li>
+        </ul>
+        <h3 id="state-management">State Management</h3>
+        <h4 id="pinia-stores">Pinia Stores</h4>
+        <h5 id="useauthstore"><strong>useAuthStore</strong></h5>
+        <ul>
+            <li><strong>Path</strong>: <code>src/stores/auth.ts</code> (Assumed)</li>
+            <li><strong>Description</strong>: Manages authentication state, including user roles and authentication
+                status.</li>
+        </ul>
+        <h5 id="usecheckoutstore"><strong>useCheckoutStore</strong></h5>
+        <ul>
+            <li><strong>Path</strong>: <code>src/stores/checkout.ts</code> (Assumed)</li>
+            <li><strong>Description</strong>: Handles state related to the checkout process, such as storing user
+                information and selected items.</li>
+        </ul>
+        <h3 id="services">Services</h3>
+        <ul>
+            <li>
+                <p><strong>useCart</strong></p>
+                <ul>
+                    <li><strong>Path</strong>: <code>src/services/useCart.ts</code> (Assumed)</li>
+                    <li><strong>Description</strong>: Provides methods to add, remove, and manage items in the shopping
+                        cart.</li>
+                </ul>
+            </li>
+            <li>
+                <p><strong>useProducts</strong></p>
+                <ul>
+                    <li><strong>Path</strong>: <code>src/services/useProducts.ts</code> (Assumed)</li>
+                    <li><strong>Description</strong>: Fetches and manages product data from the backend.</li>
+                </ul>
+            </li>
+            <li>
+                <p><strong>useOrders</strong></p>
+                <ul>
+                    <li><strong>Path</strong>: <code>src/services/useOrders.ts</code> (Assumed)</li>
+                    <li><strong>Description</strong>: Handles fetching and processing order data.</li>
+                </ul>
+            </li>
+            <li>
+                <p><strong>useReturns</strong></p>
+                <ul>
+                    <li><strong>Path</strong>: <code>src/services/useReturns.ts</code> (Assumed)</li>
+                    <li><strong>Description</strong>: Manages return-related data and operations.</li>
+                </ul>
+            </li>
+            <li>
+                <p><strong>useUsers</strong></p>
+                <ul>
+                    <li><strong>Path</strong>: <code>src/services/useUsers.ts</code> (Assumed)</li>
+                    <li><strong>Description</strong>: Fetches and manages user information.</li>
+                </ul>
+            </li>
+        </ul>
+        <h3 id="backend-configuration">Backend Configuration</h3>
+        <h4 id="aws-amplify-and-cdk">AWS Amplify and CDK</h4>
+        <ul>
+            <li>
+                <p><strong>ImageCloudFront Stack</strong></p>
+                <ul>
+                    <li><strong>Path</strong>: <code>amplify/backend/custom/ImageCloudFront/cdk-stack.ts</code></li>
+                    <li><strong>Description</strong>: Defines CloudFront distributions with origin access controls to
+                        securely serve images from S3. Configures bucket policies and outputs the CloudFront URL.</li>
+                </ul>
+            </li>
+        </ul>
+        <h4 id="amplify-resources-reference">Amplify Resources Reference</h4>
+        <ul>
+            <li><strong>Path</strong>: <code>amplify/backend/types/amplify-dependent-resources-ref.d.ts</code></li>
+            <li><strong>Description</strong>: Provides TypeScript definitions for Amplify-dependent resources like APIs,
+                authentication, storage, and functions.</li>
+        </ul>
+        <h3 id="entry-points">Entry Points</h3>
+        <h4 id="main.ts"><strong>main.ts</strong></h4>
+        <ul>
+            <li><strong>Path</strong>: <code>src/main.ts</code></li>
+            <li><strong>Description</strong>: Initializes the Vue application, integrates plugins like Vuetify, Pinia,
+                Vue Query, and sets up AWS Amplify configurations.</li>
+        </ul>
+        <h4 id="app.vue"><strong>App.vue</strong></h4>
+        <ul>
+            <li><strong>Path</strong>: <code>src/App.vue</code></li>
+            <li><strong>Description</strong>: The root component that incorporates the authentication wrapper and
+                includes the main layout with the AppBar and RouterView.</li>
+        </ul>
+        <h3 id="common-models">Common Models</h3>
+        <ul>
+            <li>
+                <p><strong>models.ts</strong></p>
+                <ul>
+                    <li><strong>Path</strong>: <code>src/common/models.ts</code></li>
+                    <li><strong>Description</strong>: Defines TypeScript interfaces and types used across the
+                        application, such as <code>CustomFieldValue</code> and <code>EditableFields</code>.</li>
+                </ul>
+            </li>
+        </ul>
+        <h2 id="key-features-and-functionalities">Key Features and Functionalities</h2>
+        <h3 id="authentication-and-authorization">1. Authentication and Authorization</h3>
+        <ul>
+            <li>Utilizes AWS Amplify for user authentication.</li>
+            <li>Protects routes using Vue Router’s navigation guards based on user roles (e.g.,
+                <code>adminRequired</code>, <code>devRequired</code>).
+            </li>
+            <li>Displays different navigation options in the AdminNavBar based on user permissions.</li>
+        </ul>
+        <h3 id="state-management-with-pinia">2. State Management with Pinia</h3>
+        <ul>
+            <li>Centralizes application state, making it accessible across components.</li>
+            <li>Manages authentication states, checkout information, and cart items efficiently.</li>
+        </ul>
+        <h3 id="routing-and-navigation">3. Routing and Navigation</h3>
+        <ul>
+            <li>Organizes routes for both storefront and admin sections.</li>
+            <li>Implements nested routing for admin sub-sections like Products, Users, Orders, etc.</li>
+            <li>Ensures secure access to sensitive routes through route guards.</li>
+        </ul>
+        <h3 id="ui-components-with-vuetify-and-tailwind-css">4. UI Components with Vuetify and Tailwind CSS</h3>
+        <ul>
+            <li>Leverages Vuetify’s rich set of components to build responsive and aesthetically pleasing interfaces.
+            </li>
+            <li>Uses Tailwind CSS for utility-first styling, allowing rapid UI development.</li>
+            <li>Customizes themes and styles to align with the application’s branding.</li>
+        </ul>
+        <h3 id="data-visualization-with-chart.js">5. Data Visualization with Chart.js</h3>
+        <ul>
+            <li>Integrates Chart.js for rendering dynamic charts in admin reports.</li>
+            <li>Displays sales data and customer frequency through Line and Pie charts.</li>
+        </ul>
+        <h3 id="backend-integration-with-aws-amplify">6. Backend Integration with AWS Amplify</h3>
+        <ul>
+            <li>Configures GraphQL APIs using AppSync.</li>
+            <li>Manages storage with S3 and serves content securely via CloudFront.</li>
+            <li>Deploys Lambda functions for server-side logic and administrative tasks.</li>
+        </ul>
+        <h3 id="state-and-data-handling-with-vue-query">7. State and Data Handling with Vue Query</h3>
+        <ul>
+            <li>Manages data fetching, caching, and synchronization with server state.</li>
+            <li>Utilizes queries and mutations for interacting with APIs, ensuring efficient data management.</li>
+        </ul>
+        <h3 id="infrastructure-as-code-with-aws-cdk">8. Infrastructure as Code with AWS CDK</h3>
+        <ul>
+            <li>Defines and deploys cloud resources programmatically.</li>
+            <li>Configures secure S3 buckets and CloudFront distributions with origin access controls.</li>
+        </ul>
+        <h3 id="custom-fields-and-product-specifications">9. Custom Fields and Product Specifications</h3>
+        <ul>
+            <li>Handles custom fields for products, allowing for dynamic specifications like integers, booleans, and
+                strings.</li>
+            <li>Provides dialogs for editing and entering custom specifications when adding products to the cart.</li>
+        </ul>
+        <h3 id="error-handling-and-user-feedback">10. Error Handling and User Feedback</h3>
+        <ul>
+            <li>Implements snackbars to provide immediate feedback to users on actions like adding items to the cart.
+            </li>
+            <li>Utilizes loading states and disabled buttons to enhance user experience during data operations.</li>
+        </ul>
+        <h2 id="important-aspects-to-highlight-in-your-interview">Important Aspects to Highlight in Your Interview</h2>
+        <h3 id="understanding-the-architecture">1. Understanding the Architecture</h3>
+        <ul>
+            <li>Explain how frontend and backend interact through APIs.</li>
+            <li>Discuss the role of AWS Amplify in managing backend services.</li>
+            <li>Highlight the use of Pinia for state management and Vue Router for navigation.</li>
+        </ul>
+        <h3 id="component-based-design">2. Component-Based Design</h3>
+        <ul>
+            <li>Emphasize the modularity of Vue components, making the codebase scalable and maintainable.</li>
+            <li>Discuss how components communicate via props and events.</li>
+        </ul>
+        <h3 id="typescript-integration">3. TypeScript Integration</h3>
+        <ul>
+            <li>Showcase how TypeScript enhances code reliability through type checking.</li>
+            <li>Mention the definition of interfaces and types in <code>models.ts</code> for consistent data handling.
+            </li>
+        </ul>
+        <h3 id="state-management-with-pinia-1">4. State Management with Pinia</h3>
+        <ul>
+            <li>Explain how Pinia stores centralize state, making it accessible across various components without prop
+                drilling.</li>
+            <li>Discuss specific stores like <code>useAuthStore</code> and <code>useCheckoutStore</code>.</li>
+        </ul>
+        <h3 id="routing-and-navigation-guards">5. Routing and Navigation Guards</h3>
+        <ul>
+            <li>Describe how routes are protected based on user roles.</li>
+            <li>Explain the use of meta fields in routes (e.g., <code>authRequired</code>, <code>adminRequired</code>,
+                <code>devRequired</code>) and how route guards enforce access control.
+            </li>
+        </ul>
+        <h3 id="data-fetching-with-vue-query">6. Data Fetching with Vue Query</h3>
+        <ul>
+            <li>Highlight how Vue Query manages server state efficiently, handling caching, background updates, and
+                error states.</li>
+            <li>Discuss the use of custom hooks like <code>useProducts</code>, <code>useOrdersByDate</code>, etc., for
+                data operations.</li>
+        </ul>
+        <h3 id="uiux-with-vuetify-and-tailwind-css">7. UI/UX with Vuetify and Tailwind CSS</h3>
+        <ul>
+            <li>Talk about the choice of Vuetify for its comprehensive components and ease of customization.</li>
+            <li>Explain how Tailwind CSS utility classes are used for rapid styling.</li>
+            <li>Describe how themes and styles are applied to maintain a consistent look and feel.</li>
+        </ul>
+        <h3 id="backend-services-with-aws-amplify">8. Backend Services with AWS Amplify</h3>
+        <ul>
+            <li>Discuss the setup of GraphQL APIs using AppSync.</li>
+            <li>Explain how storage is managed with S3 and content is served via CloudFront with proper security
+                configurations.</li>
+        </ul>
+        <h3 id="infrastructure-as-code-with-aws-cdk-1">9. Infrastructure as Code with AWS CDK</h3>
+        <ul>
+            <li>Describe the benefits of using CDK for defining cloud infrastructure programmatically.</li>
+            <li>Mention specific configurations like setting up CloudFront distributions and securing S3 buckets.</li>
+        </ul>
+        <h3 id="data-visualization-and-reporting">10. Data Visualization and Reporting</h3>
+        <ul>
+            <li>Explain the integration of Chart.js for creating interactive and dynamic charts.</li>
+            <li>Discuss how reports are generated, filtered, and exported as CSV files for administrative purposes.</li>
+        </ul>
+        <h3 id="handling-custom-fields">11. Handling Custom Fields</h3>
+        <ul>
+            <li>Talk about the implementation of custom fields for products, allowing for flexibility in product
+                specifications.</li>
+            <li>Describe the user interface for entering and editing these custom fields.</li>
+        </ul>
+        <h3 id="error-handling-and-user-feedback-1">12. Error Handling and User Feedback</h3>
+        <ul>
+            <li>Highlight the use of snackbars and loading states to enhance user experience.</li>
+            <li>Explain how the application gracefully handles errors during data operations.</li>
+        </ul>
+        <h3 id="best-practices-and-code-quality">13. Best Practices and Code Quality</h3>
+        <ul>
+            <li>Emphasize adherence to best practices like separation of concerns, modularity, and reusable components.
+            </li>
+            <li>Mention the use of TypeScript for type safety and improved code maintainability.</li>
+        </ul>
+        <h3 id="challenges-and-solutions">14. Challenges and Solutions</h3>
+        <ul>
+            <li>Be prepared to discuss any challenges faced during the project, such as integrating AWS services,
+                managing state, or implementing complex components, and how you overcame them.</li>
+        </ul>
+        <h2 id="preparation-tips-for-your-interview">Preparation Tips for Your Interview</h2>
+        <ol>
+            <li>
+                <p><strong>Understand the Architecture</strong></p>
+                <ul>
+                    <li>Be clear on how different parts of the application interact, including frontend components,
+                        state management, routing, and backend services.</li>
+                </ul>
+            </li>
+            <li>
+                <p><strong>Familiarize Yourself with Key Components</strong></p>
+                <ul>
+                    <li>Review the functionality and structure of major components like <code>AdminNavBar.vue</code>,
+                        <code>ItemCard.vue</code>, <code>CartItem.vue</code>, and the various admin views.
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <p><strong>State Management with Pinia</strong></p>
+                <ul>
+                    <li>Understand how Pinia stores are defined and used, and how they facilitate state sharing across
+                        components.</li>
+                </ul>
+            </li>
+            <li>
+                <p><strong>Routing and Navigation Guards</strong></p>
+                <ul>
+                    <li>Be prepared to explain how Vue Router manages application navigation and how route guards
+                        enforce access control based on user roles.</li>
+                </ul>
+            </li>
+            <li>
+                <p><strong>API Integration with Vue Query</strong></p>
+                <ul>
+                    <li>Know how Vue Query handles data fetching, caching, and synchronization with backend APIs.</li>
+                </ul>
+            </li>
+            <li>
+                <p><strong>AWS Amplify and CDK</strong></p>
+                <ul>
+                    <li>Have a solid grasp of how AWS Amplify services are integrated into the application and how AWS
+                        CDK is used for infrastructure deployment.</li>
+                </ul>
+            </li>
+            <li>
+                <p><strong>TypeScript Benefits</strong></p>
+                <ul>
+                    <li>Highlight the advantages of using TypeScript, such as type safety, better tooling, and easier
+                        maintenance.</li>
+                </ul>
+            </li>
+            <li>
+                <p><strong>UI/UX Design with Vuetify and Tailwind CSS</strong></p>
+                <ul>
+                    <li>Discuss how Vuetify components and Tailwind CSS utility classes are utilized to create a
+                        consistent and responsive user interface.</li>
+                </ul>
+            </li>
+            <li>
+                <p><strong>Data Visualization</strong></p>
+                <ul>
+                    <li>Be ready to explain how Chart.js is integrated for creating dynamic charts and how data flows
+                        from fetching to visualization.</li>
+                </ul>
+            </li>
+            <li>
+                <p><strong>Error Handling and User Feedback</strong></p>
+                <ul>
+                    <li>Explain mechanisms in place for handling errors and providing feedback to users, such as
+                        snackbars and loading indicators.</li>
+                </ul>
+            </li>
+            <li>
+                <p><strong>Best Practices</strong></p>
+                <ul>
+                    <li>Emphasize adherence to best coding practices, including modularity, reuse of components, and
+                        separation of concerns.</li>
+                </ul>
+            </li>
+            <li>
+                <p><strong>Challenges and Solutions</strong></p>
+                <ul>
+                    <li>Reflect on any challenges faced during the project and how you addressed them, showcasing
+                        problem-solving skills.</li>
+                </ul>
+            </li>
+        </ol>
+        <h2 id="recaps-of-main-technologies-used">Recaps of Main Technologies Used</h2>
+        <h3 id="vue.js-3">Vue.js 3</h3>
+        <p>Vue.js 3 is a progressive JavaScript framework for building user interfaces. Key features include:</p>
+        <ul>
+            <li><strong>Composition API</strong>: Offers better code organization and reusability.</li>
+            <li><strong>Reactive Data Management</strong>: Facilitates reactive programming.</li>
+            <li><strong>Virtual DOM</strong>: Ensures efficient rendering.</li>
+            <li><strong>Component-Based Architecture</strong>: Promotes modularity.</li>
+            <li><strong>Template Syntax</strong>: Uses directives like <code>v-for</code>, <code>v-if</code>.</li>
+            <li><strong>Computed Properties and Watchers</strong>: For derived data and side effects.</li>
+            <li><strong>Lifecycle Hooks</strong>: Such as <code>onMounted</code>, <code>onUpdated</code>.</li>
+        </ul>
+        <h3 id="vuetify">Vuetify</h3>
+        <p>Vuetify is a Material Design component framework for Vue.js. Key features include:</p>
+        <ul>
+            <li><strong>Responsive Grid System</strong></li>
+            <li><strong>Pre-Built Components</strong>: Form controls, navigation components, data display.</li>
+            <li><strong>Customizable Themes and Styles</strong></li>
+            <li><strong>Consistent Material Design Aesthetics</strong></li>
+        </ul>
+        <h3 id="tailwind-css">Tailwind CSS</h3>
+        <p>Tailwind CSS is a utility-first CSS framework. Key features include:</p>
+        <ul>
+            <li><strong>Utility Classes</strong>: For common CSS properties.</li>
+            <li><strong>Responsive Design Utilities</strong></li>
+            <li><strong>Customizable Configuration</strong></li>
+            <li><strong>PurgeCSS Integration</strong>: For optimized production builds.</li>
+        </ul>
+        <h3 id="vue-router">Vue Router</h3>
+        <p>Vue Router is the official routing library for Vue.js applications. Key features include:</p>
+        <ul>
+            <li><strong>Nested Route/View Mapping</strong></li>
+            <li><strong>Dynamic Route Matching</strong></li>
+            <li><strong>Navigation Guards</strong>: For authentication and authorization.</li>
+            <li><strong>Lazy Loading of Routes</strong></li>
+        </ul>
+        <h3 id="pinia">Pinia</h3>
+        <p>Pinia is the official state management library for Vue.js applications. Key features include:</p>
+        <ul>
+            <li><strong>Modular Store Design</strong></li>
+            <li><strong>TypeScript Support</strong></li>
+            <li><strong>Devtools Integration</strong></li>
+            <li><strong>Hot Module Replacement</strong></li>
+            <li><strong>Plugins for Extending Functionality</strong></li>
+        </ul>
+        <h3 id="aws-amplify">AWS Amplify</h3>
+        <p>AWS Amplify is a set of tools and services for building full-stack applications. Key features include:</p>
+        <ul>
+            <li><strong>Authentication (Cognito)</strong></li>
+            <li><strong>API (AppSync, API Gateway)</strong></li>
+            <li><strong>Storage (S3)</strong></li>
+            <li><strong>Functions (Lambda)</strong></li>
+            <li><strong>GraphQL Support</strong></li>
+            <li><strong>CLI for Configuration and Deployment</strong></li>
+        </ul>
+        <h3 id="graphql">GraphQL</h3>
+        <p>GraphQL is a query language for APIs. Key features include:</p>
+        <ul>
+            <li><strong>Declarative Data Fetching</strong></li>
+            <li><strong>Strong Typing</strong></li>
+            <li><strong>Single Endpoint for All Data Operations</strong></li>
+            <li><strong>Efficient Data Loading</strong></li>
+            <li><strong>Real-Time Updates with Subscriptions</strong></li>
+        </ul>
+        <h3 id="vite">Vite</h3>
+        <p>Vite is a build tool and development server for modern web projects. Key features include:</p>
+        <ul>
+            <li><strong>Fast Cold Server Start</strong></li>
+            <li><strong>Instant Hot Module Replacement (HMR)</strong></li>
+            <li><strong>On-Demand Compilation</strong></li>
+            <li><strong>CSS Pre-Processor Support</strong></li>
+            <li><strong>Out-of-the-Box TypeScript Support</strong></li>
+        </ul>
+    </div>
+</body>
+
+</html>
