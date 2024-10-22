@@ -3,7 +3,7 @@
   <v-app-bar light scroll-behavior="hide">
     <!-- Hamburger Icon for Mobile -->
     <v-app-bar-nav-icon
-      @click="drawer = !drawer"
+      @click="toggleDrawer"
       class="d-md-none"
     ></v-app-bar-nav-icon>
     <v-img :src="imageLink.logo" alt="ASSK Logo"></v-img>
@@ -27,73 +27,48 @@
   <!-- Navigation Drawer for Mobile -->
   <v-navigation-drawer v-model="drawer" app temporary class="d-md-none">
     <v-list>
-      <v-list-item
-        @click="
-          navigateTo('hero-banner');
-          drawer = false;
-        "
-      >
+      <v-list-item @click="navigateAndClose('hero-banner')">
         <v-list-item-title>View Marketplace</v-list-item-title>
       </v-list-item>
-      <v-list-item
-        @click="
-          navigateTo('contact-us');
-          drawer = false;
-        "
-      >
+      <v-list-item @click="navigateAndClose('contact-us')">
         <v-list-item-title>Source Equipment</v-list-item-title>
       </v-list-item>
-      <v-list-item
-        @click="
-          navigateTo('sell-equipment');
-          drawer = false;
-        "
-      >
+      <v-list-item @click="navigateAndClose('sell-equipment')">
         <v-list-item-title>Sell Your Equipment</v-list-item-title>
       </v-list-item>
-      <v-list-item
-        @click="
-          navigateTo('financing');
-          drawer = false;
-        "
-      >
+      <v-list-item @click="navigateAndClose('financing')">
         <v-list-item-title>Financing Options</v-list-item-title>
       </v-list-item>
-      <!-- <v-list-item
-        @click="
-          navigateTo('community-board');
-          drawer = false;
-        "
-      >
-        <v-list-item-title>Community Board</v-list-item-title>
-      </v-list-item> -->
     </v-list>
   </v-navigation-drawer>
 
   <!-- Hero Section -->
-  <v-parallax
-    src="https://app.theironhub.com/assets/themes/assk-inc/banner-0cb61e5e11b120d4975eb23bf5e0963384cc6e0d6ef7c6755a2bec750aa02e3e.jpg"
-    height="100vh"
-    id="hero-banner"
-  >
+  <v-parallax :src="imageLink.sub_main" height="100vh" id="hero-banner">
+    <div
+      class="absolute inset-0 bg-gradient-to-b from-black/30 to-black/50"
+    ></div>
     <v-container class="fill-height d-flex align-center justify-center">
       <v-row align="center" justify="center">
-        <v-col cols="12" md="8" class="text-center">
-          <h1 class="text-h1 font-weight-bold text-white mb-4 text-shadow">
+        <v-col cols="12" md="8" class="text-center animate-on-scroll">
+          <h1
+            class="text-h1 font-weight-bold text-white mb-4 text-shadow hero-title"
+          >
             ASSK Inc.
           </h1>
-          <h3 class="text-h4 font-weight-light text-white mb-6">
+          <h3 class="text-h4 font-weight-light text-white mb-6 hero-subtitle">
             Leading Oil and Gas Equipment Supplier
           </h3>
           <v-btn
             color="secondary"
-            large
-            rounded
-            class="px-8 py-1"
+            size="x-large"
+            rounded="pill"
+            class="px-8 py-2 hero-cta"
             href="https://www.assk.ca/"
             :ripple="false"
+            elevation="4"
           >
             View Our Marketplace
+            <v-icon right class="ml-2">mdi-arrow-right</v-icon>
           </v-btn>
         </v-col>
       </v-row>
@@ -101,7 +76,7 @@
   </v-parallax>
 
   <!-- About Section -->
-  <v-container fluid class="py-16 bg-light" id="about">
+  <v-container fluid class="py-16 bg-gray-100" id="about">
     <v-row align="center">
       <v-col cols="12" md="6">
         <v-img :src="imageLink.main" alt="About ASSK" height="400"></v-img>
@@ -109,15 +84,15 @@
       <v-col cols="12" md="6">
         <h2 class="text-3xl font-bold mb-4">About ASSK Inc.</h2>
         <p class="text-lg text-gray-700">
-          Let ASSK SELL &amp; Source Your equipment and OCTG needs. - Freeing
-          time for you to focus on core initiatives – Since inception,
-          supporting transactions that have always been fair to the buyer,
-          seller, and broker. ASSK has been providing the new, unused,
-          reconditioned, and used oil and gas production equipment and pipe you
-          have come to expect. Combine this with timely communication, quality
-          execution, and the hands- on deck approach to move each case along;
-          strong results can be expected. Give ASSK Sell &amp; Source a try,
-          What have you got to lose? You are not locked in.
+          Let ASSK SELL &amp; Source Your equipment and OCTG needs. Freeing time
+          for you to focus on core initiatives - Since inception, supporting
+          transactions that have always been fair to the buyer, seller, and
+          broker. ASSK has been providing the new, unused, reconditioned, and
+          used oil and gas production equipment and pipe you have come to
+          expect. Combine this with timely communication, quality execution, and
+          the hands-on deck approach to move each case along; strong results can
+          be expected. Give ASSK Sell &amp; Source a try, What have you got to
+          lose? You are not locked in.
         </p>
       </v-col>
     </v-row>
@@ -125,71 +100,43 @@
 
   <!-- Services Section -->
   <v-container class="py-16">
-    <h2 class="text-3xl font-bold text-center mb-8">Our Services</h2>
+    <h2 class="text-3xl font-bold text-center mb-8 animate-on-scroll">
+      Our Services
+    </h2>
     <v-row>
-      <v-col cols="12" md="4" class="d-flex">
+      <v-col
+        v-for="(service, index) in services"
+        :key="index"
+        cols="12"
+        md="4"
+        class="d-flex"
+      >
         <v-card
-          class="elevation-3 pa-6 flex-grow-1 transition-transform duration-300 hover:scale-105"
+          class="elevation-3 pa-6 flex-grow-1 service-card animate-on-scroll"
+          :style="{ transitionDelay: `${index * 0.2}s` }"
         >
-          <v-icon large color="primary" class="mb-4">mdi-cogs</v-icon>
-          <h3 class="text-xl font-semibold mb-2">Sales</h3>
-          <p>
-            Providing the equipment and pipe, you requested and require is
-            paramount. Whether this is achieved through surplus, rentals,
-            service companies or from original equipment manufacturers we have
-            relationships with who extend discounted pricing, the idea is to
-            make it happen.
-          </p>
-        </v-card>
-      </v-col>
-      <v-col cols="12" md="4" class="d-flex">
-        <v-card
-          class="elevation-3 pa-6 flex-grow-1 transition-transform duration-300 hover:scale-105"
-        >
-          <v-icon large color="primary" class="mb-4">mdi-source-fork</v-icon>
-          <h3 class="text-xl font-semibold mb-2">Sourcing</h3>
-          <p>
-            Not every piece of equipment is listed publicly on our website or
-            other marketplace listings. We spend the time to source from as many
-            places as can be imagined, including a large list of non-traditional
-            sources so you have the best options to consider.
-          </p>
+          <v-icon :color="service.iconColor" size="48" class="mb-4">
+            {{ service.icon }}
+          </v-icon>
+          <h3 class="text-xl font-semibold mb-2">{{ service.title }}</h3>
+          <p class="text-body-1">{{ service.description }}</p>
           <v-btn
+            v-if="service.action"
             text
-            color="primary"
+            :color="service.iconColor"
             class="mt-4"
-            @click="navigateTo('contact-us')"
+            @click="service.action.handler"
           >
-            Request Equipment Sourcing
+            {{ service.action.text }}
+            <v-icon right>mdi-arrow-right</v-icon>
           </v-btn>
-        </v-card>
-      </v-col>
-      <v-col cols="12" md="4" class="d-flex">
-        <v-card
-          class="elevation-3 pa-6 flex-grow-1 transition-transform duration-300 hover:scale-105"
-        >
-          <v-icon large color="primary" class="mb-4">mdi-clipboard-list</v-icon>
-          <h3 class="text-xl font-semibold mb-2">
-            Taking inventory and listing your equipment
-          </h3>
-          <p>
-            Considered taking inventory of assets to list and sell but have not
-            been able to get it done? Give ASSK a shout and we will work to head
-            out, take photos and list your assets on a public marketplace. The
-            location is kept confidential and the public discussion is handled
-            by our team eliminating wasted time and tire kickers on your end if
-            dealing directly. Final sale and removal of any piece of equipment
-            or pipe is not acted on without the full knowledge and approval of
-            the owner of the asset and payment in full received. Conditions also
-            exist to do a full inventory and management of company assets.
-          </p>
         </v-card>
       </v-col>
     </v-row>
   </v-container>
 
   <!-- Sustainability Section -->
-  <v-container fluid class="py-16 bg-light" id="carbon-meter">
+  <v-container fluid class="py-16 bg-gray-100" id="carbon-meter">
     <v-row justify="center">
       <v-col cols="12" class="text-center mb-8">
         <h2 class="text-3xl font-bold mb-4">
@@ -203,13 +150,7 @@
           <v-col cols="auto">
             <v-tooltip
               location="top"
-              text="Reutilization of assets versus a new build dramatically reduces
-                  CO2. As the origin of steel from surplus material is unknown, a
-                  conservative approach is used. The reutilization of assets
-                  results in the avoidance of approximately 0.5 kilogram of CO2
-                  production per kilogram of steel manufactured. While not being
-                  tracked for the purposes of official carbon credit, we will
-                  track the amount of CO2 production avoided by selling surplus."
+              text="Reutilization of assets versus a new build dramatically reduces CO2. As the origin of steel from surplus material is unknown, a conservative approach is used. The reutilization of assets results in the avoidance of approximately 0.5 kilogram of CO2 production per kilogram of steel manufactured. While not being tracked for the purposes of official carbon credit, we will track the amount of CO2 production avoided by selling surplus."
             >
               <template v-slot:activator="{ props }">
                 <div v-bind="props" class="mt-4 pb-4">
@@ -254,7 +195,7 @@
             <v-form v-model="sellForm.valid" @submit.prevent="submitSellForm">
               <v-text-field
                 v-model="sellForm.equipment"
-                :rules="[(v) => !!v || 'Equipment description is required']"
+                :rules="equipmentRules"
                 label="Equipment Description"
                 required
                 outlined
@@ -276,9 +217,9 @@
                 class="mb-4"
               ></v-textarea>
               <Checkbox v-model="isCaptchaVerified" class="mb-4" />
-              <v-btn type="submit" color="secondary" large rounded
-                >Submit Inquiry</v-btn
-              >
+              <v-btn type="submit" color="secondary" large rounded>
+                Submit Inquiry
+              </v-btn>
             </v-form>
           </v-card-text>
         </v-card>
@@ -332,11 +273,11 @@
             <v-btn
               class="bg-primary"
               block
-              border
               href="https://go.mycreditportal.ca/assk-inc-/robert-siroishka/instant-quote?lang=en"
               target="_blank"
-              >Get Lease Quote</v-btn
             >
+              Get Lease Quote
+            </v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -361,11 +302,11 @@
             <v-btn
               class="bg-primary"
               block
-              border
               href="https://community.mycreditportal.ca/s/customer-application-form?oid=0055X000000KaVP&vid=001JQ00000Ue4Ez&vname=ASSK%20Inc."
               target="_blank"
-              >Apply for Credit</v-btn
             >
+              Apply for Credit
+            </v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -399,9 +340,9 @@
                   <p class="text-subtitle-1 text-white mb-6">
                     {{ slide.description }}
                   </p>
-                  <v-btn color="secondary" rounded :to="slide.link"
-                    >Read More</v-btn
-                  >
+                  <v-btn color="secondary" rounded :to="slide.link">
+                    Read More
+                  </v-btn>
                 </div>
               </v-col>
             </v-row>
@@ -436,9 +377,9 @@
               class="mb-4"
             ></v-textarea>
             <Checkbox v-model="isCaptchaVerified" class="mb-4" />
-            <v-btn type="submit" color="primary" class="w-full"
-              >Send Message</v-btn
-            >
+            <v-btn type="submit" color="primary" class="w-full">
+              Send Message
+            </v-btn>
           </v-form>
         </v-card-text>
       </v-card>
@@ -499,7 +440,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from "vue";
+import { ref, reactive, watch, onMounted } from "vue";
 import { useTheme } from "vuetify";
 import ScrollingFeed from "./ScrollingFeed.vue";
 import { Checkbox, useRecaptchaProvider } from "vue-recaptcha";
@@ -520,10 +461,8 @@ const sellForm = ref({
 // Reactive state for Contact Form
 const contactFormEmail = ref("");
 const contactFormMessage = ref("");
-const recaptchaKey = ref("6Ld4V2gqAAAAAMs8k6ojDw7Et0I0lZPKizgOogoV");
 
 // Reactive state for Carbon Meter
-const showCarbonInfo = ref(false);
 const carbonSaved = ref(7500); // Initial number
 
 // Reactive state for Equipment Sold
@@ -539,24 +478,16 @@ const addEquipmentSold = (weight) => {
   equipmentSold.value += weight;
 };
 
-// Email validation rules
-// Start of Selection
+// Validation Rules
 const emailRules = [
   (v) => !!v || "E-mail is required",
   (v) => /\S+@\S+\.\S+/.test(v) || "E-mail must be valid",
 ];
+const equipmentRules = [(v) => !!v || "Equipment description is required"];
 
 // Handle Sell Equipment Form Submission
 const submitSellForm = async () => {
   if (sellForm.value.valid) {
-    // Add your form submission logic here
-    console.log(
-      "Sell Equipment Inquiry:",
-      sellForm.value.equipment,
-      sellForm.value.contactEmail,
-      sellForm.value.additionalInfo
-    );
-
     try {
       const response = await fetch(
         "https://rev6ykipl5.execute-api.us-east-2.amazonaws.com/Prod/sendEmail",
@@ -575,10 +506,12 @@ const submitSellForm = async () => {
       if (response.ok) {
         alert("Inquiry sent successfully!");
         // Reset form
-        sellForm.value.equipment = "";
-        sellForm.value.contactEmail = "";
-        sellForm.value.additionalInfo = "";
-        sellForm.value.valid = false;
+        sellForm.value = {
+          equipment: "",
+          contactEmail: "",
+          additionalInfo: "",
+          valid: false,
+        };
       } else {
         alert("Failed to send inquiry.");
       }
@@ -590,6 +523,8 @@ const submitSellForm = async () => {
 };
 
 // Handle Contact Form Submission
+const isCaptchaVerified = ref(false);
+
 const submitContactForm = async () => {
   if (!isCaptchaVerified.value) {
     alert("Please verify the CAPTCHA.");
@@ -615,6 +550,7 @@ const submitContactForm = async () => {
       alert("Message sent successfully!");
       contactFormEmail.value = "";
       contactFormMessage.value = "";
+      isCaptchaVerified.value = false;
     } else {
       alert("Failed to send message.");
     }
@@ -624,10 +560,25 @@ const submitContactForm = async () => {
   }
 };
 
-// Toggle Carbon Info Dialog
-const toggleCarbonInfo = () => {
-  showCarbonInfo.value = !showCarbonInfo.value;
+// Navigation Methods
+const navigateTo = (sectionId) => {
+  const element = document.getElementById(sectionId);
+  if (element) {
+    element.scrollIntoView({ behavior: "smooth" });
+  }
 };
+
+const navigateAndClose = (sectionId) => {
+  navigateTo(sectionId);
+  drawer.value = false;
+};
+
+const toggleDrawer = () => {
+  drawer.value = !drawer.value;
+};
+
+// Drawer State
+const drawer = ref(false);
 
 // Image Links
 const imageLink = reactive({
@@ -667,20 +618,52 @@ const newsSlides = [
   },
 ];
 
-const isCaptchaVerified = ref("");
+// Services Data
+const services = ref([
+  {
+    title: "Sales",
+    description:
+      "Providing the equipment and pipe you requested and require is paramount. Whether this is achieved through surplus, rentals, service companies or from original equipment manufacturers we have relationships with who extend discounted pricing, the idea is to make it happen.",
+    icon: "mdi-cogs",
+    iconColor: "primary",
+  },
+  {
+    title: "Sourcing",
+    description:
+      "Not every piece of equipment is listed publicly on our website or other marketplace listings. We spend the time to source from as many places as can be imagined, including a large list of non-traditional sources so you have the best options to consider.",
+    icon: "mdi-source-fork",
+    iconColor: "primary",
+    action: {
+      text: "Request Equipment Sourcing",
+      handler: () => navigateTo("contact-us"),
+    },
+  },
+  {
+    title: "Taking Inventory and Listing Your Equipment",
+    description:
+      "Considered taking inventory of assets to list and sell but have not been able to get it done? Give ASSK a shout and we will work to head out, take photos and list your assets on a public marketplace. The location is kept confidential and the public discussion is handled by our team eliminating wasted time and tire kickers on your end if dealing directly. Final sale and removal of any piece of equipment or pipe is not acted on without the full knowledge and approval of the owner of the asset and payment in full received. Conditions also exist to do a full inventory and management of company assets.",
+    icon: "mdi-clipboard-list",
+    iconColor: "primary",
+  },
+]);
 
-const activeTab = ref(null);
+// Intersection Observer for Animations
+onMounted(() => {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("animate-fade-in");
+        }
+      });
+    },
+    { threshold: 0.1 }
+  );
 
-// Methods
-const navigateTo = (sectionId) => {
-  const element = document.getElementById(sectionId);
-  if (element) {
-    element.scrollIntoView({ behavior: "smooth" });
-  }
-};
-
-// Add a reactive property for the drawer
-const drawer = ref(false);
+  document.querySelectorAll(".animate-on-scroll").forEach((el) => {
+    observer.observe(el);
+  });
+});
 </script>
 
 <style scoped>
@@ -689,7 +672,7 @@ const drawer = ref(false);
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-.bg-light {
+.bg-gray-100 {
   background-color: #f9fafb;
 }
 
@@ -724,6 +707,66 @@ const drawer = ref(false);
   }
   .text-3xl {
     font-size: 1.75rem;
+  }
+}
+
+.bg-gradient-to-b {
+  background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3));
+}
+
+.hero-title {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  letter-spacing: -0.02em;
+}
+
+.hero-subtitle {
+  font-size: clamp(1.2rem, 4vw, 2rem);
+}
+
+.hero-cta {
+  transition: transform 0.3s ease;
+}
+
+.hero-cta:hover {
+  transform: translateY(-2px);
+}
+
+/* Animation Classes */
+.animate-fade-in {
+  animation: fadeIn 1s ease forwards;
+}
+
+.service-card {
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.service-card.animate-fade-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 960px) {
+  .v-container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .service-card {
+    margin-bottom: 24px;
   }
 }
 </style>
