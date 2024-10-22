@@ -2,7 +2,6 @@
 import { RouterView, useRoute } from "vue-router";
 import AppBar from "@/components/AppBar.vue";
 import { computed } from "vue";
-
 const route = useRoute();
 const isLandingRoute = computed(() => route.name?.startsWith("landing"));
 </script>

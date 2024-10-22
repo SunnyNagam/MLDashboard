@@ -23,7 +23,7 @@ const redoHistory = ref([]);
 const theme = useTheme();
 theme.global.name.value = "light";
 
-const groq = new Groq({
+let groq = new Groq({
   apiKey: groqApiKey,
   dangerouslyAllowBrowser: true,
 });

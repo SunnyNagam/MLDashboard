@@ -78,6 +78,10 @@
 
 <script setup>
 import { ref, onMounted, watch } from "vue";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
+theme.global.name.value = "light";
 
 // Reactive state for community items
 const communityItems = ref([]);

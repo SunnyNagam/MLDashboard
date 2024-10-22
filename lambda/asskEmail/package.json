@@ -1,0 +1,6 @@
+{
+    "name": "asskEmail",
+    "dependencies": {
+        "axios": "^1.6.8"
+    }
+}

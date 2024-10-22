@@ -5,6 +5,7 @@ import App from "./App.vue";
 import "vuetify/styles";
 import { createVuetify } from "vuetify";
 import Vue3TouchEvents from "vue3-touch-events";
+import { VueRecaptchaPlugin } from "vue-recaptcha/head";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 // Icons
@@ -28,4 +29,7 @@ const app = createApp(App);
 app.use(vuetify);
 app.use(router);
 app.use(Vue3TouchEvents);
+app.use(VueRecaptchaPlugin, {
+  v2SiteKey: "6Ld4V2gqAAAAAMs8k6ojDw7Et0I0lZPKizgOogoV",
+});
 app.mount("#app");
