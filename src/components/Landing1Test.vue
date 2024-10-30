@@ -43,13 +43,13 @@
   </v-navigation-drawer>
 
   <!-- Hero Section -->
-  <v-parallax :src="imageLink.sub_main" height="100vh" id="hero-banner">
+  <v-parallax :src="bannerImg" height="100vh" id="hero-banner">
     <div
       class="absolute inset-0 bg-gradient-to-b from-black/30 to-black/50"
     ></div>
     <v-container class="fill-height d-flex align-center justify-center">
       <v-row align="center" justify="center">
-        <v-col cols="12" md="8" class="text-center animate-on-scroll">
+        <v-col cols="12" md="12" class="text-center animate-on-scroll">
           <h1
             class="text-h1 font-weight-bold text-white mb-4 text-shadow hero-title"
           >
@@ -62,7 +62,7 @@
             color="secondary"
             size="x-large"
             rounded="pill"
-            class="px-8 py-2 hero-cta"
+            class="px-8 py-2 hero-cta my-4"
             href="https://www.assk.ca/"
             :ripple="false"
             elevation="4"
@@ -70,10 +70,102 @@
             View Our Marketplace
             <v-icon right class="ml-2">mdi-arrow-right</v-icon>
           </v-btn>
+          <v-row justify="center" class="mt-8">
+            <v-col cols="auto">
+              <v-btn
+                color="teal"
+                size="large"
+                rounded="pill"
+                class="px-8 py-2 hero-cta mx-2"
+                @click="sellEquipmentDialog = true"
+                :ripple="false"
+                elevation="4"
+              >
+                Sell Your Equipment
+              </v-btn>
+            </v-col>
+            <v-col cols="auto">
+              <v-btn
+                color="teal"
+                size="large"
+                rounded="pill"
+                class="px-8 py-2 hero-cta mx-2"
+                @click="financingDialog = true"
+                :ripple="false"
+                elevation="4"
+              >
+                Financing Options
+              </v-btn>
+            </v-col>
+            <v-col cols="auto">
+              <v-btn
+                color="teal"
+                size="large"
+                rounded="pill"
+                class="px-8 py-2 hero-cta mx-2"
+                @click="sourceEquipmentDialog = true"
+                :ripple="false"
+                elevation="4"
+              >
+                Source Equipment
+              </v-btn>
+            </v-col>
+          </v-row>
         </v-col>
       </v-row>
     </v-container>
   </v-parallax>
+
+  <!-- Sell Equipment Modal -->
+  <v-dialog v-model="sellEquipmentDialog" max-width="800px">
+    <v-card class="pa-6">
+      <v-card-title class="text-center">
+        <h2 class="text-3xl font-bold">Sell Your Equipment</h2>
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          @click="sellEquipmentDialog = false"
+          class="position-absolute"
+          style="right: 8px; top: 8px"
+        ></v-btn>
+      </v-card-title>
+      <v-card-text>
+        <p class="text-center mb-8">
+          Have surplus equipment? Let ASSK Inc. help you sell it quickly and
+          efficiently.
+        </p>
+        <v-form v-model="sellForm.valid" @submit.prevent="submitSellForm">
+          <v-text-field
+            v-model="sellForm.equipment"
+            :rules="equipmentRules"
+            label="Equipment Description"
+            required
+            outlined
+            class="mb-4"
+          ></v-text-field>
+          <v-text-field
+            v-model="sellForm.contactEmail"
+            :rules="emailRules"
+            label="Your Email"
+            required
+            outlined
+            class="mb-4"
+          ></v-text-field>
+          <v-textarea
+            v-model="sellForm.additionalInfo"
+            label="Additional Information"
+            rows="3"
+            outlined
+            class="mb-4"
+          ></v-textarea>
+          <Checkbox v-model="isCaptchaVerified" class="mb-4" />
+          <v-btn type="submit" color="secondary" block large rounded>
+            Submit Inquiry
+          </v-btn>
+        </v-form>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
 
   <!-- About Section -->
   <v-container fluid class="py-16 bg-gray-100" id="about">
@@ -150,17 +242,239 @@
           <v-col cols="auto">
             <v-tooltip
               location="top"
+              width="600"
               text="Reutilization of assets versus a new build dramatically reduces CO2. As the origin of steel from surplus material is unknown, a conservative approach is used. The reutilization of assets results in the avoidance of approximately 0.5 kilogram of CO2 production per kilogram of steel manufactured. While not being tracked for the purposes of official carbon credit, we will track the amount of CO2 production avoided by selling surplus."
             >
               <template v-slot:activator="{ props }">
                 <div v-bind="props" class="mt-4 pb-4">
-                  <v-img
-                    src="https://static.vecteezy.com/system/resources/previews/041/290/226/original/co2-emission-reduction-green-leaf-logo-icon-free-png.png"
-                    alt="CO2 Emission Reduction"
-                    height="100"
-                    width="100"
-                    class="animate-spin-slow"
-                  ></v-img>
+                  <svg viewBox="0 0 200 200" class="smoke-animation">
+                    <!-- Enhanced Gradients -->
+                    <defs>
+                      <radialGradient
+                        id="smokeGradient"
+                        cx="50%"
+                        cy="50%"
+                        r="50%"
+                      >
+                        <stop
+                          offset="0%"
+                          style="stop-color: rgba(158, 158, 158, 0.9)"
+                        />
+                        <stop
+                          offset="60%"
+                          style="stop-color: rgba(158, 158, 158, 0.4)"
+                        />
+                        <stop
+                          offset="100%"
+                          style="stop-color: rgba(158, 158, 158, 0)"
+                        />
+                      </radialGradient>
+
+                      <linearGradient
+                        id="metalGradient"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="100%"
+                      >
+                        <stop offset="0%" style="stop-color: #4a5568" />
+                        <stop offset="50%" style="stop-color: #2d3748" />
+                        <stop offset="100%" style="stop-color: #1a202c" />
+                      </linearGradient>
+
+                      <filter id="glow">
+                        <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                        <feMerge>
+                          <feMergeNode in="coloredBlur" />
+                          <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                      </filter>
+                    </defs>
+
+                    <!-- Background Factory Elements -->
+                    <g class="factory-background">
+                      <!-- Additional Buildings -->
+                      <rect
+                        x="10"
+                        y="120"
+                        width="40"
+                        height="60"
+                        fill="url(#metalGradient)"
+                        rx="2"
+                      />
+                      <rect
+                        x="150"
+                        y="130"
+                        width="35"
+                        height="50"
+                        fill="url(#metalGradient)"
+                        rx="2"
+                      />
+
+                      <!-- Pipes and Details -->
+                      <path
+                        d="M 80 100 Q 90 90, 100 100 T 120 100"
+                        stroke="#2d3748"
+                        fill="none"
+                        stroke-width="4"
+                      />
+                      <circle cx="80" cy="100" r="3" fill="#4a5568" />
+                      <circle cx="120" cy="100" r="3" fill="#4a5568" />
+                    </g>
+
+                    <!-- Enhanced Smoke Particles -->
+                    <g class="smoke-particles left-smoke">
+                      <circle
+                        v-for="index in 15"
+                        :key="'left' + index"
+                        class="smoke-particle"
+                        cx="20"
+                        cy="70"
+                        r="6"
+                      />
+                    </g>
+
+                    <g class="smoke-particles right-smoke">
+                      <circle
+                        v-for="index in 15"
+                        :key="'right' + index"
+                        class="smoke-particle"
+                        cx="70"
+                        cy="70"
+                        r="6"
+                      />
+                    </g>
+
+                    <!-- Main Factory Elements -->
+                    <g class="factory-elements" filter="url(#glow)">
+                      <!-- Enhanced Factory Base -->
+                      <rect
+                        x="20"
+                        y="180"
+                        width="160"
+                        height="20"
+                        class="factory-base"
+                        rx="4"
+                      />
+                      <rect
+                        x="15"
+                        y="175"
+                        width="170"
+                        height="8"
+                        fill="#2d3748"
+                        rx="2"
+                      />
+
+                      <!-- Enhanced Smoke Stacks -->
+                      <g class="left-stack">
+                        <rect
+                          x="40"
+                          y="80"
+                          width="30"
+                          height="100"
+                          class="smoke-stack"
+                          rx="2"
+                        />
+                        <rect
+                          x="35"
+                          y="75"
+                          width="40"
+                          height="10"
+                          class="stack-top"
+                          rx="6"
+                        />
+                        <!-- Stack Details -->
+                        <rect
+                          x="45"
+                          y="90"
+                          width="20"
+                          height="5"
+                          fill="#4a5568"
+                          rx="1"
+                        />
+                        <rect
+                          x="45"
+                          y="120"
+                          width="20"
+                          height="5"
+                          fill="#4a5568"
+                          rx="1"
+                        />
+                        <rect
+                          x="45"
+                          y="150"
+                          width="20"
+                          height="5"
+                          fill="#4a5568"
+                          rx="1"
+                        />
+                      </g>
+
+                      <g class="right-stack">
+                        <rect
+                          x="130"
+                          y="80"
+                          width="30"
+                          height="100"
+                          class="smoke-stack"
+                          rx="2"
+                        />
+                        <rect
+                          x="125"
+                          y="75"
+                          width="40"
+                          height="10"
+                          class="stack-top"
+                          rx="6"
+                        />
+                        <!-- Stack Details -->
+                        <rect
+                          x="135"
+                          y="90"
+                          width="20"
+                          height="5"
+                          fill="#4a5568"
+                          rx="1"
+                        />
+                        <rect
+                          x="135"
+                          y="120"
+                          width="20"
+                          height="5"
+                          fill="#4a5568"
+                          rx="1"
+                        />
+                        <rect
+                          x="135"
+                          y="150"
+                          width="20"
+                          height="5"
+                          fill="#4a5568"
+                          rx="1"
+                        />
+                      </g>
+
+                      <!-- Warning Stripes -->
+                      <g class="warning-stripes">
+                        <rect
+                          x="38"
+                          y="165"
+                          width="34"
+                          height="8"
+                          fill="#fbbf24"
+                          rx="1"
+                        />
+                        <rect
+                          x="128"
+                          y="165"
+                          width="34"
+                          height="8"
+                          fill="#fbbf24"
+                          rx="1"
+                        />
+                      </g>
+                    </g>
+                  </svg>
                 </div>
               </template>
             </v-tooltip>
@@ -179,139 +493,81 @@
     </v-row>
   </v-container>
 
-  <!-- Sell Your Equipment Section -->
-  <v-container class="py-16 bg-primary text-white" id="sell-equipment">
-    <v-row justify="center">
-      <v-col cols="12" class="text-center mb-8">
-        <h2 class="text-3xl font-bold mb-4">Sell Your Equipment</h2>
-        <p>
-          Have surplus equipment? Let ASSK Inc. help you sell it quickly and
-          efficiently.
-        </p>
-      </v-col>
-      <v-col cols="12" md="6">
-        <v-card class="bg-transparent">
-          <v-card-text>
-            <v-form v-model="sellForm.valid" @submit.prevent="submitSellForm">
-              <v-text-field
-                v-model="sellForm.equipment"
-                :rules="equipmentRules"
-                label="Equipment Description"
-                required
-                outlined
-                class="mb-4"
-              ></v-text-field>
-              <v-text-field
-                v-model="sellForm.contactEmail"
-                :rules="emailRules"
-                label="Your Email"
-                required
-                outlined
-                class="mb-4"
-              ></v-text-field>
-              <v-textarea
-                v-model="sellForm.additionalInfo"
-                label="Additional Information"
-                rows="3"
-                outlined
-                class="mb-4"
-              ></v-textarea>
-              <Checkbox v-model="isCaptchaVerified" class="mb-4" />
-              <v-btn type="submit" color="secondary" large rounded>
-                Submit Inquiry
-              </v-btn>
-            </v-form>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
-
-  <!-- Community Board Section -->
-  <!-- <v-container class="my-16 py-16 bg-secondary text-white" id="community-board">
-    <v-row justify="center">
-      <v-col cols="12" md="8" class="text-center">
-        <h2 class="text-3xl font-bold mb-4">
-          Community Board and Rolling Banner
-        </h2>
-        <p class="mb-6">
-          Have an industry related business or piece of equipment that you want
-          a little more industry exposure on? Maybe some gas for Bitcoin mining
-          or Peaker energy? How about well heads you are trying to find and
-          having no luck!
-          <br /><br />
-          Contact us to have your company name or product put on our community
-          board or rolling banner.
-        </p>
-        <v-btn color="primary" large :to="{ name: 'landing-community-board' }">
-          Visit Community Board
-        </v-btn>
-      </v-col>
-    </v-row>
-  </v-container> -->
-
-  <!-- Financing Options Section -->
-  <v-container class="py-16" id="financing">
-    <h2 class="text-3xl font-bold text-center mb-8">Financing Options</h2>
-    <v-row>
-      <v-col cols="12" md="6" class="mb-6">
-        <v-card
-          class="h-full pa-6 elevation-3 hover:scale-105 transition-transform duration-300 d-flex flex-column"
-        >
-          <v-card-title class="d-flex align-center">
-            <v-icon color="primary" size="48" class="mr-4"
-              >mdi-calculator-variant</v-icon
+  <!-- Financing Modal -->
+  <v-dialog v-model="financingDialog" max-width="1000px">
+    <v-card class="pa-6">
+      <v-card-title class="text-center position-relative">
+        <h2 class="text-3xl font-bold w-100">Financing Options</h2>
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          @click="financingDialog = false"
+          class="position-absolute"
+          style="right: 8px; top: 8px"
+        ></v-btn>
+      </v-card-title>
+      <v-card-text>
+        <v-row>
+          <v-col cols="12" md="6" class="mb-6">
+            <v-card
+              class="h-full pa-6 elevation-3 hover:scale-105 transition-transform duration-300 d-flex flex-column"
             >
-            <span class="text-2xl font-semibold">Instant Lease Quote</span>
-          </v-card-title>
-          <v-card-text class="text-gray-700 flex-grow-1">
-            Get an instant quote for leasing equipment tailored to your business
-            needs. Our leasing options are designed to be flexible and
-            cost-effective.
-          </v-card-text>
-          <v-card-actions class="mt-auto">
-            <v-btn
-              class="bg-primary"
-              block
-              href="https://go.mycreditportal.ca/assk-inc-/robert-siroishka/instant-quote?lang=en"
-              target="_blank"
+              <v-card-title class="d-flex align-center">
+                <v-icon color="primary" size="48" class="mr-4"
+                  >mdi-calculator-variant</v-icon
+                >
+                <span class="text-2xl font-semibold">Instant Lease Quote</span>
+              </v-card-title>
+              <v-card-text class="text-gray-700 flex-grow-1">
+                Get an instant quote for leasing equipment tailored to your
+                business needs. Our leasing options are designed to be flexible
+                and cost-effective.
+              </v-card-text>
+              <v-card-actions class="mt-auto">
+                <v-btn
+                  class="bg-primary"
+                  block
+                  href="https://go.mycreditportal.ca/assk-inc-/robert-siroishka/instant-quote?lang=en"
+                  target="_blank"
+                >
+                  Get Lease Quote
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-col>
+          <v-col cols="12" md="6" class="mb-6">
+            <v-card
+              class="h-full pa-6 elevation-3 hover:scale-105 transition-transform duration-300 d-flex flex-column"
             >
-              Get Lease Quote
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-col>
-      <v-col cols="12" md="6" class="mb-6">
-        <v-card
-          class="h-full pa-6 elevation-3 hover:scale-105 transition-transform duration-300 d-flex flex-column"
-        >
-          <v-card-title class="d-flex align-center">
-            <v-icon color="primary" size="48" class="mr-4"
-              >mdi-credit-card-outline</v-icon
-            >
-            <span class="text-2xl font-semibold"
-              >Online Credit Application</span
-            >
-          </v-card-title>
-          <v-card-text class="text-gray-700 flex-grow-1">
-            Apply online for credit easily and quickly to finance your equipment
-            purchase. Our streamlined process ensures a fast and efficient
-            application experience.
-          </v-card-text>
-          <v-card-actions class="mt-auto">
-            <v-btn
-              class="bg-primary"
-              block
-              href="https://community.mycreditportal.ca/s/customer-application-form?oid=0055X000000KaVP&vid=001JQ00000Ue4Ez&vname=ASSK%20Inc."
-              target="_blank"
-            >
-              Apply for Credit
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+              <v-card-title class="d-flex align-center">
+                <v-icon color="primary" size="48" class="mr-4"
+                  >mdi-credit-card-outline</v-icon
+                >
+                <span class="text-2xl font-semibold"
+                  >Online Credit Application</span
+                >
+              </v-card-title>
+              <v-card-text class="text-gray-700 flex-grow-1">
+                Apply online for credit easily and quickly to finance your
+                equipment purchase. Our streamlined process ensures a fast and
+                efficient application experience.
+              </v-card-text>
+              <v-card-actions class="mt-auto">
+                <v-btn
+                  class="bg-primary"
+                  block
+                  href="https://community.mycreditportal.ca/s/customer-application-form?oid=0055X000000KaVP&vid=001JQ00000Ue4Ez&vname=ASSK%20Inc."
+                  target="_blank"
+                >
+                  Apply for Credit
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
 
   <!-- News & Highlights Section -->
   <v-container class="py-16">
@@ -437,6 +693,53 @@
     </v-row>
   </v-container>
   <ScrollingFeed />
+
+  <!-- Source Equipment Modal (copy of contact section) -->
+  <v-dialog v-model="sourceEquipmentDialog" max-width="1000px">
+    <v-card class="pa-6">
+      <v-card-title class="text-center position-relative">
+        <h2 class="text-3xl font-bold w-100">Source Equipment</h2>
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          @click="sourceEquipmentDialog = false"
+          class="position-absolute"
+          style="right: 8px; top: 8px"
+        ></v-btn>
+      </v-card-title>
+      <v-card-text>
+        <v-row justify="center">
+          <v-card class="elevation-2 pa-6 w-full mx-6">
+            <v-card-text>
+              <v-form @submit.prevent="submitContactForm" ref="contactForm">
+                <v-text-field
+                  v-model="contactFormEmail"
+                  label="Email Address"
+                  type="email"
+                  required
+                  :rules="emailRules"
+                  outlined
+                  class="mb-4"
+                ></v-text-field>
+                <v-textarea
+                  v-model="contactFormMessage"
+                  label="Your Message"
+                  required
+                  outlined
+                  rows="4"
+                  class="mb-4"
+                ></v-textarea>
+                <Checkbox v-model="isCaptchaVerified" class="mb-4" />
+                <v-btn type="submit" color="primary" class="w-full">
+                  Send Message
+                </v-btn>
+              </v-form>
+            </v-card-text>
+          </v-card>
+        </v-row>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
@@ -444,6 +747,9 @@ import { ref, reactive, watch, onMounted } from "vue";
 import { useTheme } from "vuetify";
 import ScrollingFeed from "./ScrollingFeed.vue";
 import { Checkbox, useRecaptchaProvider } from "vue-recaptcha";
+import gsap from "gsap";
+
+import bannerImg from "@/asskAssets/banner2.jpg";
 
 useRecaptchaProvider();
 
@@ -461,6 +767,10 @@ const sellForm = ref({
 // Reactive state for Contact Form
 const contactFormEmail = ref("");
 const contactFormMessage = ref("");
+
+const sellEquipmentDialog = ref(false);
+const financingDialog = ref(false);
+const sourceEquipmentDialog = ref(false);
 
 // Reactive state for Carbon Meter
 const carbonSaved = ref(7500); // Initial number
@@ -659,10 +969,89 @@ onMounted(() => {
     },
     { threshold: 0.1 }
   );
-
   document.querySelectorAll(".animate-on-scroll").forEach((el) => {
     observer.observe(el);
   });
+
+  // Function to animate a single smoke particle
+  const animateParticle = (particle, isLeft) => {
+    const startX = isLeft ? 25 : 70;
+    const startY = -80;
+
+    gsap.fromTo(
+      particle,
+      {
+        opacity: 0.6,
+        transformOrigin: "center",
+      },
+      {
+        duration: 2.5,
+        opacity: 0.6,
+        scale: 1.5,
+        y: 10,
+        x: startX - 10,
+        ease: "power1.in",
+        onComplete: () => {
+          // Reset position instantly but fade in opacity
+          gsap.set(particle, {
+            scale: gsap.utils.random(2.5, 3.5),
+            y: gsap.utils.random(startY + 0, startY + 30),
+            x: gsap.utils.random(startX + 20, startX + 60),
+            opacity: 0, // Start fully transparent
+          });
+          // Fade in opacity gradually
+          gsap.to(particle, {
+            duration: 2,
+            opacity: 0.8,
+            //ease: "elastic.out(1, 0.3)", // Bouncy elastic easing
+            // Other options:
+            // ease: "back.out(1.7)", // Overshoots then settles
+            // ease: "bounce.out", // Bounces at the end
+            // ease: "circ.out", // Circular motion
+            ease: "expo.out", // Exponential slowdown
+            //ease: "sine.out", // Smooth sinusoidal
+            onComplete: () => {
+              animateParticle(particle, isLeft);
+            },
+          });
+        },
+      }
+    );
+  };
+
+  // Animate left smoke stack particles
+  document
+    .querySelectorAll(".left-smoke .smoke-particle")
+    .forEach((particle, index) => {
+      const startX = 25;
+      const startY = -80;
+      gsap.set(particle, {
+        scale: 3,
+        y: gsap.utils.random(startY + 0, startY + 30),
+        x: gsap.utils.random(startX + 20, startX + 60),
+        opacity: 0, // Start fully transparent
+      });
+      gsap.delayedCall(index * 0.5, () => {
+        animateParticle(particle, true);
+      });
+    });
+
+  // Animate right smoke stack particles
+  document
+    .querySelectorAll(".right-smoke .smoke-particle")
+    .forEach((particle, index) => {
+      const startX = 70;
+      const startY = -80;
+      gsap.set(particle, {
+        scale: 3,
+        y: gsap.utils.random(startY + 0, startY + 30),
+        x: gsap.utils.random(startX + 20, startX + 60),
+        opacity: 0, // Start fully transparent
+      });
+      gsap.delayedCall(index * 0.5, () => {
+        animateParticle(particle, false);
+      });
+    });
 });
 </script>
 
@@ -768,5 +1157,65 @@ onMounted(() => {
   .service-card {
     margin-bottom: 24px;
   }
+}
+.smoke-animation {
+  width: 200px;
+  height: 200px;
+  overflow: visible;
+  border-radius: 10px;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+  background: linear-gradient(180deg, #sky-400 0%, #sky-600 100%);
+}
+
+.factory-base {
+  fill: url(#metalGradient);
+  filter: drop-shadow(0 -2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.smoke-stack {
+  fill: url(#metalGradient);
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.stack-top {
+  fill: url(#metalGradient);
+  filter: drop-shadow(0 -2px 2px rgba(0, 0, 0, 0.2));
+}
+
+.smoke-particle {
+  fill: url(#smokeGradient);
+  opacity: 0.8;
+  filter: blur(3px);
+}
+
+/* Add new animation for warning stripes */
+.warning-stripes rect {
+  animation: flash 2s infinite;
+}
+
+@keyframes flash {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Enhanced smoke particle effects */
+.left-smoke .smoke-particle,
+.right-smoke .smoke-particle {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+  mix-blend-mode: screen;
+}
+
+/* Add subtle hover effect to the entire factory */
+.factory-elements {
+  transition: transform 0.3s ease;
+}
+
+.smoke-animation:hover .factory-elements {
+  transform: scale(1.02);
 }
 </style>
