@@ -2,20 +2,11 @@
   <!-- Enhanced Landing Page -->
   <v-app-bar light scroll-behavior="hide">
     <!-- Hamburger Icon for Mobile -->
-    <v-app-bar-nav-icon
-      @click="toggleDrawer"
-      class="d-md-none"
-    ></v-app-bar-nav-icon>
+    <v-app-bar-nav-icon @click="toggleDrawer" class="d-md-none"></v-app-bar-nav-icon>
     <v-img :src="imageLink.logo" alt="ASSK Logo"></v-img>
     <v-spacer></v-spacer>
     <!-- Tabs for Desktop -->
-    <v-tabs
-      v-model="activeTab"
-      background-color="transparent"
-      slider-color="primary"
-      align-with-title
-      class="d-none d-md-flex"
-    >
+    <v-tabs v-model="activeTab" background-color="transparent" slider-color="primary" align-with-title class="d-none d-md-flex">
       <v-tab @click="navigateTo('hero-banner')">View Marketplace</v-tab>
       <v-tab @click="navigateTo('contact-us')">Source Equipment</v-tab>
       <v-tab @click="navigateTo('sell-equipment')">Sell Your Equipment</v-tab>
@@ -44,56 +35,24 @@
 
   <!-- Hero Section -->
   <v-parallax :src="bannerImg" height="100vh" id="hero-banner">
-    <div
-      class="absolute inset-0 bg-gradient-to-b from-black/30 to-black/50"
-    ></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-black/30 to-black/50"></div>
     <v-container class="fill-height d-flex align-center justify-center">
       <v-row align="center" justify="center">
         <v-col cols="12" md="12" class="text-center animate-on-scroll">
-          <h1
-            class="text-h1 font-weight-bold text-white mb-4 text-shadow hero-title"
-          >
-            ASSK Inc.
-          </h1>
-          <h3 class="text-h4 font-weight-light text-white mb-6 hero-subtitle">
-            Leading Oil and Gas Equipment Supplier
-          </h3>
-          <v-btn
-            color="secondary"
-            size="x-large"
-            rounded="pill"
-            class="px-8 py-2 hero-cta my-4"
-            href="https://www.assk.ca/"
-            :ripple="false"
-            elevation="4"
-          >
+          <h1 class="text-h1 font-weight-bold text-white mb-4 text-shadow hero-title">ASSK Inc.</h1>
+          <h3 class="text-h4 font-weight-light text-white mb-6 hero-subtitle">Leading Oil and Gas Equipment Supplier</h3>
+          <v-btn color="secondary" size="x-large" rounded="pill" class="px-8 py-2 hero-cta my-4" href="https://www.assk.ca/" :ripple="false" elevation="4">
             View Our Marketplace
             <v-icon right class="ml-2">mdi-arrow-right</v-icon>
           </v-btn>
           <v-row justify="center" class="mt-8">
             <v-col cols="auto">
-              <v-btn
-                color="teal"
-                size="large"
-                rounded="pill"
-                class="px-8 py-2 hero-cta mx-2"
-                @click="sellEquipmentDialog = true"
-                :ripple="false"
-                elevation="4"
-              >
+              <v-btn color="teal" size="large" rounded="pill" class="px-8 py-2 hero-cta mx-2" @click="sellEquipmentDialog = true" :ripple="false" elevation="4">
                 Sell Your Equipment
               </v-btn>
             </v-col>
             <v-col cols="auto">
-              <v-btn
-                color="teal"
-                size="large"
-                rounded="pill"
-                class="px-8 py-2 hero-cta mx-2"
-                @click="financingDialog = true"
-                :ripple="false"
-                elevation="4"
-              >
+              <v-btn color="teal" size="large" rounded="pill" class="px-8 py-2 hero-cta mx-2" @click="financingDialog = true" :ripple="false" elevation="4">
                 Financing Options
               </v-btn>
             </v-col>
@@ -121,47 +80,16 @@
     <v-card class="pa-6">
       <v-card-title class="text-center">
         <h2 class="text-3xl font-bold">Sell Your Equipment</h2>
-        <v-btn
-          icon="mdi-close"
-          variant="text"
-          @click="sellEquipmentDialog = false"
-          class="position-absolute"
-          style="right: 8px; top: 8px"
-        ></v-btn>
+        <v-btn icon="mdi-close" variant="text" @click="sellEquipmentDialog = false" class="position-absolute" style="right: 8px; top: 8px"></v-btn>
       </v-card-title>
       <v-card-text>
-        <p class="text-center mb-8">
-          Have surplus equipment? Let ASSK Inc. help you sell it quickly and
-          efficiently.
-        </p>
+        <p class="text-center mb-8">Have surplus equipment? Let ASSK Inc. help you sell it quickly and efficiently.</p>
         <v-form v-model="sellForm.valid" @submit.prevent="submitSellForm">
-          <v-text-field
-            v-model="sellForm.equipment"
-            :rules="equipmentRules"
-            label="Equipment Description"
-            required
-            outlined
-            class="mb-4"
-          ></v-text-field>
-          <v-text-field
-            v-model="sellForm.contactEmail"
-            :rules="emailRules"
-            label="Your Email"
-            required
-            outlined
-            class="mb-4"
-          ></v-text-field>
-          <v-textarea
-            v-model="sellForm.additionalInfo"
-            label="Additional Information"
-            rows="3"
-            outlined
-            class="mb-4"
-          ></v-textarea>
+          <v-text-field v-model="sellForm.equipment" :rules="equipmentRules" label="Equipment Description" required outlined class="mb-4"></v-text-field>
+          <v-text-field v-model="sellForm.contactEmail" :rules="emailRules" label="Your Email" required outlined class="mb-4"></v-text-field>
+          <v-textarea v-model="sellForm.additionalInfo" label="Additional Information" rows="3" outlined class="mb-4"></v-textarea>
           <Checkbox v-model="isCaptchaVerified" class="mb-4" />
-          <v-btn type="submit" color="secondary" block large rounded>
-            Submit Inquiry
-          </v-btn>
+          <v-btn type="submit" color="secondary" block large rounded> Submit Inquiry </v-btn>
         </v-form>
       </v-card-text>
     </v-card>
@@ -176,68 +104,21 @@
       <v-col cols="12" md="6">
         <h2 class="text-3xl font-bold mb-4">About ASSK Inc.</h2>
         <p class="text-lg text-gray-700">
-          Let ASSK SELL &amp; Source Your equipment and OCTG needs. Freeing time
-          for you to focus on core initiatives - Since inception, supporting
-          transactions that have always been fair to the buyer, seller, and
-          broker. ASSK has been providing the new, unused, reconditioned, and
-          used oil and gas production equipment and pipe you have come to
-          expect. Combine this with timely communication, quality execution, and
-          the hands-on deck approach to move each case along; strong results can
-          be expected. Give ASSK Sell &amp; Source a try, What have you got to
-          lose? You are not locked in.
+          Let ASSK SELL &amp; Source Your equipment and OCTG needs. Freeing time for you to focus on core initiatives - Since inception, supporting transactions
+          that have always been fair to the buyer, seller, and broker. ASSK has been providing the new, unused, reconditioned, and used oil and gas production
+          equipment and pipe you have come to expect. Combine this with timely communication, quality execution, and the hands-on deck approach to move each
+          case along; strong results can be expected. Give ASSK Sell &amp; Source a try, What have you got to lose? You are not locked in.
         </p>
-      </v-col>
-    </v-row>
-  </v-container>
-
-  <!-- Services Section -->
-  <v-container class="py-16">
-    <h2 class="text-3xl font-bold text-center mb-8 animate-on-scroll">
-      Our Services
-    </h2>
-    <v-row>
-      <v-col
-        v-for="(service, index) in services"
-        :key="index"
-        cols="12"
-        md="4"
-        class="d-flex"
-      >
-        <v-card
-          class="elevation-3 pa-6 flex-grow-1 service-card animate-on-scroll"
-          :style="{ transitionDelay: `${index * 0.2}s` }"
-        >
-          <v-icon :color="service.iconColor" size="48" class="mb-4">
-            {{ service.icon }}
-          </v-icon>
-          <h3 class="text-xl font-semibold mb-2">{{ service.title }}</h3>
-          <p class="text-body-1">{{ service.description }}</p>
-          <v-btn
-            v-if="service.action"
-            text
-            :color="service.iconColor"
-            class="mt-4"
-            @click="service.action.handler"
-          >
-            {{ service.action.text }}
-            <v-icon right>mdi-arrow-right</v-icon>
-          </v-btn>
-        </v-card>
       </v-col>
     </v-row>
   </v-container>
 
   <!-- Sustainability Section -->
-  <v-container fluid class="py-16 bg-gray-100" id="carbon-meter">
+  <v-container fluid class="py-5 bg-gray-100" id="carbon-meter">
     <v-row justify="center">
       <v-col cols="12" class="text-center mb-8">
-        <h2 class="text-3xl font-bold mb-4">
-          Our Commitment to Sustainability
-        </h2>
-        <p class="text-lg text-gray-700 mb-4">
-          ASSK Inc. is dedicated to environmental responsibility and
-          sustainability in all our operations.
-        </p>
+        <h2 class="text-3xl font-bold mb-4">Our Commitment to Sustainability</h2>
+        <p class="text-lg text-gray-700 mb-4">ASSK Inc. is dedicated to environmental responsibility and sustainability in all our operations.</p>
         <v-row justify="center">
           <v-col cols="auto">
             <v-tooltip
@@ -250,36 +131,22 @@
                   <svg viewBox="0 0 200 200" class="smoke-animation">
                     <!-- Enhanced Gradients -->
                     <defs>
-                      <radialGradient
-                        id="smokeGradient"
-                        cx="50%"
-                        cy="50%"
-                        r="50%"
-                      >
-                        <stop
-                          offset="0%"
-                          style="stop-color: rgba(158, 158, 158, 0.9)"
-                        />
-                        <stop
-                          offset="60%"
-                          style="stop-color: rgba(158, 158, 158, 0.4)"
-                        />
-                        <stop
-                          offset="100%"
-                          style="stop-color: rgba(158, 158, 158, 0)"
-                        />
+                      <radialGradient id="smokeGradient" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" style="stop-color: rgba(158, 158, 158, 0.9)" />
+                        <stop offset="60%" style="stop-color: rgba(158, 158, 158, 0.4)" />
+                        <stop offset="100%" style="stop-color: rgba(158, 158, 158, 0)" />
                       </radialGradient>
 
-                      <linearGradient
-                        id="metalGradient"
-                        x1="0%"
-                        y1="0%"
-                        x2="100%"
-                        y2="100%"
-                      >
+                      <linearGradient id="metalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" style="stop-color: #4a5568" />
                         <stop offset="50%" style="stop-color: #2d3748" />
                         <stop offset="100%" style="stop-color: #1a202c" />
+                      </linearGradient>
+
+                      <linearGradient id="metalGradientLight" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color: #718096" />
+                        <stop offset="50%" style="stop-color: #4a5568" />
+                        <stop offset="100%" style="stop-color: #2d3748" />
                       </linearGradient>
 
                       <filter id="glow">
@@ -294,184 +161,78 @@
                     <!-- Background Factory Elements -->
                     <g class="factory-background">
                       <!-- Additional Buildings -->
-                      <rect
-                        x="10"
-                        y="120"
-                        width="40"
-                        height="60"
-                        fill="url(#metalGradient)"
-                        rx="2"
-                      />
-                      <rect
-                        x="150"
-                        y="130"
-                        width="35"
-                        height="50"
-                        fill="url(#metalGradient)"
-                        rx="2"
-                      />
+                      <rect x="25" y="120" width="40" height="60" fill="url(#metalGradientLight)" rx="2" opacity="0.9" />
+                      <!-- Building Windows -->
+                      <rect x="30" y="130" width="8" height="8" fill="#4a5568" opacity="0.8" />
+                      <rect x="30" y="145" width="8" height="8" fill="#4a5568" opacity="0.8" />
+                      <rect x="30" y="160" width="8" height="8" fill="#4a5568" opacity="0.8" />
+                      <rect x="45" y="130" width="8" height="8" fill="#4a5568" opacity="0.8" />
+                      <rect x="45" y="145" width="8" height="8" fill="#4a5568" opacity="0.8" />
+                      <rect x="45" y="160" width="8" height="8" fill="#4a5568" opacity="0.8" />
 
-                      <!-- Pipes and Details -->
-                      <path
-                        d="M 80 100 Q 90 90, 100 100 T 120 100"
-                        stroke="#2d3748"
-                        fill="none"
-                        stroke-width="4"
-                      />
-                      <circle cx="80" cy="100" r="3" fill="#4a5568" />
-                      <circle cx="120" cy="100" r="3" fill="#4a5568" />
+                      <!-- Center Building -->
+                      <rect x="80" y="110" width="45" height="70" fill="url(#metalGradientLight)" rx="2" opacity="0.9" />
+                      <!-- Center Building Windows -->
+                      <rect x="85" y="120" width="8" height="8" fill="#4a5568" opacity="0.8" />
+                      <rect x="85" y="135" width="8" height="8" fill="#4a5568" opacity="0.8" />
+                      <rect x="85" y="150" width="8" height="8" fill="#4a5568" opacity="0.8" />
+                      <rect x="85" y="165" width="8" height="8" fill="#4a5568" opacity="0.8" />
+                      <rect x="100" y="120" width="8" height="8" fill="#4a5568" opacity="0.8" />
+                      <rect x="100" y="135" width="8" height="8" fill="#4a5568" opacity="0.8" />
+                      <rect x="100" y="150" width="8" height="8" fill="#4a5568" opacity="0.8" />
+                      <rect x="100" y="165" width="8" height="8" fill="#4a5568" opacity="0.8" />
+                      <rect x="115" y="120" width="8" height="8" fill="#4a5568" opacity="0.8" />
+                      <rect x="115" y="135" width="8" height="8" fill="#4a5568" opacity="0.8" />
+                      <rect x="115" y="150" width="8" height="8" fill="#4a5568" opacity="0.8" />
+                      <rect x="115" y="165" width="8" height="8" fill="#4a5568" opacity="0.8" />
+
+                      <!-- Right Building -->
+                      <rect x="120" y="130" width="35" height="50" fill="url(#metalGradientLight)" rx="2" opacity="0.9" />
+                      <!-- Building Windows -->
+                      <rect x="125" y="140" width="7" height="7" fill="#4a5568" opacity="0.8" />
+                      <rect x="125" y="155" width="7" height="7" fill="#4a5568" opacity="0.8" />
+                      <rect x="140" y="140" width="7" height="7" fill="#4a5568" opacity="0.8" />
+                      <rect x="140" y="155" width="7" height="7" fill="#4a5568" opacity="0.8" />
                     </g>
 
                     <!-- Enhanced Smoke Particles -->
                     <g class="smoke-particles left-smoke">
-                      <circle
-                        v-for="index in 15"
-                        :key="'left' + index"
-                        class="smoke-particle"
-                        cx="20"
-                        cy="70"
-                        r="6"
-                      />
+                      <circle v-for="index in 15" :key="'left' + index" class="smoke-particle" cx="20" cy="70" r="6" />
                     </g>
 
                     <g class="smoke-particles right-smoke">
-                      <circle
-                        v-for="index in 15"
-                        :key="'right' + index"
-                        class="smoke-particle"
-                        cx="70"
-                        cy="70"
-                        r="6"
-                      />
+                      <circle v-for="index in 15" :key="'right' + index" class="smoke-particle" cx="70" cy="70" r="6" />
                     </g>
 
                     <!-- Main Factory Elements -->
                     <g class="factory-elements" filter="url(#glow)">
                       <!-- Enhanced Factory Base -->
-                      <rect
-                        x="20"
-                        y="180"
-                        width="160"
-                        height="20"
-                        class="factory-base"
-                        rx="4"
-                      />
-                      <rect
-                        x="15"
-                        y="175"
-                        width="170"
-                        height="8"
-                        fill="#2d3748"
-                        rx="2"
-                      />
+                      <rect x="20" y="180" width="160" height="20" class="factory-base" rx="4" />
+                      <rect x="15" y="175" width="170" height="8" fill="#2d3748" rx="2" />
 
                       <!-- Enhanced Smoke Stacks -->
                       <g class="left-stack">
-                        <rect
-                          x="40"
-                          y="80"
-                          width="30"
-                          height="100"
-                          class="smoke-stack"
-                          rx="2"
-                        />
-                        <rect
-                          x="35"
-                          y="75"
-                          width="40"
-                          height="10"
-                          class="stack-top"
-                          rx="6"
-                        />
+                        <rect x="40" y="80" width="30" height="100" class="smoke-stack" rx="2" />
+                        <rect x="35" y="75" width="40" height="10" class="stack-top" rx="6" />
                         <!-- Stack Details -->
-                        <rect
-                          x="45"
-                          y="90"
-                          width="20"
-                          height="5"
-                          fill="#4a5568"
-                          rx="1"
-                        />
-                        <rect
-                          x="45"
-                          y="120"
-                          width="20"
-                          height="5"
-                          fill="#4a5568"
-                          rx="1"
-                        />
-                        <rect
-                          x="45"
-                          y="150"
-                          width="20"
-                          height="5"
-                          fill="#4a5568"
-                          rx="1"
-                        />
+                        <rect x="45" y="90" width="20" height="5" fill="#4a5568" rx="1" />
+                        <rect x="45" y="120" width="20" height="5" fill="#4a5568" rx="1" />
+                        <rect x="45" y="150" width="20" height="5" fill="#4a5568" rx="1" />
                       </g>
 
                       <g class="right-stack">
-                        <rect
-                          x="130"
-                          y="80"
-                          width="30"
-                          height="100"
-                          class="smoke-stack"
-                          rx="2"
-                        />
-                        <rect
-                          x="125"
-                          y="75"
-                          width="40"
-                          height="10"
-                          class="stack-top"
-                          rx="6"
-                        />
+                        <rect x="130" y="80" width="30" height="100" class="smoke-stack" rx="2" />
+                        <rect x="125" y="75" width="40" height="10" class="stack-top" rx="6" />
                         <!-- Stack Details -->
-                        <rect
-                          x="135"
-                          y="90"
-                          width="20"
-                          height="5"
-                          fill="#4a5568"
-                          rx="1"
-                        />
-                        <rect
-                          x="135"
-                          y="120"
-                          width="20"
-                          height="5"
-                          fill="#4a5568"
-                          rx="1"
-                        />
-                        <rect
-                          x="135"
-                          y="150"
-                          width="20"
-                          height="5"
-                          fill="#4a5568"
-                          rx="1"
-                        />
+                        <rect x="135" y="90" width="20" height="5" fill="#4a5568" rx="1" />
+                        <rect x="135" y="120" width="20" height="5" fill="#4a5568" rx="1" />
+                        <rect x="135" y="150" width="20" height="5" fill="#4a5568" rx="1" />
                       </g>
 
                       <!-- Warning Stripes -->
                       <g class="warning-stripes">
-                        <rect
-                          x="38"
-                          y="165"
-                          width="34"
-                          height="8"
-                          fill="#fbbf24"
-                          rx="1"
-                        />
-                        <rect
-                          x="128"
-                          y="165"
-                          width="34"
-                          height="8"
-                          fill="#fbbf24"
-                          rx="1"
-                        />
+                        <rect x="38" y="165" width="34" height="8" fill="#fbbf24" rx="1" />
+                        <rect x="128" y="165" width="34" height="8" fill="#fbbf24" rx="1" />
                       </g>
                     </g>
                   </svg>
@@ -483,12 +244,30 @@
 
         <div class="cursor-pointer">
           <div>
-            <span class="text-4xl font-bold"
-              >{{ carbonSaved.toFixed(2) }} kg</span
-            >
+            <span class="text-4xl font-bold">{{ carbonSaved.toFixed(2) }} kg</span>
             <div class="text-lg">Carbon Saved</div>
           </div>
         </div>
+      </v-col>
+    </v-row>
+  </v-container>
+
+  <!-- Services Section -->
+  <v-container class="py-16">
+    <h2 class="text-3xl font-bold text-center mb-8 animate-on-scroll">Our Services</h2>
+    <v-row>
+      <v-col v-for="(service, index) in services" :key="index" cols="12" md="4" class="d-flex">
+        <v-card class="elevation-3 pa-6 flex-grow-1 service-card animate-on-scroll" :style="{ transitionDelay: `${index * 0.2}s` }">
+          <v-icon :color="service.iconColor" size="48" class="mb-4">
+            {{ service.icon }}
+          </v-icon>
+          <h3 class="text-xl font-semibold mb-2">{{ service.title }}</h3>
+          <p class="text-body-1">{{ service.description }}</p>
+          <v-btn v-if="service.action" text :color="service.iconColor" class="mt-4" @click="service.action.handler">
+            {{ service.action.text }}
+            <v-icon right>mdi-arrow-right</v-icon>
+          </v-btn>
+        </v-card>
       </v-col>
     </v-row>
   </v-container>
@@ -498,59 +277,35 @@
     <v-card class="pa-6">
       <v-card-title class="text-center position-relative">
         <h2 class="text-3xl font-bold w-100">Financing Options</h2>
-        <v-btn
-          icon="mdi-close"
-          variant="text"
-          @click="financingDialog = false"
-          class="position-absolute"
-          style="right: 8px; top: 8px"
-        ></v-btn>
+        <v-btn icon="mdi-close" variant="text" @click="financingDialog = false" class="position-absolute" style="right: 8px; top: 8px"></v-btn>
       </v-card-title>
       <v-card-text>
         <v-row>
           <v-col cols="12" md="6" class="mb-6">
-            <v-card
-              class="h-full pa-6 elevation-3 hover:scale-105 transition-transform duration-300 d-flex flex-column"
-            >
+            <v-card class="h-full pa-6 elevation-3 hover:scale-105 transition-transform duration-300 d-flex flex-column">
               <v-card-title class="d-flex align-center">
-                <v-icon color="primary" size="48" class="mr-4"
-                  >mdi-calculator-variant</v-icon
-                >
+                <v-icon color="primary" size="48" class="mr-4">mdi-calculator-variant</v-icon>
                 <span class="text-2xl font-semibold">Instant Lease Quote</span>
               </v-card-title>
               <v-card-text class="text-gray-700 flex-grow-1">
-                Get an instant quote for leasing equipment tailored to your
-                business needs. Our leasing options are designed to be flexible
-                and cost-effective.
+                Get an instant quote for leasing equipment tailored to your business needs. Our leasing options are designed to be flexible and cost-effective.
               </v-card-text>
               <v-card-actions class="mt-auto">
-                <v-btn
-                  class="bg-primary"
-                  block
-                  href="https://go.mycreditportal.ca/assk-inc-/robert-siroishka/instant-quote?lang=en"
-                  target="_blank"
-                >
+                <v-btn class="bg-primary" block href="https://go.mycreditportal.ca/assk-inc-/robert-siroishka/instant-quote?lang=en" target="_blank">
                   Get Lease Quote
                 </v-btn>
               </v-card-actions>
             </v-card>
           </v-col>
           <v-col cols="12" md="6" class="mb-6">
-            <v-card
-              class="h-full pa-6 elevation-3 hover:scale-105 transition-transform duration-300 d-flex flex-column"
-            >
+            <v-card class="h-full pa-6 elevation-3 hover:scale-105 transition-transform duration-300 d-flex flex-column">
               <v-card-title class="d-flex align-center">
-                <v-icon color="primary" size="48" class="mr-4"
-                  >mdi-credit-card-outline</v-icon
-                >
-                <span class="text-2xl font-semibold"
-                  >Online Credit Application</span
-                >
+                <v-icon color="primary" size="48" class="mr-4">mdi-credit-card-outline</v-icon>
+                <span class="text-2xl font-semibold">Online Credit Application</span>
               </v-card-title>
               <v-card-text class="text-gray-700 flex-grow-1">
-                Apply online for credit easily and quickly to finance your
-                equipment purchase. Our streamlined process ensures a fast and
-                efficient application experience.
+                Apply online for credit easily and quickly to finance your equipment purchase. Our streamlined process ensures a fast and efficient application
+                experience.
               </v-card-text>
               <v-card-actions class="mt-auto">
                 <v-btn
@@ -572,19 +327,8 @@
   <!-- News & Highlights Section -->
   <v-container class="py-16">
     <h2 class="text-3xl font-bold text-center mb-8">News & Highlights</h2>
-    <v-carousel
-      cycle
-      height="500"
-      hide-delimiter-background
-      show-arrows="hover"
-      :show-arrows-on-hover="true"
-    >
-      <v-carousel-item
-        v-for="(slide, i) in newsSlides"
-        :key="i"
-        :src="slide.image"
-        cover
-      >
+    <v-carousel cycle height="500" hide-delimiter-background show-arrows="hover" :show-arrows-on-hover="true">
+      <v-carousel-item v-for="(slide, i) in newsSlides" :key="i" :src="slide.image" cover>
         <v-sheet class="fill-height" color="rgba(0, 0, 0, 0.4)">
           <v-container class="fill-height">
             <v-row align="center" justify="center">
@@ -596,9 +340,7 @@
                   <p class="text-subtitle-1 text-white mb-6">
                     {{ slide.description }}
                   </p>
-                  <v-btn color="secondary" rounded :to="slide.link">
-                    Read More
-                  </v-btn>
+                  <v-btn color="secondary" rounded :to="slide.link"> Read More </v-btn>
                 </div>
               </v-col>
             </v-row>
@@ -615,54 +357,31 @@
       <v-card class="elevation-2 pa-6 w-full mx-6">
         <v-card-text>
           <v-form @submit.prevent="submitContactForm" ref="contactForm">
-            <v-text-field
-              v-model="contactFormEmail"
-              label="Email Address"
-              type="email"
-              required
-              :rules="emailRules"
-              outlined
-              class="mb-4"
-            ></v-text-field>
-            <v-textarea
-              v-model="contactFormMessage"
-              label="Your Message"
-              required
-              outlined
-              rows="4"
-              class="mb-4"
-            ></v-textarea>
+            <v-text-field v-model="contactFormEmail" label="Email Address" type="email" required :rules="emailRules" outlined class="mb-4"></v-text-field>
+            <v-textarea v-model="contactFormMessage" label="Your Message" required outlined rows="4" class="mb-4"></v-textarea>
             <Checkbox v-model="isCaptchaVerified" class="mb-4" />
-            <v-btn type="submit" color="primary" class="w-full">
-              Send Message
-            </v-btn>
+            <v-btn type="submit" color="primary" class="w-full"> Send Message </v-btn>
           </v-form>
         </v-card-text>
       </v-card>
     </v-row>
     <v-row justify="center">
       <v-col cols="12" md="4" class="mb-6">
-        <v-card
-          class="pa-6 text-center transition-all duration-300 hover:shadow-lg"
-        >
+        <v-card class="pa-6 text-center transition-all duration-300 hover:shadow-lg">
           <v-icon color="primary" size="32" class="mb-4">mdi-phone</v-icon>
           <h3 class="text-xl font-semibold mb-2">Phone</h3>
           <p>(123) 456-7890</p>
         </v-card>
       </v-col>
       <v-col cols="12" md="4" class="mb-6">
-        <v-card
-          class="pa-6 text-center transition-all duration-300 hover:shadow-lg"
-        >
+        <v-card class="pa-6 text-center transition-all duration-300 hover:shadow-lg">
           <v-icon color="primary" size="32" class="mb-4">mdi-email</v-icon>
           <h3 class="text-xl font-semibold mb-2">Email</h3>
           <p>info@assk.ca</p>
         </v-card>
       </v-col>
       <v-col cols="12" md="4" class="mb-6">
-        <v-card
-          class="pa-6 text-center transition-all duration-300 hover:shadow-lg"
-        >
+        <v-card class="pa-6 text-center transition-all duration-300 hover:shadow-lg">
           <v-icon color="primary" size="32" class="mb-4">mdi-map-marker</v-icon>
           <h3 class="text-xl font-semibold mb-2">Address</h3>
           <p>1234 Oil &amp; Gas Ave, Alberta, Canada</p>
@@ -699,40 +418,17 @@
     <v-card class="pa-6">
       <v-card-title class="text-center position-relative">
         <h2 class="text-3xl font-bold w-100">Source Equipment</h2>
-        <v-btn
-          icon="mdi-close"
-          variant="text"
-          @click="sourceEquipmentDialog = false"
-          class="position-absolute"
-          style="right: 8px; top: 8px"
-        ></v-btn>
+        <v-btn icon="mdi-close" variant="text" @click="sourceEquipmentDialog = false" class="position-absolute" style="right: 8px; top: 8px"></v-btn>
       </v-card-title>
       <v-card-text>
         <v-row justify="center">
           <v-card class="elevation-2 pa-6 w-full mx-6">
             <v-card-text>
               <v-form @submit.prevent="submitContactForm" ref="contactForm">
-                <v-text-field
-                  v-model="contactFormEmail"
-                  label="Email Address"
-                  type="email"
-                  required
-                  :rules="emailRules"
-                  outlined
-                  class="mb-4"
-                ></v-text-field>
-                <v-textarea
-                  v-model="contactFormMessage"
-                  label="Your Message"
-                  required
-                  outlined
-                  rows="4"
-                  class="mb-4"
-                ></v-textarea>
+                <v-text-field v-model="contactFormEmail" label="Email Address" type="email" required :rules="emailRules" outlined class="mb-4"></v-text-field>
+                <v-textarea v-model="contactFormMessage" label="Your Message" required outlined rows="4" class="mb-4"></v-textarea>
                 <Checkbox v-model="isCaptchaVerified" class="mb-4" />
-                <v-btn type="submit" color="primary" class="w-full">
-                  Send Message
-                </v-btn>
+                <v-btn type="submit" color="primary" class="w-full"> Send Message </v-btn>
               </v-form>
             </v-card-text>
           </v-card>
@@ -789,29 +485,23 @@ const addEquipmentSold = (weight) => {
 };
 
 // Validation Rules
-const emailRules = [
-  (v) => !!v || "E-mail is required",
-  (v) => /\S+@\S+\.\S+/.test(v) || "E-mail must be valid",
-];
+const emailRules = [(v) => !!v || "E-mail is required", (v) => /\S+@\S+\.\S+/.test(v) || "E-mail must be valid"];
 const equipmentRules = [(v) => !!v || "Equipment description is required"];
 
 // Handle Sell Equipment Form Submission
 const submitSellForm = async () => {
   if (sellForm.value.valid) {
     try {
-      const response = await fetch(
-        "https://rev6ykipl5.execute-api.us-east-2.amazonaws.com/Prod/sendEmail",
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: sellForm.value.contactEmail,
-            message: `Equipment Description: ${sellForm.value.equipment}\nAdditional Info: ${sellForm.value.additionalInfo}`,
-          }),
-        }
-      );
+      const response = await fetch("https://rev6ykipl5.execute-api.us-east-2.amazonaws.com/Prod/sendEmail", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: sellForm.value.contactEmail,
+          message: `Equipment Description: ${sellForm.value.equipment}\nAdditional Info: ${sellForm.value.additionalInfo}`,
+        }),
+      });
 
       if (response.ok) {
         alert("Inquiry sent successfully!");
@@ -842,19 +532,16 @@ const submitContactForm = async () => {
   }
 
   try {
-    const response = await fetch(
-      "https://rev6ykipl5.execute-api.us-east-2.amazonaws.com/Prod/sendEmail",
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: contactFormEmail.value,
-          message: contactFormMessage.value,
-        }),
-      }
-    );
+    const response = await fetch("https://rev6ykipl5.execute-api.us-east-2.amazonaws.com/Prod/sendEmail", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: contactFormEmail.value,
+        message: contactFormMessage.value,
+      }),
+    });
 
     if (response.ok) {
       alert("Message sent successfully!");
@@ -893,37 +580,29 @@ const drawer = ref(false);
 // Image Links
 const imageLink = reactive({
   main: "https://app.theironhub.com/assets/header-bg-6bf202e71c42d69cefaa48f8891f177d0e21e55dd6ce753815b5b4b3ab11fa54.jpg",
-  sub_main:
-    "https://app.theironhub.com/assets/themes/assk-inc/banner-0cb61e5e11b120d4975eb23bf5e0963384cc6e0d6ef7c6755a2bec750aa02e3e.jpg",
+  sub_main: "https://app.theironhub.com/assets/themes/assk-inc/banner-0cb61e5e11b120d4975eb23bf5e0963384cc6e0d6ef7c6755a2bec750aa02e3e.jpg",
   logo: "https://app.theironhub.com/assets/themes/assk-inc/logo-white-f4666eb021d8d335e4d376f32d83f545e80fe1d2ff676335b0e5cdbb227ead2c.png",
-  social_cover:
-    "https://app.theironhub.com/assets/themes/assk-inc/banner-0cb61e5e11b120d4975eb23bf5e0963384cc6e0d6ef7c6755a2bec750aa02e3e.jpg",
+  social_cover: "https://app.theironhub.com/assets/themes/assk-inc/banner-0cb61e5e11b120d4975eb23bf5e0963384cc6e0d6ef7c6755a2bec750aa02e3e.jpg",
 });
 
 // News, Updates, and Offers Carousel
 const newsSlides = [
   {
     title: "Industry News: Oil Prices Stabilize",
-    description:
-      "Recent market trends show oil prices stabilizing, impacting equipment demand.",
-    image:
-      "https://ironhub.s3.amazonaws.com/35/listings/48632/images/396459/small/IMG_02331_1721156171079.jpg?1721158548",
+    description: "Recent market trends show oil prices stabilizing, impacting equipment demand.",
+    image: "https://ironhub.s3.amazonaws.com/35/listings/48632/images/396459/small/IMG_02331_1721156171079.jpg?1721158548",
     link: "/news/oil-prices-stabilize",
   },
   {
     title: "ASSK Inc. Expands Operations",
-    description:
-      "We're excited to announce the opening of our new distribution center.",
-    image:
-      "https://app.theironhub.com/assets/themes/assk-inc/recycle-logo-1-f29ad99581c2743d5b0995de1f4441bb7c69411f146cbecdc348daea5caa0e62.png",
+    description: "We're excited to announce the opening of our new distribution center.",
+    image: "https://app.theironhub.com/assets/themes/assk-inc/recycle-logo-1-f29ad99581c2743d5b0995de1f4441bb7c69411f146cbecdc348daea5caa0e62.png",
     link: "/updates/new-distribution-center",
   },
   {
     title: "Special Offer: Summer Equipment Sale",
-    description:
-      "Get up to 20% off on select oil and gas equipment this summer.",
-    image:
-      "https://ironhub.s3.amazonaws.com/35/listings/49040/images/402081/small/20240909035256_67f21fb4-ecb1-4e12-ad8d-551b829d9a9b.jpg?1725853976",
+    description: "Get up to 20% off on select oil and gas equipment this summer.",
+    image: "https://ironhub.s3.amazonaws.com/35/listings/49040/images/402081/small/20240909035256_67f21fb4-ecb1-4e12-ad8d-551b829d9a9b.jpg?1725853976",
     link: "https://www.assk.ca/listings/X5dRP6TIfoe0fwaQugJ3",
   },
 ];
@@ -1020,38 +699,34 @@ onMounted(() => {
   };
 
   // Animate left smoke stack particles
-  document
-    .querySelectorAll(".left-smoke .smoke-particle")
-    .forEach((particle, index) => {
-      const startX = 25;
-      const startY = -80;
-      gsap.set(particle, {
-        scale: 3,
-        y: gsap.utils.random(startY + 0, startY + 30),
-        x: gsap.utils.random(startX + 20, startX + 60),
-        opacity: 0, // Start fully transparent
-      });
-      gsap.delayedCall(index * 0.5, () => {
-        animateParticle(particle, true);
-      });
+  document.querySelectorAll(".left-smoke .smoke-particle").forEach((particle, index) => {
+    const startX = 25;
+    const startY = -80;
+    gsap.set(particle, {
+      scale: 3,
+      y: gsap.utils.random(startY + 0, startY + 30),
+      x: gsap.utils.random(startX + 20, startX + 60),
+      opacity: 0, // Start fully transparent
     });
+    gsap.delayedCall(index * 0.5, () => {
+      animateParticle(particle, true);
+    });
+  });
 
   // Animate right smoke stack particles
-  document
-    .querySelectorAll(".right-smoke .smoke-particle")
-    .forEach((particle, index) => {
-      const startX = 70;
-      const startY = -80;
-      gsap.set(particle, {
-        scale: 3,
-        y: gsap.utils.random(startY + 0, startY + 30),
-        x: gsap.utils.random(startX + 20, startX + 60),
-        opacity: 0, // Start fully transparent
-      });
-      gsap.delayedCall(index * 0.5, () => {
-        animateParticle(particle, false);
-      });
+  document.querySelectorAll(".right-smoke .smoke-particle").forEach((particle, index) => {
+    const startX = 70;
+    const startY = -80;
+    gsap.set(particle, {
+      scale: 3,
+      y: gsap.utils.random(startY + 0, startY + 30),
+      x: gsap.utils.random(startX + 20, startX + 60),
+      opacity: 0, // Start fully transparent
     });
+    gsap.delayedCall(index * 0.5, () => {
+      animateParticle(particle, false);
+    });
+  });
 });
 </script>
 
