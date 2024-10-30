@@ -113,12 +113,33 @@
     </v-row>
   </v-container>
 
-  <!-- Sustainability Section -->
-  <v-container fluid class="py-5 bg-gray-100" id="carbon-meter">
-    <v-row justify="center">
-      <v-col cols="12" class="text-center mb-8">
-        <h2 class="text-3xl font-bold mb-4">Our Commitment to Sustainability</h2>
-        <p class="text-lg text-gray-700 mb-4">ASSK Inc. is dedicated to environmental responsibility and sustainability in all our operations.</p>
+  <!-- Services and Sustainability Section -->
+  <v-container fluid class="py-16">
+    <v-row>
+      <!-- Services Section -->
+      <v-col cols="12" md="8">
+        <h2 class="text-3xl font-bold text-center mb-8 animate-on-scroll">Our Services</h2>
+        <v-row>
+          <v-col v-for="(service, index) in services" :key="index" cols="12" md="4" class="d-flex hover:scale-105 transition-transform duration-400">
+            <v-card class="elevation-3 pa-6 flex-grow-1 service-card animate-on-scroll" :style="{ transitionDelay: `${index * 0.2}s` }">
+              <v-icon :color="service.iconColor" size="48" class="mb-4">
+                {{ service.icon }}
+              </v-icon>
+              <h3 class="text-xl font-semibold mb-2">{{ service.title }}</h3>
+              <p class="text-body-1">{{ service.description }}</p>
+              <v-btn v-if="service.action" text :color="service.iconColor" class="mt-4" @click="service.action.handler">
+                {{ service.action.text }}
+                <v-icon right>mdi-arrow-right</v-icon>
+              </v-btn>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-col>
+
+      <!-- Sustainability Section -->
+      <v-col cols="12" md="4">
+        <h2 class="text-3xl font-bold text-center mb-4">Our Commitment to Sustainability</h2>
+        <p class="text-lg text-gray-700 mb-4 mx-6">ASSK Inc. is dedicated to environmental responsibility and sustainability in all our operations.</p>
         <v-row justify="center">
           <v-col cols="auto">
             <v-tooltip
@@ -242,32 +263,12 @@
           </v-col>
         </v-row>
 
-        <div class="cursor-pointer">
+        <div class="cursor-pointer text-center">
           <div>
             <span class="text-4xl font-bold">{{ carbonSaved.toFixed(2) }} kg</span>
             <div class="text-lg">Carbon Saved</div>
           </div>
         </div>
-      </v-col>
-    </v-row>
-  </v-container>
-
-  <!-- Services Section -->
-  <v-container class="py-16">
-    <h2 class="text-3xl font-bold text-center mb-8 animate-on-scroll">Our Services</h2>
-    <v-row>
-      <v-col v-for="(service, index) in services" :key="index" cols="12" md="4" class="d-flex">
-        <v-card class="elevation-3 pa-6 flex-grow-1 service-card animate-on-scroll" :style="{ transitionDelay: `${index * 0.2}s` }">
-          <v-icon :color="service.iconColor" size="48" class="mb-4">
-            {{ service.icon }}
-          </v-icon>
-          <h3 class="text-xl font-semibold mb-2">{{ service.title }}</h3>
-          <p class="text-body-1">{{ service.description }}</p>
-          <v-btn v-if="service.action" text :color="service.iconColor" class="mt-4" @click="service.action.handler">
-            {{ service.action.text }}
-            <v-icon right>mdi-arrow-right</v-icon>
-          </v-btn>
-        </v-card>
       </v-col>
     </v-row>
   </v-container>
@@ -426,7 +427,7 @@
             <v-card-text>
               <v-form @submit.prevent="submitContactForm" ref="contactForm">
                 <v-text-field v-model="contactFormEmail" label="Email Address" type="email" required :rules="emailRules" outlined class="mb-4"></v-text-field>
-                <v-textarea v-model="contactFormMessage" label="Your Message" required outlined rows="4" class="mb-4"></v-textarea>
+                <v-textarea v-model="contactFormMessage" label="Tell us about your equipment" required outlined rows="4" class="mb-4"></v-textarea>
                 <Checkbox v-model="isCaptchaVerified" class="mb-4" />
                 <v-btn type="submit" color="primary" class="w-full"> Send Message </v-btn>
               </v-form>
@@ -623,14 +624,14 @@ const services = ref([
     icon: "mdi-source-fork",
     iconColor: "primary",
     action: {
-      text: "Request Equipment Sourcing",
-      handler: () => navigateTo("contact-us"),
+      text: "Try It",
+      handler: () => (sourceEquipmentDialog.value = true),
     },
   },
   {
     title: "Taking Inventory and Listing Your Equipment",
     description:
-      "Considered taking inventory of assets to list and sell but have not been able to get it done? Give ASSK a shout and we will work to head out, take photos and list your assets on a public marketplace. The location is kept confidential and the public discussion is handled by our team eliminating wasted time and tire kickers on your end if dealing directly. Final sale and removal of any piece of equipment or pipe is not acted on without the full knowledge and approval of the owner of the asset and payment in full received. Conditions also exist to do a full inventory and management of company assets.",
+      "Need help cataloging and selling your equipment? Let ASSK handle the entire process - from site visits and photography to marketplace listings and buyer communications. We maintain location confidentiality and manage all inquiries, saving you time and hassle. Nothing moves without your explicit approval and full payment. We also offer comprehensive inventory management services for your assets.",
     icon: "mdi-clipboard-list",
     iconColor: "primary",
   },
