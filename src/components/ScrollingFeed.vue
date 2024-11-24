@@ -5,36 +5,16 @@
       '--scroll-duration': `${settings.scrollSpeed}s`,
       '--transparency': settings.transparency,
     }"
-    @dblclick="openSettingsDialog"
+    @click.shift="openSettingsDialog"
   >
     <div class="scrolling-feed">
-      <span
-        v-for="(item, index) in feedItems"
-        :key="item.id || index"
-        class="scrolling-item px-6 flex-shrink-0"
-      >
-        <v-card
-          class="bg-transparent shadow-none d-flex align-center elevation-0"
-        >
-          <v-img
-            :src="item.thumbnail"
-            :alt="item.title"
-            class="mr-4 rounded"
-            width="50"
-            height="50"
-          ></v-img>
+      <span v-for="(item, index) in feedItems" :key="item.id || index" class="scrolling-item px-6 flex-shrink-0">
+        <v-card class="bg-transparent shadow-none d-flex align-center elevation-0">
+          <v-img :src="item.thumbnail" :alt="item.title" class="mr-4 rounded" width="50" height="50"></v-img>
           <v-card-text>
             <h3 class="text-xl font-semibold">
               {{ item.title }}
-              <a
-                v-if="item.link"
-                :href="item.link"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-blue-500 ml-2"
-              >
-                Learn More
-              </a>
+              <a v-if="item.link" :href="item.link" target="_blank" rel="noopener noreferrer" class="text-blue-500 ml-2"> Learn More </a>
             </h3>
             <p class="text-sm">{{ item.description }}</p>
           </v-card-text>
@@ -52,14 +32,9 @@
               <v-row>
                 <v-col cols="12" md="6">
                   <h3 class="mb-4">Feed Items</h3>
-                  <v-btn color="primary" @click="addItem" class="mb-4">
-                    <v-icon left>mdi-plus</v-icon>Add Item
-                  </v-btn>
+                  <v-btn color="primary" @click="addItem" class="mb-4"> <v-icon left>mdi-plus</v-icon>Add Item </v-btn>
                   <v-expansion-panels multiple>
-                    <v-expansion-panel
-                      v-for="(item, index) in feedItems"
-                      :key="item.id || index"
-                    >
+                    <v-expansion-panel v-for="(item, index) in feedItems" :key="item.id || index">
                       <v-expansion-panel-title>
                         {{ item.title || "Untitled Item" }}
                       </v-expansion-panel-title>
@@ -68,45 +43,26 @@
                           <v-card-text>
                             <v-row>
                               <v-col cols="12">
-                                <v-text-field
-                                  v-model="item.title"
-                                  label="Title"
-                                  :rules="[(v) => !!v || 'Title is required']"
-                                  required
-                                ></v-text-field>
+                                <v-text-field v-model="item.title" label="Title" :rules="[(v) => !!v || 'Title is required']" required></v-text-field>
                               </v-col>
                               <v-col cols="12">
                                 <v-textarea
                                   v-model="item.description"
                                   label="Description"
-                                  :rules="[
-                                    (v) => !!v || 'Description is required',
-                                  ]"
+                                  :rules="[(v) => !!v || 'Description is required']"
                                   required
                                 ></v-textarea>
                               </v-col>
                               <v-col cols="12">
-                                <v-text-field
-                                  v-model="item.thumbnail"
-                                  label="Thumbnail URL"
-                                  required
-                                ></v-text-field>
+                                <v-text-field v-model="item.thumbnail" label="Thumbnail URL" required></v-text-field>
                               </v-col>
                               <v-col cols="12">
-                                <v-text-field
-                                  v-model="item.link"
-                                  label="Link (optional)"
-                                ></v-text-field>
+                                <v-text-field v-model="item.link" label="Link (optional)"></v-text-field>
                               </v-col>
                             </v-row>
                           </v-card-text>
                           <v-card-actions class="justify-end">
-                            <v-btn
-                              icon
-                              color="red"
-                              @click="removeItem(index)"
-                              :disabled="feedItems.length === 1"
-                            >
+                            <v-btn icon color="red" @click="removeItem(index)" :disabled="feedItems.length === 1">
                               <v-icon>mdi-delete</v-icon>
                             </v-btn>
                           </v-card-actions>
@@ -146,14 +102,17 @@
                     class="mt-4"
                   ></v-slider>
 
-                  <!-- New API Key Field -->
+                  <!-- Add Carbon Saved input -->
                   <v-text-field
-                    v-model="apiKey"
-                    label="Password"
-                    type="password"
-                    :rules="[(v) => !!v || 'API Key is required']"
+                    v-model.number="settings.carbonSaved"
+                    label="Carbon Saved (kg)"
+                    type="number"
+                    :rules="[(v) => v >= 0 || 'Value must be positive']"
                     required
                   ></v-text-field>
+
+                  <!-- New API Key Field -->
+                  <v-text-field v-model="apiKey" label="Password" type="password" :rules="[(v) => !!v || 'API Key is required']" required></v-text-field>
                 </v-col>
               </v-row>
             </v-container>
@@ -162,26 +121,20 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn text @click="closeSettingsDialog">Cancel</v-btn>
-          <v-btn :disabled="!isFormValid" color="primary" @click="saveSettings">
-            Save
-          </v-btn>
+          <v-btn :disabled="!isFormValid" color="primary" @click="saveSettings"> Save </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <!-- Loading Indicator -->
-    <v-progress-linear
-      v-if="apiIsLoading || isSaving"
-      indeterminate
-      color="green"
-      class="mt-2"
-    ></v-progress-linear>
+    <v-progress-linear v-if="apiIsLoading || isSaving" indeterminate color="green" class="mt-2"></v-progress-linear>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from "vue";
-// Removed the useApi import as it's no longer needed
+import { ref, onMounted, reactive, watch } from "vue";
+
+const emit = defineEmits(["settings-updated"]);
 
 // Reactive state for feed items and loading status
 const feedItems = ref([]);
@@ -192,6 +145,7 @@ const isSaving = ref(false);
 const settings = reactive({
   transparency: false,
   scrollSpeed: 30, // default scroll speed in seconds
+  carbonSaved: 0, // Add default value for carbonSaved
 });
 
 // Reactive state for API Key (separate from settings)
@@ -206,9 +160,7 @@ const feedForm = ref(null);
 const fetchFeedItems = async () => {
   apiIsLoading.value = true;
   try {
-    const response = await fetch(
-      "https://rev6ykipl5.execute-api.us-east-2.amazonaws.com/Prod/getData?key=ASSKBanner"
-    );
+    const response = await fetch("https://rev6ykipl5.execute-api.us-east-2.amazonaws.com/Prod/getData?key=ASSKBanner");
     if (!response.ok) {
       throw new Error("Failed to fetch feed items.");
     }
@@ -217,6 +169,10 @@ const fetchFeedItems = async () => {
     // Update settings using reactive assignment
     settings.transparency = data.settings.transparency;
     settings.scrollSpeed = data.settings.scrollSpeed;
+    settings.carbonSaved = data.settings.carbonSaved;
+
+    // Emit the settings to parent component
+    emit("settings-updated", { ...settings });
   } catch (error) {
     console.error("Error fetching feed items:", error);
   } finally {
@@ -274,17 +230,14 @@ const saveSettings = async () => {
       feedItems: feedItems.value,
       settings: settings,
     };
-    const response = await fetch(
-      "https://rev6ykipl5.execute-api.us-east-2.amazonaws.com/Prod/getData?key=ASSKBanner",
-      {
-        method: "PUT",
-        headers: {
-          "X-Api-Key": apiKey.value,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      }
-    );
+    const response = await fetch("https://rev6ykipl5.execute-api.us-east-2.amazonaws.com/Prod/getData?key=ASSKBanner", {
+      method: "PUT",
+      headers: {
+        "X-Api-Key": apiKey.value,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
 
     if (!response.ok) {
       throw new Error("Failed to save settings and feed items.");
@@ -301,6 +254,15 @@ const saveSettings = async () => {
     isSaving.value = false;
   }
 };
+
+// Add watcher for settings changes
+watch(
+  settings,
+  (newSettings) => {
+    emit("settings-updated", { ...newSettings });
+  },
+  { deep: true }
+);
 </script>
 
 <style scoped>

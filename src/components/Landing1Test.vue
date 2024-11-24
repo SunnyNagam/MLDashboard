@@ -254,7 +254,7 @@
           <div class="cursor-pointer text-center">
             <div>
               <div class="text-4xl font-bold mb-2 text-black">
-                <scroll-triggered-animated-number :value="carbonSaved.toFixed(2)" :duration="3000" :symbol="'kg'" />
+                <scroll-triggered-animated-number :value="carbonSaved" :duration="3000" :symbol="'kg'" />
               </div>
               <div class="text-lg">Carbon Saved</div>
             </div>
@@ -388,7 +388,7 @@
       </v-col>
     </v-row>
   </v-container>
-  <ScrollingFeed />
+  <ScrollingFeed @settings-updated="handleSettingsUpdate" />
 
   <!-- Sell Equipment Modal -->
   <v-dialog v-model="sellEquipmentDialog" max-width="800px">
@@ -633,6 +633,20 @@ const services = ref([
     iconColor: "primary",
   },
 ]);
+
+// Add reactive reference for banner settings
+const bannerSettings = ref({
+  transparency: 0.7,
+  scrollSpeed: 30,
+});
+
+// Add handler for settings updates
+const handleSettingsUpdate = (settings) => {
+  bannerSettings.value = settings;
+  if (settings.carbonSaved !== undefined) {
+    carbonSaved.value = Number(settings.carbonSaved);
+  }
+};
 
 // Intersection Observer for Animations
 onMounted(() => {
