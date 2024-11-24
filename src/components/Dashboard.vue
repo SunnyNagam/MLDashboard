@@ -27,20 +27,17 @@ const isExpanded = ref(false);
 
 function expandComponent(component, props = {}) {
   expandedComponent.value = markRaw(component);
-  expandedProps.value = props;
+  expandedProps.value = { ...props, isExpanded: true };
   isExpanded.value = true;
 }
 
 async function fetchTodoData() {
   try {
-    const response = await fetch(
-      "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/fetch?list_name=Now",
-      {
-        headers: {
-          "X-Api-Key": getApiKey(),
-        },
-      }
-    );
+    const response = await fetch("https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/fetch?list_name=Now", {
+      headers: {
+        "X-Api-Key": getApiKey(),
+      },
+    });
     const data = await response.json();
     todo.value = data;
   } catch (error) {
@@ -48,14 +45,11 @@ async function fetchTodoData() {
   }
 }
 async function fetchCalendar() {
-  const response = await fetch(
-    "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getCal",
-    {
-      headers: {
-        "X-Api-Key": getApiKey(),
-      },
-    }
-  );
+  const response = await fetch("https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getCal", {
+    headers: {
+      "X-Api-Key": getApiKey(),
+    },
+  });
   const data = await response.json();
   // Helper function to parse a local date string into a local Date object
   const parseGoogleDate = (dateString, isEnd = false) => {
@@ -97,22 +91,11 @@ function getTodoTexts(todoItems) {
 fetchTodoData();
 fetchCalendar();
 
-const chatContext = computed(
-  () =>
-    "**Items on user's todo list (with steps):** \n\n" +
-    getTodoTexts(todo.value.Now)
-);
+const chatContext = computed(() => "**Items on user's todo list (with steps):** \n\n" + getTodoTexts(todo.value.Now));
 const calContext = computed(
   () =>
     "**Items on user's Calendar:** \n\n" +
-    calendarEvents.value
-      .map(
-        (event) =>
-          `${
-            event.title
-          } from ${event.start.toLocaleString()} to ${event.end.toLocaleString()}\n`
-      )
-      .join("\n")
+    calendarEvents.value.map((event) => `${event.title} from ${event.start.toLocaleString()} to ${event.end.toLocaleString()}\n`).join("\n")
 );
 
 function handleApiKeySubmit(enteredApiKey) {
@@ -128,64 +111,24 @@ function handleApiKeySubmit(enteredApiKey) {
     <v-row>
       <v-col cols="12">
         <h1 class="text-3xl sm:text-6xl font-bold my-4 text-center">
-          <v-icon @click="apiKeyModalVisible = true"
-            >mdi-white-balance-sunny</v-icon
-          >
+          <v-icon @click="apiKeyModalVisible = true">mdi-white-balance-sunny</v-icon>
           Sunny's Dashboard :)
         </h1>
       </v-col>
     </v-row>
     <v-row>
       <v-col cols="12" sm="8" order-sm="2">
-        <Calendar
-          :collapsed="smAndDown"
-          class="mb-4"
-          @expand="expandComponent(Calendar)"
-        />
-        <TreeNotes
-          :collapsed="true"
-          class="mb-4"
-          v-if="!smAndDown"
-          @expand="expandComponent(TreeNotes)"
-        />
-        <TodoAITreeDisp
-          :collapsed="true"
-          class="mb-4"
-          @expand="expandComponent(TodoAITreeDisp)"
-        />
-        <WooshFriendsTest
-          :collapsed="true"
-          class="mb-4"
-          v-if="!smAndDown"
-          @expand="expandComponent(WooshFriendsTest)"
-        />
+        <Calendar :collapsed="smAndDown" class="mb-4" @expand="expandComponent(Calendar)" />
+        <TreeNotes :collapsed="true" class="mb-4" v-if="!smAndDown" @expand="expandComponent(TreeNotes)" />
+        <TodoAITreeDisp :collapsed="true" class="mb-4" @expand="expandComponent(TodoAITreeDisp)" />
+        <WooshFriendsTest :collapsed="true" class="mb-4" v-if="!smAndDown" @expand="expandComponent(WooshFriendsTest)" />
       </v-col>
       <v-col cols="12" sm="4" order-sm="1">
-        <TodoListCard
-          title="Now"
-          @expand="expandComponent(TodoListCard, { title: 'Now' })"
-        />
-        <TodoListCard
-          title="Soon"
-          :collapsed="true"
-          @expand="expandComponent(TodoListCard, { title: 'Soon' })"
-        />
-        <TodoListCard
-          title="Eventually"
-          :collapsed="true"
-          @expand="expandComponent(TodoListCard, { title: 'Eventually' })"
-        />
-        <Woosh
-          :collapsed="false"
-          class="my-4"
-          @expand="expandComponent(Woosh)"
-        />
-        <TreeNotes
-          :collapsed="true"
-          class="mb-4"
-          v-if="smAndDown"
-          @expand="expandComponent(TreeNotes)"
-        />
+        <TodoListCard title="Now" @expand="expandComponent(TodoListCard, { title: 'Now' })" />
+        <TodoListCard title="Soon" :collapsed="true" @expand="expandComponent(TodoListCard, { title: 'Soon' })" />
+        <TodoListCard title="Eventually" :collapsed="true" @expand="expandComponent(TodoListCard, { title: 'Eventually' })" />
+        <Woosh :collapsed="false" class="my-4" @expand="expandComponent(Woosh)" />
+        <TreeNotes :collapsed="true" class="mb-4" v-if="smAndDown" @expand="expandComponent(TreeNotes)" />
         <Chat
           :context="otherContext + '\n' + chatContext + '\n' + calContext"
           :collapsed="false"
@@ -200,22 +143,10 @@ function handleApiKeySubmit(enteredApiKey) {
   </v-container>
 
   <!-- Expansion Dialog -->
-  <v-dialog v-model="isExpanded" hide-overlay transition="scale-transition">
-    <v-card>
-      <v-toolbar color="grey-darken-4" dark>
-        <v-btn icon @click="isExpanded = false">
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-        <v-toolbar-title>{{
-          expandedComponent?.name || "Full Screen"
-        }}</v-toolbar-title>
-      </v-toolbar>
-      <v-card-text class="expanded-content">
-        <component
-          :is="expandedComponent"
-          v-bind="expandedProps"
-          :collapsed="false"
-        />
+  <v-dialog v-model="isExpanded" hide-overlay transition="scale-transition" width="90vw" height="90vh" class="ma-auto">
+    <v-card class="h-[90vh]">
+      <v-card-text class="expanded-content h-[calc(90vh-64px)]">
+        <component :is="expandedComponent" v-bind="expandedProps" :collapsed="false" />
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -224,27 +155,15 @@ function handleApiKeySubmit(enteredApiKey) {
     <v-card>
       <v-card-title class="headline">Enter Password (API key):</v-card-title>
       <v-card-text>
-        <v-text-field
-          v-model="enteredApiKey"
-          label="API Key"
-          type="password"
-          autofocus
-          solo
-          @keydown.enter="handleApiKeySubmit(enteredApiKey)"
-        />
+        <v-text-field v-model="enteredApiKey" label="API Key" type="password" autofocus solo @keydown.enter="handleApiKeySubmit(enteredApiKey)" />
         <v-card-subtitle class="text-wrap">
-          (This site is intended for personal use. Uses API key protected
-          serverless AWS Lambda functions to connect to personalized Google
-          Calendar, Notion, and Reddit based tools)
+          (This site is intended for personal use. Uses API key protected serverless AWS Lambda functions to connect to personalized Google Calendar, Notion,
+          and Reddit based tools)
         </v-card-subtitle>
       </v-card-text>
       <v-card-actions>
-        <v-btn color="grey darken-4" @click="apiKeyModalVisible = false"
-          >Close</v-btn
-        >
-        <v-btn color="primary" @click="handleApiKeySubmit(enteredApiKey)"
-          >Submit</v-btn
-        >
+        <v-btn color="grey darken-4" @click="apiKeyModalVisible = false">Close</v-btn>
+        <v-btn color="primary" @click="handleApiKeySubmit(enteredApiKey)">Submit</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

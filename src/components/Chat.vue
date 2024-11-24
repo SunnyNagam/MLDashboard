@@ -1,17 +1,10 @@
 <template>
-  <v-card :class="[$attrs.class, 'mx-auto']" elevation="2" rounded="lg">
-    <v-toolbar
-      color="grey-darken-4"
-      dark
-      density="compact"
-      :border="showChat ? 'md' : 'none'"
-    >
+  <v-card :class="[$attrs.class, 'mx-auto', isExpanded ? 'h-full d-flex flex-column' : '']" elevation="2" rounded="lg">
+    <v-toolbar color="grey-darken-4" dark density="compact" :border="showChat ? 'md' : 'none'">
       <v-btn icon @click="showChat = !showChat">
         <v-icon>{{ showChat ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
       </v-btn>
-      <v-toolbar-title
-        >Chat ({{ selectedModel.split("/")[1] }})</v-toolbar-title
-      >
+      <v-toolbar-title>Chat ({{ selectedModel.split("/")[1] }})</v-toolbar-title>
       <v-btn icon @click="clearMessages">
         <v-icon>mdi-delete</v-icon>
       </v-btn>
@@ -28,13 +21,9 @@
         <v-icon>mdi-arrow-expand</v-icon>
       </v-btn>
     </v-toolbar>
-    <div v-show="showChat">
-      <v-card-text class="h-[21vh] overflow-y-auto">
-        <div
-          class="space-y-2 py-2"
-          v-for="(message, index) in messages.slice(1)"
-          :key="message.content"
-        >
+    <div v-show="showChat" :class="['d-flex flex-column', isExpanded ? 'flex-grow-1' : '']">
+      <v-card-text :class="['overflow-y-auto', isExpanded ? 'flex-grow-1' : 'h-[21vh]']">
+        <div class="space-y-2 py-2" v-for="(message, index) in messages.slice(1)" :key="message.content">
           <div
             @click="showMenu(message, index + 1)"
             :class="{
@@ -44,10 +33,8 @@
           >
             <div
               :class="{
-                'inline-block bg-blue-500 text-white p-2 rounded-l-lg':
-                  message.role === 'user',
-                'inline-block bg-gray-900 p-2 rounded-r-lg':
-                  message.role === 'assistant',
+                'inline-block bg-blue-500 text-white p-2 rounded-l-lg': message.role === 'user',
+                'inline-block bg-gray-900 p-2 rounded-r-lg': message.role === 'assistant',
               }"
               :ref="
                 (el) => {
@@ -55,10 +42,7 @@
                 }
               "
             >
-              <vue-markdown
-                :source="message.content"
-                :options="{ breaks: true }"
-              />
+              <vue-markdown :source="message.content" :options="{ breaks: true }" />
             </div>
           </div>
           <div
@@ -109,14 +93,7 @@
         </div>
       </v-card-text>
       <v-card-actions>
-        <v-text-field
-          v-model="userInput"
-          label="Type a message..."
-          class="flex-grow-1"
-          @keyup.enter="sendMessage"
-          outlined
-          hide-details
-        ></v-text-field>
+        <v-text-field v-model="userInput" label="Type a message..." class="flex-grow-1" @keyup.enter="sendMessage" outlined hide-details></v-text-field>
         <v-btn @click="sendMessage">
           {{ editingIndex === -1 ? "Send" : "Save" }}
         </v-btn>
@@ -129,40 +106,14 @@
       <v-card-title class="headline">Chat AI settings</v-card-title>
       <v-card-text>
         Model:
-        <v-combobox
-          :items="modelChoices"
-          v-model="selectedModel"
-          label="Select or enter a model"
-          outlined
-          clearable
-        ></v-combobox>
-        <v-switch
-          v-model="callAgent"
-          label="Use Agent (beta)"
-          color="deep-purple accent-4"
-        ></v-switch>
+        <v-combobox :items="modelChoices" v-model="selectedModel" label="Select or enter a model" outlined clearable></v-combobox>
+        <v-switch v-model="callAgent" label="Use Agent (beta)" color="deep-purple accent-4"></v-switch>
         <v-form class="mt-4">
-          <v-text-field
-            v-model="apiKey"
-            label="API Key"
-            outlined
-            hint="Enter your OpenRouter API key"
-            clearable
-            dense
-          ></v-text-field>
-          <v-btn @click="saveApiKey" color="primary" class="mt-2" elevation="2">
-            Save API Key
-          </v-btn>
+          <v-text-field v-model="apiKey" label="API Key" outlined hint="Enter your OpenRouter API key" clearable dense></v-text-field>
+          <v-btn @click="saveApiKey" color="primary" class="mt-2" elevation="2"> Save API Key </v-btn>
         </v-form>
       </v-card-text>
-      <tree
-        v-model="notes"
-        :data="notes"
-        group="notesParent"
-        @input="updateData"
-        class="mt-4"
-      >
-      </tree>
+      <tree v-model="notes" :data="notes" group="notesParent" @input="updateData" class="mt-4"> </tree>
     </v-card>
   </v-dialog>
 </template>
@@ -192,17 +143,12 @@ const openaiApi = ref(null); // Initialize as null; will set after fetching API 
 
 const fetchOpenRouterApiKey = async () => {
   try {
-    const response = await fetch(
-      "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=Notes",
-      { headers: { "X-Api-Key": getApiKey() } }
-    );
+    const response = await fetch("https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=Notes", { headers: { "X-Api-Key": getApiKey() } });
     const data = await response.json();
     console.log(data);
     if (Array.isArray(data) && data.length > 0) {
       const apiKeys = data.find((item) => item.text === "API keys");
-      const openRouterKey = apiKeys?.children?.find(
-        (item) => item.text === "OpenRouter"
-      );
+      const openRouterKey = apiKeys?.children?.find((item) => item.text === "OpenRouter");
       if (openRouterKey) {
         apiKey.value = openRouterKey.children[0].text;
         Cookies.set("OPEN_ROUTER_API_KEY", apiKey.value);
@@ -237,6 +183,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  isExpanded: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 if (props.collapsed) {
@@ -268,9 +218,7 @@ const messages = ref([
 ]);
 
 const clearMessages = () => {
-  messages.value = messages.value.filter(
-    (message, index) => message.role === "system" && index === 0
-  );
+  messages.value = messages.value.filter((message, index) => message.role === "system" && index === 0);
 };
 
 const lastMessage = ref(null);
@@ -350,8 +298,7 @@ async function sendMessageToApi(userMessage) {
         role: "assistant",
       });
       for await (const part of stream) {
-        messages.value[messages.value.length - 1].content +=
-          part.choices[0]?.delta?.content || "";
+        messages.value[messages.value.length - 1].content += part.choices[0]?.delta?.content || "";
       }
     } else {
       const localModelName = selectedModel.value.split("/")[1];
@@ -365,8 +312,7 @@ async function sendMessageToApi(userMessage) {
         role: "assistant",
       });
       for await (const part of response) {
-        messages.value[messages.value.length - 1].content +=
-          part.message.content;
+        messages.value[messages.value.length - 1].content += part.message.content;
       }
     }
   } catch (error) {

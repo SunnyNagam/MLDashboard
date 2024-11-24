@@ -1,12 +1,7 @@
 <template>
-  <v-card class="mx-auto" elevation="2" rounded="lg">
+  <v-card :class="[$attrs.class, 'mx-auto', isExpanded2 ? 'h-full d-flex flex-column' : '']" elevation="2" rounded="lg">
     <!-- Toolbar -->
-    <v-toolbar
-      color="grey-darken-4"
-      dark
-      dense
-      :border="showList ? 'md' : 'none'"
-    >
+    <v-toolbar color="grey-darken-4" dark dense :border="showList ? 'md' : 'none'">
       <v-btn icon @click="showList = !showList">
         <v-icon>{{ showList ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
       </v-btn>
@@ -23,124 +18,83 @@
       </template>
     </v-toolbar>
 
-    <!-- Progress Bar -->
-    <v-progress-linear
-      v-if="apiIsLoading"
-      indeterminate
-      class="mx-auto"
-      size="64"
-    ></v-progress-linear>
+    <!-- Todo List Container -->
+    <div v-show="showList" :class="['d-flex flex-column', isExpanded2 ? 'flex-grow-1' : '']">
+      <v-progress-linear v-if="apiIsLoading" indeterminate class="mx-auto" size="64"></v-progress-linear>
 
-    <!-- Todo List -->
-    <v-list v-show="showList">
-      <v-list-group v-for="item in todo" :key="item.id">
-        <template v-slot:activator="{ props }">
-          <v-list-item
-            v-bind="props"
-            class="group"
-            :style="getSwipeStyle(item.id)"
-            v-touch:swipe.left="() => deferItem(item.id)"
-            v-touch:swipe.right="() => removeItem(item.id)"
-            @touchstart="(e) => startSwipe(item.id, e.touches[0].clientX)"
-            @touchmove="(e) => updateSwipe(item.id, e.touches[0].clientX)"
-            @touchend="() => endSwipe(item.id)"
-          >
-            <template v-slot:prepend>
-              <v-checkbox
-                v-if="selectionMode"
-                v-model="selectedItems"
-                :value="item.id"
-                @click.stop
-              ></v-checkbox>
-              <v-icon v-else @click="toggleExpanded(item.id)">
-                {{
-                  isExpanded(item.id) ? "mdi-chevron-up" : "mdi-chevron-down"
-                }}
-              </v-icon>
-            </template>
-            <template v-slot:append> </template>
-            <div class="flex flex-1" @click="handleItemClick(item)">
-              <div class="flex-grow">
-                <v-list-item-title>{{ item.text }}</v-list-item-title>
-                <v-list-item-subtitle>
-                  Created: {{ formatDate(item.created) }}
-                </v-list-item-subtitle>
-              </div>
-
-              <div
-                v-if="!selectionMode"
-                class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-2 bg-zinc-800 p-2 rounded-lg invisible group-hover:visible"
-              >
-                <v-icon @click.stop="openAddDialog(item.id, null)"
-                  >mdi-table-row-plus-after</v-icon
-                >
-                <v-icon @click.stop="openAddDialog(null, item.id)"
-                  >mdi-plus</v-icon
-                >
-                <v-icon @click.stop="removeItem(item.id)" color="red"
-                  >mdi-delete</v-icon
-                >
-                <v-icon @click.stop="deferItem(item.id)"
-                  >mdi-timer-outline</v-icon
-                >
-              </div>
-            </div>
-          </v-list-item>
-        </template>
-
-        <!-- Subtasks -->
-        <v-list-item
-          v-for="subTask in item.subTasks"
-          :key="subTask.id"
-          class="group"
-          :style="getSwipeStyle(subTask.id)"
-          v-touch:swipe.left="() => deferItem(subTask.id)"
-          v-touch:swipe.right="() => removeItem(subTask.id)"
-          @touchstart="(e) => startSwipe(subTask.id, e.touches[0].clientX)"
-          @touchmove="(e) => updateSwipe(subTask.id, e.touches[0].clientX)"
-          @touchend="() => endSwipe(subTask.id)"
-          @click="toggleEditing(subTask)"
-        >
-          <template v-slot:prepend="{ isActive }">
-            <v-list-item-action start>
-              <v-checkbox-btn
-                v-model="subTask.checked"
-                @click="
-                  toggleItem(
-                    item.id,
-                    subTask.id,
-                    subTask.text,
-                    !subTask.checked
-                  )
-                "
-              ></v-checkbox-btn>
-            </v-list-item-action>
-          </template>
-
-          <v-list-item-title>{{ subTask.text }}</v-list-item-title>
-          <template v-slot:append>
-            <div
-              class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-2 bg-zinc-800 p-2 rounded-lg invisible group-hover:visible"
+      <!-- Todo List with dynamic height -->
+      <v-list :class="['overflow-y-auto', isExpanded2 ? 'flex-grow-1' : '']" v-show="showList">
+        <v-list-group v-for="item in todo" :key="item.id">
+          <template v-slot:activator="{ props }">
+            <v-list-item
+              v-bind="props"
+              class="group"
+              :style="getSwipeStyle(item.id)"
+              v-touch:swipe.left="() => deferItem(item.id)"
+              v-touch:swipe.right="() => removeItem(item.id)"
+              @touchstart="(e) => startSwipe(item.id, e.touches[0].clientX)"
+              @touchmove="(e) => updateSwipe(item.id, e.touches[0].clientX)"
+              @touchend="() => endSwipe(item.id)"
             >
-              <v-icon @click.stop="openAddDialog(subTask.id, item.id)"
-                >mdi-table-row-plus-after</v-icon
-              >
-              <v-icon @click.stop="removeItem(subTask.id)" color="red"
-                >mdi-delete</v-icon
-              >
-            </div>
+              <template v-slot:prepend>
+                <v-checkbox v-if="selectionMode" v-model="selectedItems" :value="item.id" @click.stop></v-checkbox>
+                <v-icon v-else @click="toggleExpanded(item.id)">
+                  {{ isExpanded(item.id) ? "mdi-chevron-up" : "mdi-chevron-down" }}
+                </v-icon>
+              </template>
+              <template v-slot:append> </template>
+              <div class="flex flex-1" @click="handleItemClick(item)">
+                <div class="flex-grow">
+                  <v-list-item-title>{{ item.text }}</v-list-item-title>
+                  <v-list-item-subtitle> Created: {{ formatDate(item.created) }} </v-list-item-subtitle>
+                </div>
+
+                <div
+                  v-if="!selectionMode"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-2 bg-zinc-800 p-2 rounded-lg invisible group-hover:visible"
+                >
+                  <v-icon @click.stop="openAddDialog(item.id, null)">mdi-table-row-plus-after</v-icon>
+                  <v-icon @click.stop="openAddDialog(null, item.id)">mdi-plus</v-icon>
+                  <v-icon @click.stop="removeItem(item.id)" color="red">mdi-delete</v-icon>
+                  <v-icon @click.stop="deferItem(item.id)">mdi-timer-outline</v-icon>
+                </div>
+              </div>
+            </v-list-item>
           </template>
-        </v-list-item>
-      </v-list-group>
-    </v-list>
+
+          <!-- Subtasks -->
+          <v-list-item
+            v-for="subTask in item.subTasks"
+            :key="subTask.id"
+            class="group"
+            :style="getSwipeStyle(subTask.id)"
+            v-touch:swipe.left="() => deferItem(subTask.id)"
+            v-touch:swipe.right="() => removeItem(subTask.id)"
+            @touchstart="(e) => startSwipe(subTask.id, e.touches[0].clientX)"
+            @touchmove="(e) => updateSwipe(subTask.id, e.touches[0].clientX)"
+            @touchend="() => endSwipe(subTask.id)"
+            @click="toggleEditing(subTask)"
+          >
+            <template v-slot:prepend="{ isActive }">
+              <v-list-item-action start>
+                <v-checkbox-btn v-model="subTask.checked" @click="toggleItem(item.id, subTask.id, subTask.text, !subTask.checked)"></v-checkbox-btn>
+              </v-list-item-action>
+            </template>
+
+            <v-list-item-title>{{ subTask.text }}</v-list-item-title>
+            <template v-slot:append>
+              <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-2 bg-zinc-800 p-2 rounded-lg invisible group-hover:visible">
+                <v-icon @click.stop="openAddDialog(subTask.id, item.id)">mdi-table-row-plus-after</v-icon>
+                <v-icon @click.stop="removeItem(subTask.id)" color="red">mdi-delete</v-icon>
+              </div>
+            </template>
+          </v-list-item>
+        </v-list-group>
+      </v-list>
+    </div>
 
     <!-- Dialogs -->
-    <TodoEditDialog
-      :active="editDialog"
-      :item="editDialogItem"
-      @save="editItem"
-      @toggle="editDialog = $event"
-    ></TodoEditDialog>
+    <TodoEditDialog :active="editDialog" :item="editDialogItem" @save="editItem" @toggle="editDialog = $event"></TodoEditDialog>
 
     <TodoAddDialog v-model:active="addDialog" @save="addItem"></TodoAddDialog>
 
@@ -175,6 +129,10 @@ const props = defineProps({
     default: "Now",
   },
   collapsed: {
+    type: Boolean,
+    default: false,
+  },
+  isExpanded2: {
     type: Boolean,
     default: false,
   },
@@ -265,9 +223,7 @@ const apiCall = async (endpoint, method = "GET", body = null) => {
 
 // Fetch Todo Items
 const fetchTodo = async () => {
-  const data = await apiCall(
-    `${BASE_URL}/fetch?list_name=${encodeURIComponent(props.title)}`
-  );
+  const data = await apiCall(`${BASE_URL}/fetch?list_name=${encodeURIComponent(props.title)}`);
   todo.value = data?.[props.title] || [];
 };
 
@@ -309,9 +265,7 @@ const removeItem = async (id) => {
 // Defer Item
 const deferItem = async (id) => {
   const deferParam = props.title === "Now" ? "defer=true" : "deferWeek=true";
-  const response = await apiCall(
-    `${BASE_URL}/delete?block_id=${id}&${deferParam}`
-  );
+  const response = await apiCall(`${BASE_URL}/delete?block_id=${id}&${deferParam}`);
   if (response) {
     updateLocalStateAfterRemoval([id]);
   }
@@ -347,16 +301,12 @@ const updateLocalStateAfterAdd = (text, id, afterId, parentId) => {
   };
 
   if (!parentId) {
-    const index = afterId
-      ? todo.value.findIndex((item) => item.id === afterId)
-      : -1;
+    const index = afterId ? todo.value.findIndex((item) => item.id === afterId) : -1;
     todo.value.splice(index + 1, 0, newItem);
   } else {
     const parent = todo.value.find((item) => item.id === parentId);
     if (parent) {
-      const subIndex = afterId
-        ? parent.subTasks.findIndex((subTask) => subTask.id === afterId)
-        : -1;
+      const subIndex = afterId ? parent.subTasks.findIndex((subTask) => subTask.id === afterId) : -1;
       parent.subTasks.splice(subIndex + 1, 0, newItem);
     }
   }
@@ -440,10 +390,7 @@ const formatDate = (dateStr) => {
 const drawRandomItem = () => {
   if (randomItemDialog.value) {
     const allItems = todo.value.flatMap((item) => [item, ...item.subTasks]);
-    randomItem.value =
-      allItems.length > 0
-        ? { ...allItems[Math.floor(Math.random() * allItems.length)] }
-        : null;
+    randomItem.value = allItems.length > 0 ? { ...allItems[Math.floor(Math.random() * allItems.length)] } : null;
   }
 };
 

@@ -83,7 +83,7 @@
       </v-col>
       <v-col cols="12" md="6" class="text-center">
         <h2 class="text-3xl font-bold mb-8">About ASSK Inc.</h2>
-        <p class="text-xl font-bold mb-0">Let ASSK SELL & SOURCE your equipment and OCTG needs</p>
+        <p class="text-xl font-semibold mb-0">Let ASSK SELL & SOURCE your equipment and OCTG needs</p>
 
         <p class="text-lg font-semibold mb-8">- Freeing time for you to focus on core initiatives -</p>
 
