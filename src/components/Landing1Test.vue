@@ -311,7 +311,7 @@
 
   <!-- News & Highlights Section -->
   <v-container class="py-16">
-    <h2 class="text-3xl font-bold text-center mb-8">Missalaneous</h2>
+    <h2 class="text-3xl font-bold text-center mb-8">Miscellaneous</h2>
     <v-carousel cycle height="500" hide-delimiter-background show-arrows="hover" :show-arrows-on-hover="true">
       <v-carousel-item v-for="(slide, i) in newsSlides" :key="i" :src="slide.image" cover>
         <v-sheet class="fill-height" color="rgba(0, 0, 0, 0.4)">
