@@ -2,7 +2,7 @@
   <!-- Enhanced Landing Page -->
   <v-app-bar light scroll-behavior="hide">
     <!-- Hamburger Icon for Mobile -->
-    <v-app-bar-nav-icon @click="toggleDrawer" class="d-md-none"></v-app-bar-nav-icon>
+    <v-app-bar-nav-icon @click="toggleDrawer" class="d-md-none" aria-label="Toggle Navigation Drawer"></v-app-bar-nav-icon>
     <v-img :src="imageLink.logo" alt="ASSK Logo"></v-img>
     <v-spacer></v-spacer>
     <!-- Tabs for Desktop -->
@@ -11,7 +11,6 @@
       <v-tab @click="sourceEquipmentDialog = true">Source Equipment</v-tab>
       <v-tab @click="sellEquipmentDialog = true">Sell Your Equipment</v-tab>
       <v-tab @click="financingDialog = true">Financing Options</v-tab>
-      <!-- <v-tab @click="navigateTo('community-board')">Community Board</v-tab> -->
     </v-tabs>
   </v-app-bar>
 
@@ -123,11 +122,13 @@
           </v-btn>
         </v-card>
       </v-col>
+      <!-- Additional Service Card -->
       <v-col cols="12" md="3" class="px-4 d-flex hover:scale-105 transition-transform duration-400">
         <v-card class="elevation-3 pa-6 flex-grow-1 service-card animate-on-scroll" :style="{ transitionDelay: `${index * 0.2}s` }">
           <v-icon color="primary" size="48" class="mb-4" icon="mdi-recycle"></v-icon>
           <h2 class="text-xl font-semibold mb-2">Our Commitment to Sustainability</h2>
           <p class="text-body-1">ASSK Inc. is dedicated to environmental responsibility and sustainability in all our operations.</p>
+          <!-- Smoke Animation and Carbon Saved -->
           <v-row justify="center">
             <v-col cols="auto">
               <v-tooltip
@@ -269,7 +270,7 @@
     <v-card class="pa-6">
       <v-card-title class="text-center position-relative mb-4">
         <h2 class="text-3xl font-bold w-100">Financing Options</h2>
-        <v-btn icon="mdi-close" variant="text" @click="financingDialog = false" class="position-absolute" style="right: 2px; top: 0px"></v-btn>
+        <v-btn icon="mdi-close" variant="text" aria-label="Close" @click="financingDialog = false" class="close-button"></v-btn>
       </v-card-title>
       <v-card-text>
         <v-row>
@@ -310,7 +311,7 @@
 
   <!-- News & Highlights Section -->
   <v-container class="py-16">
-    <h2 class="text-3xl font-bold text-center mb-8">News & Highlights</h2>
+    <h2 class="text-3xl font-bold text-center mb-8">Missalaneous</h2>
     <v-carousel cycle height="500" hide-delimiter-background show-arrows="hover" :show-arrows-on-hover="true">
       <v-carousel-item v-for="(slide, i) in newsSlides" :key="i" :src="slide.image" cover>
         <v-sheet class="fill-height" color="rgba(0, 0, 0, 0.4)">
@@ -340,8 +341,10 @@
     <v-row justify="center">
       <v-card class="elevation-2 pa-6 w-full mx-6">
         <v-card-text>
+          <v-alert type="success" v-if="contactFormSubmitSuccess" dismissible> Message sent successfully! </v-alert>
+          <v-alert type="error" v-if="contactFormSubmitError" dismissible> Failed to send message. </v-alert>
           <v-form @submit.prevent="submitContactForm" ref="contactForm">
-            <v-text-field v-model="contactFormEmail" label="Email Address" type="email" required :rules="emailRules" outlined class="mb-4"></v-text-field>
+            <v-text-field v-model="contactFormEmail" :rules="emailRules" label="Email Address" type="email" required outlined class="mb-4"></v-text-field>
             <v-textarea v-model="contactFormMessage" label="Your Message" required outlined rows="4" class="mb-4"></v-textarea>
             <Checkbox v-model="isCaptchaVerified" class="mb-4" />
             <v-btn type="submit" color="primary" class="w-full"> Send Message </v-btn>
@@ -393,11 +396,13 @@
   <!-- Sell Equipment Modal -->
   <v-dialog v-model="sellEquipmentDialog" max-width="800px">
     <v-card class="pa-6">
-      <v-card-title class="text-center">
+      <v-card-title class="text-center position-relative">
         <h2 class="text-3xl font-bold">Sell Your Equipment</h2>
-        <v-btn icon="mdi-close" variant="text" @click="sellEquipmentDialog = false" class="position-absolute" style="right: 8px; top: 8px"></v-btn>
+        <v-btn icon="mdi-close" variant="text" aria-label="Close" @click="sellEquipmentDialog = false" class="close-button"></v-btn>
       </v-card-title>
       <v-card-text>
+        <v-alert type="success" v-if="sellFormSubmitSuccess" dismissible> Inquiry sent successfully! </v-alert>
+        <v-alert type="error" v-if="sellFormSubmitError" dismissible> Failed to send inquiry. </v-alert>
         <p class="text-center mb-8 text-lg">Have surplus equipment? Let ASSK Inc. help you market and sell it.</p>
         <v-form v-model="sellForm.valid" @submit.prevent="submitSellForm">
           <v-text-field
@@ -445,7 +450,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onMounted } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import { useTheme } from "vuetify";
 import ScrollingFeed from "./ScrollingFeed.vue";
 import { Checkbox, useRecaptchaProvider } from "vue-recaptcha";
@@ -460,7 +465,7 @@ const theme = useTheme();
 theme.global.name.value = "light";
 
 // Reactive state for Sell Equipment Form
-const sellForm = ref({
+const sellForm = reactive({
   equipment: "",
   contactEmail: "",
   additionalInfo: "",
@@ -471,9 +476,16 @@ const sellForm = ref({
 const contactFormEmail = ref("");
 const contactFormMessage = ref("");
 
+// Dialog States
 const sellEquipmentDialog = ref(false);
 const financingDialog = ref(false);
 const sourceEquipmentDialog = ref(false);
+
+// Alert States
+const sellFormSubmitSuccess = ref(false);
+const sellFormSubmitError = ref(false);
+const contactFormSubmitSuccess = ref(false);
+const contactFormSubmitError = ref(false);
 
 // Reactive state for Carbon Meter
 const carbonSaved = ref(7500); // Initial number
@@ -484,7 +496,7 @@ const equipmentRules = [(v) => !!v || "Equipment description is required"];
 
 // Handle Sell Equipment Form Submission
 const submitSellForm = async () => {
-  if (sellForm.value.valid) {
+  if (sellForm.valid) {
     try {
       const response = await fetch("https://rev6ykipl5.execute-api.us-east-2.amazonaws.com/Prod/sendEmail", {
         method: "PUT",
@@ -492,26 +504,26 @@ const submitSellForm = async () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: sellForm.value.contactEmail,
-          message: `Equipment Description: ${sellForm.value.equipment}\nAdditional Info: ${sellForm.value.additionalInfo}`,
+          email: sellForm.contactEmail,
+          message: `Equipment Description: ${sellForm.equipment}\nAdditional Info: ${sellForm.additionalInfo}`,
         }),
       });
 
       if (response.ok) {
-        alert("Inquiry sent successfully!");
+        sellFormSubmitSuccess.value = true;
         // Reset form
-        sellForm.value = {
+        Object.assign(sellForm, {
           equipment: "",
           contactEmail: "",
           additionalInfo: "",
           valid: false,
-        };
+        });
       } else {
-        alert("Failed to send inquiry.");
+        sellFormSubmitError.value = true;
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("An error occurred while sending the inquiry.");
+      sellFormSubmitError.value = true;
     }
   }
 };
@@ -538,16 +550,16 @@ const submitContactForm = async () => {
     });
 
     if (response.ok) {
-      alert("Message sent successfully!");
+      contactFormSubmitSuccess.value = true;
       contactFormEmail.value = "";
       contactFormMessage.value = "";
       isCaptchaVerified.value = false;
     } else {
-      alert("Failed to send message.");
+      contactFormSubmitError.value = true;
     }
   } catch (error) {
     console.error("Error:", error);
-    alert("An error occurred while sending the message.");
+    contactFormSubmitError.value = true;
   }
 };
 
@@ -606,8 +618,7 @@ const services = ref([
   {
     title: "Sales",
     description:
-      "Whether you are a producer, part of a procurement department, a broker, or an engineering firm, providing the equipment and OCTG you need is ASSK's top priority.\n\n" +
-      "By offering surplus supply or sourcing new equipment and pipe directly from original equipment manufacturers—passing our discounts on to you—ASSK leverages years of strong relationships to streamline the process and help you focus on your core initiatives.",
+      "Whether you are a producer, part of a procurement department, a broker, or an engineering firm, providing the equipment and OCTG you need is ASSK's top priority.\n\nBy offering surplus supply or sourcing new equipment and pipe directly from original equipment manufacturers and passing our discounts on to you. ASSK leverages years of strong relationships to streamline the process and help you focus on your core initiatives.",
     icon: "mdi-cogs",
     iconColor: "primary",
   },
@@ -625,10 +636,7 @@ const services = ref([
   {
     title: "Listing your equipment",
     description:
-      "Need help marketing & selling your equipment?\n\n" +
-      "Let ASSK handle the entire process — from site visits, inventory and photos, offering possibly secure storage locations, to marketplace listings and buyer screenings. " +
-      "We ensure location confidentiality, screen out unqualified buyers, and manage all inquiries to save you time and hassle, allowing your team to stay focused on core initiatives.\n\n" +
-      "When a sale is confirmed, nothing moves without your explicit approval, full field coordination, and payment in full.",
+      "Need help marketing & selling your equipment?\n\nLet ASSK handle the entire process — from site visits, inventory and photos, offering possibly secure storage locations, to marketplace listings and buyer screenings. We ensure location confidentiality, screen out unqualified buyers, and manage all inquiries to save you time and hassle, allowing your team to stay focused on core initiatives.\n\nWhen a sale is confirmed, nothing moves without your explicit approval, full field coordination, and payment in full.",
     icon: "mdi-clipboard-list",
     iconColor: "primary",
   },
@@ -752,19 +760,6 @@ onMounted(() => {
   background-color: #f9fafb;
 }
 
-.animate-spin-slow {
-  animation: spin-slow 20s linear infinite;
-}
-
-@keyframes spin-slow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .hoverable-icon {
   transition: transform 0.3s, color 0.3s;
 }
@@ -848,6 +843,13 @@ onMounted(() => {
   .service-card {
     margin-bottom: 24px;
   }
+}
+
+/* Close Button Styles */
+.close-button {
+  position: absolute;
+  right: 8px;
+  top: 8px;
 }
 .smoke-animation {
   width: 200px;

@@ -1,57 +1,32 @@
 <template>
   <v-card class="mx-auto" elevation="2" rounded="lg">
-    <v-toolbar
-      color="grey-darken-4"
-      dark
-      density="compact"
-      :border="showNotes ? 'md' : 'none'"
-    >
+    <v-toolbar color="grey-darken-4" dark density="compact">
       <v-btn icon @click="showNotes = !showNotes">
         <v-icon>{{ showNotes ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
       </v-btn>
       <v-toolbar-title>Woosh Friends</v-toolbar-title>
-      <v-btn @click="fetchNotes"><v-icon>mdi-refresh</v-icon></v-btn>
+      <v-btn icon="mdi-refresh" x-small @click="fetchNotes" />
     </v-toolbar>
 
-    <v-progress-linear
-      v-if="apiIsLoading"
-      indeterminate
-      class="mx-auto"
-    ></v-progress-linear>
+    <v-progress-linear v-if="apiIsLoading" indeterminate class="mx-auto"></v-progress-linear>
 
     <div v-show="showNotes">
       <v-list>
-        <v-list-group
-          v-for="(friend, name) in notes"
-          :key="name"
-          :value="name"
-          no-action
-        >
+        <v-list-group v-for="(friend, name) in notes" :key="name" :value="name" no-action>
           <template v-slot:activator="{ props }">
             <v-list-item
               v-bind="props"
               :title="name"
-              :subtitle="
-                'Last Changed: ' +
-                new Date(friend.last_updated).toISOString().split('T')[0]
-              "
+              :subtitle="'Last Changed: ' + new Date(friend.last_updated).toISOString().split('T')[0]"
               class="text-h6"
             ></v-list-item>
           </template>
 
           <v-list-item v-for="(value, keyName) in friend" :key="keyName">
             <template v-if="keyName !== 'last_updated'">
-              <v-list-item-title class="font-weight-bold text-subtitle-1">
-                {{ keyName }}:
-              </v-list-item-title>
+              <v-list-item-title class="font-weight-bold text-subtitle-1"> {{ keyName }}: </v-list-item-title>
               <v-list-item-subtitle>
-                <v-chip
-                  v-for="(item, index) in value"
-                  :key="index"
-                  class="ma-1"
-                  color="primary"
-                  variant="outlined"
-                >
+                <v-chip v-for="(item, index) in value" :key="index" class="ma-1" color="primary" variant="outlined">
                   {{ item }}
                 </v-chip>
               </v-list-item-subtitle>
@@ -110,14 +85,11 @@ function undo() {
 
 const fetchNotes = async () => {
   apiIsLoading.value = true;
-  const response = await fetch(
-    "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=WooshFriendsProcessed",
-    {
-      headers: {
-        "X-Api-Key": getApiKey(),
-      },
-    }
-  );
+  const response = await fetch("https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=WooshFriendsProcessed", {
+    headers: {
+      "X-Api-Key": getApiKey(),
+    },
+  });
   const data = await response.json();
   notes.value = data;
   previousNotes.value = JSON.parse(JSON.stringify(notes.value)); // Save current state
@@ -126,17 +98,14 @@ const fetchNotes = async () => {
 
 const saveNotes = async () => {
   apiIsLoading.value = true;
-  const response = await fetch(
-    "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=WooshFriendsProcessed",
-    {
-      method: "PUT",
-      headers: {
-        "X-Api-Key": getApiKey(),
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(notes.value),
-    }
-  );
+  const response = await fetch("https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=WooshFriendsProcessed", {
+    method: "PUT",
+    headers: {
+      "X-Api-Key": getApiKey(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(notes.value),
+  });
   const data = await response.json();
   console.log(notes.value);
   console.log(data);

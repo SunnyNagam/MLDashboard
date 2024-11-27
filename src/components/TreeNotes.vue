@@ -1,17 +1,15 @@
 <template>
   <v-card :class="[$attrs.class, 'mx-auto', isExpanded ? 'h-full d-flex flex-column' : '']" elevation="2" rounded="lg">
-    <v-toolbar color="grey-darken-4" dark density="compact" :border="showNotes ? 'md' : 'none'">
+    <v-toolbar color="grey-darken-4" dark density="compact">
       <v-btn icon @click="toggleNotes">
         <v-icon>{{ showNotes ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
       </v-btn>
       <v-toolbar-title>Notes</v-toolbar-title>
-      <v-btn @click="fetchNotes"><v-icon>mdi-refresh</v-icon></v-btn>
-      <v-btn @click="saveNotes"><v-icon>mdi-content-save</v-icon></v-btn>
-      <v-btn @click="addNode"><v-icon>mdi-plus</v-icon></v-btn>
-      <v-btn @click="undo"><v-icon>mdi-undo</v-icon></v-btn>
-      <v-btn icon @click="$emit('expand')">
-        <v-icon>mdi-arrow-expand</v-icon>
-      </v-btn>
+      <v-btn icon="mdi-refresh" size="small" @click="fetchNotes" />
+      <v-btn icon="mdi-content-save" size="small" @click="saveNotes" />
+      <v-btn icon="mdi-plus" size="small" @click="addNode" />
+      <v-btn icon="mdi-undo" size="small" @click="undo" />
+      <v-btn icon="mdi-arrow-expand" size="small" @click="$emit('expand')" />
     </v-toolbar>
 
     <v-progress-linear v-if="apiIsLoading" indeterminate class="mx-auto"></v-progress-linear>
@@ -21,9 +19,10 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import Tree from "@/components/Tree.vue";
 import { useApi } from "@/useAPI.js";
+import { useNotesStore } from "@/stores/useNotesStore";
 
 const { getApiKey } = useApi();
 const props = defineProps({
@@ -41,6 +40,7 @@ const showNotes = ref(!props.collapsed);
 const notes = ref([]);
 const previousNotes = ref([]);
 const apiIsLoading = ref(false);
+const notesStore = useNotesStore();
 
 watch(showNotes, (newValue) => newValue && fetchNotes());
 
@@ -62,10 +62,7 @@ function undo() {
 async function fetchNotes() {
   apiIsLoading.value = true;
   try {
-    const response = await fetch("https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=Notes", {
-      headers: { "X-Api-Key": getApiKey() },
-    });
-    notes.value = await response.json();
+    notes.value = await notesStore.fetchNotes();
     previousNotes.value = JSON.parse(JSON.stringify(notes.value));
   } finally {
     apiIsLoading.value = false;

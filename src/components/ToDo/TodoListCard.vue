@@ -1,29 +1,30 @@
 <template>
-  <v-card :class="[$attrs.class, 'mx-auto', isExpanded2 ? 'h-full d-flex flex-column' : '']" elevation="2" rounded="lg">
+  <v-card :class="['mx-auto', isFullScreen ? 'h-full d-flex flex-column' : '']" elevation="2" rounded="lg">
     <!-- Toolbar -->
-    <v-toolbar color="grey-darken-4" dark dense :border="showList ? 'md' : 'none'">
+    <v-toolbar color="grey-darken-4" dark density="compact" :elevation="8" border="bottom">
       <v-btn icon @click="showList = !showList">
         <v-icon>{{ showList ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
       </v-btn>
 
-      <v-toolbar-title>{{ title }}</v-toolbar-title>
+      <v-toolbar-title
+        >ToDo <span class="text-grey text-sm"> ({{ title }})</span></v-toolbar-title
+      >
 
       <v-spacer></v-spacer>
 
       <!-- Dynamic Toolbar Buttons -->
       <template v-for="button in toolbarButtons" :key="button.icon">
-        <v-btn v-if="button && button.visible" icon @click="button.action">
-          <v-icon :color="button.color">{{ button.icon }}</v-icon>
-        </v-btn>
+        <v-btn :icon="button.icon" v-if="button && button.visible" @click="button.action" />
       </template>
+      <v-btn icon="mdi-arrow-expand" @click="$emit('expand')" />
     </v-toolbar>
 
     <!-- Todo List Container -->
-    <div v-show="showList" :class="['d-flex flex-column', isExpanded2 ? 'flex-grow-1' : '']">
+    <div :class="['d-flex flex-column', isFullScreen ? 'flex-grow-1' : '']">
       <v-progress-linear v-if="apiIsLoading" indeterminate class="mx-auto" size="64"></v-progress-linear>
 
       <!-- Todo List with dynamic height -->
-      <v-list :class="['overflow-y-auto', isExpanded2 ? 'flex-grow-1' : '']" v-show="showList">
+      <v-list :class="['overflow-y-auto', isFullScreen ? 'flex-grow-1' : '']" v-show="showList">
         <v-list-group v-for="item in todo" :key="item.id">
           <template v-slot:activator="{ props }">
             <v-list-item
@@ -132,7 +133,7 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  isExpanded2: {
+  isFullScreen: {
     type: Boolean,
     default: false,
   },
@@ -194,11 +195,6 @@ const toolbarButtons = computed(() => [
   {
     icon: "mdi-history",
     action: () => (historyDialog.value = true),
-    visible: true,
-  },
-  {
-    icon: "mdi-arrow-expand",
-    action: () => emit("expand"),
     visible: true,
   },
 ]);
@@ -410,3 +406,9 @@ watch(
 // Initial Fetch
 if (showList.value) fetchTodo();
 </script>
+
+<style scoped>
+:deep(.v-toolbar) .v-btn {
+  --v-btn-size: small;
+}
+</style>

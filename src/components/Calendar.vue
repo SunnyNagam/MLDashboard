@@ -1,15 +1,8 @@
 <template>
   <v-card class="mx-auto" elevation="2" rounded="lg">
-    <v-toolbar
-      color="grey-darken-4"
-      dark
-      density="compact"
-      :border="showCalendar ? 'md' : 'none'"
-    >
+    <v-toolbar color="grey-darken-4" dark density="compact">
       <v-btn icon @click="showCalendar = !showCalendar">
-        <v-icon>{{
-          showCalendar ? "mdi-chevron-up" : "mdi-chevron-down"
-        }}</v-icon>
+        <v-icon>{{ showCalendar ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
       </v-btn>
       <v-toolbar-title>Calendar</v-toolbar-title>
       <v-btn icon @click="addDialog = true">
@@ -25,40 +18,20 @@
         density="compact"
         hide-details
       ></v-select>
-      <v-btn icon @click="$emit('expand')">
+      <v-btn icon size="small" @click="$emit('expand')">
         <v-icon>mdi-arrow-expand</v-icon>
       </v-btn>
     </v-toolbar>
 
-    <v-progress-linear
-      v-if="apiIsLoading"
-      indeterminate
-      class="mx-auto"
-    ></v-progress-linear>
+    <v-progress-linear v-if="apiIsLoading" indeterminate class="mx-auto"></v-progress-linear>
 
     <div v-show="showCalendar">
       <v-sheet class="text-sm mx-0 mx-sm-4 pb-4">
-        <v-calendar
-          ref="calendar"
-          v-model:now="currentDate"
-          :events="calendarEvents"
-          :view-mode="viewType"
-          :weekdays="weekday"
-          :hide-week-number="true"
-        >
+        <v-calendar ref="calendar" v-model:now="currentDate" :events="calendarEvents" :view-mode="viewType" :weekdays="weekday" :hide-week-number="true">
           <template v-slot:event="{ day, allDay, event }">
             <v-tooltip
               v-model="showTooltipId[event.id]"
-              :text="
-                event.title +
-                ' (' +
-                (allDay
-                  ? 'All Day'
-                  : event.start.toLocaleTimeString() +
-                    ' - ' +
-                    event.end.toLocaleTimeString()) +
-                ')'
-              "
+              :text="event.title + ' (' + (allDay ? 'All Day' : event.start.toLocaleTimeString() + ' - ' + event.end.toLocaleTimeString()) + ')'"
               location="top center"
               :open-on-focus="true"
             >
@@ -85,11 +58,7 @@
     </div>
 
     <!-- Modal -->
-    <v-dialog
-      v-model="showEventDialog"
-      max-width="500px"
-      scroll-strategy="close"
-    >
+    <v-dialog v-model="showEventDialog" max-width="500px" scroll-strategy="close">
       <v-card>
         <v-card-title class="headline">{{ selectedEvent.title }}</v-card-title>
         <v-card-subtitle>
@@ -120,46 +89,26 @@
         <v-card-title class="headline">Add an Event</v-card-title>
         <v-card-text>
           <v-form ref="addEventForm">
-            <v-text-field
-              v-model="newEvent.title"
-              label="Event Title"
-              required
-            ></v-text-field>
+            <v-text-field v-model="newEvent.title" label="Event Title" required></v-text-field>
             <v-row>
               <v-btn icon @click="menuStart = !menuStart">
                 <v-icon>mdi-calendar</v-icon>
               </v-btn>
-              <v-text-field
-                v-model="newEvent.start"
-                label="Start Time"
-              ></v-text-field>
+              <v-text-field v-model="newEvent.start" label="Start Time"></v-text-field>
             </v-row>
-            <v-date-picker
-              v-model="newEvent.start"
-              v-if="menuStart"
-              @input="menuStart = false"
-            ></v-date-picker>
+            <v-date-picker v-model="newEvent.start" v-if="menuStart" @input="menuStart = false"></v-date-picker>
             <v-row>
               <v-btn icon @click="menuEnd = !menuEnd">
                 <v-icon>mdi-calendar</v-icon>
               </v-btn>
-              <v-text-field
-                v-model="newEvent.end"
-                label="End Time"
-              ></v-text-field>
+              <v-text-field v-model="newEvent.end" label="End Time"></v-text-field>
             </v-row>
-            <v-date-picker
-              v-model="newEvent.end"
-              v-if="menuEnd"
-              @input="menuEnd = false"
-            ></v-date-picker>
+            <v-date-picker v-model="newEvent.end" v-if="menuEnd" @input="menuEnd = false"></v-date-picker>
             <v-checkbox v-model="newEvent.allDay" label="All Day"></v-checkbox>
           </v-form>
         </v-card-text>
         <v-card-actions>
-          <v-btn color="grey darken-1" text @click="addDialog = false"
-            >Close</v-btn
-          >
+          <v-btn color="grey darken-1" text @click="addDialog = false">Close</v-btn>
           <v-btn color="primary" text @click="saveEvent">Save</v-btn>
         </v-card-actions>
       </v-card>
@@ -212,16 +161,12 @@ const menuEnd = ref(false);
 
 const fetchCalendar = async () => {
   apiIsLoading.value = true;
-  const response = await fetch(
-    "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getCal",
-    {
-      headers: {
-        "X-Api-Key": getApiKey(),
-      },
-    }
-  );
+  const response = await fetch("https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getCal", {
+    headers: {
+      "X-Api-Key": getApiKey(),
+    },
+  });
   const data = await response.json();
-  console.log(data);
   // Helper function to parse a local date string into a local Date object
   const parseGoogleDate = (dateString, isEnd = false) => {
     if (!dateString.includes("T")) {
@@ -317,11 +262,9 @@ const saveEvent = async () => {
   }
 
   const response = await fetch(
-    `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/addCal?title=${encodeURIComponent(
-      event.title
-    )}&start=${encodeURIComponent(event.start)}&end=${encodeURIComponent(
-      event.end
-    )}`,
+    `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/addCal?title=${encodeURIComponent(event.title)}&start=${encodeURIComponent(
+      event.start
+    )}&end=${encodeURIComponent(event.end)}`,
     {
       method: "POST",
       headers: {
@@ -346,16 +289,13 @@ const saveEvent = async () => {
 // Delete Event
 const deleteEvent = async () => {
   apiIsLoading.value = true;
-  const response = await fetch(
-    `https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/deleteCal?id=${selectedEvent.value.id}`,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Api-Key": getApiKey(),
-      },
-    }
-  );
+  const response = await fetch(`https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/deleteCal?id=${selectedEvent.value.id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Api-Key": getApiKey(),
+    },
+  });
 
   if (response.ok) {
     fetchCalendar();

@@ -1,28 +1,23 @@
 <template>
-  <v-card :class="[$attrs.class, 'mx-auto', isExpanded ? 'h-full d-flex flex-column' : '']" elevation="2" rounded="lg">
-    <v-toolbar color="grey-darken-4" dark density="compact" :border="showChat ? 'md' : 'none'">
-      <v-btn icon @click="showChat = !showChat">
+  <v-card :class="['mx-auto', isExpanded ? 'h-full d-flex flex-column' : '']" elevation="2" rounded="lg">
+    <v-toolbar color="grey-darken-4" dark density="compact">
+      <v-btn icon @click="toggleChat">
         <v-icon>{{ showChat ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
       </v-btn>
       <v-toolbar-title>Chat ({{ selectedModel.split("/")[1] }})</v-toolbar-title>
-      <v-btn icon @click="clearMessages">
-        <v-icon>mdi-delete</v-icon>
-      </v-btn>
+      <v-btn icon="mdi-delete" @click="clearMessages" />
       <v-btn
-        icon
+        icon="mdi-cog"
         @click="
           fetchOpenRouterApiKey();
           dialog = true;
         "
-      >
-        <v-icon>mdi-cog</v-icon>
-      </v-btn>
-      <v-btn icon @click="$emit('expand')">
-        <v-icon>mdi-arrow-expand</v-icon>
-      </v-btn>
+      />
+      <v-btn icon="mdi-arrow-expand" @click="$emit('expand')" />
     </v-toolbar>
-    <div v-show="showChat" :class="['d-flex flex-column', isExpanded ? 'flex-grow-1' : '']">
-      <v-card-text :class="['overflow-y-auto', isExpanded ? 'flex-grow-1' : 'h-[21vh]']">
+
+    <div :class="['d-flex flex-column', isExpanded ? 'flex-grow-1' : '']">
+      <v-card-text v-show="showChat" :class="['overflow-y-auto', isExpanded ? 'flex-grow-1' : 'h-[21vh]']">
         <div class="space-y-2 py-2" v-for="(message, index) in messages.slice(1)" :key="message.content">
           <div
             @click="showMenu(message, index + 1)"
@@ -92,7 +87,7 @@
           </div>
         </div>
       </v-card-text>
-      <v-card-actions>
+      <v-card-actions v-show="showChat">
         <v-text-field v-model="userInput" label="Type a message..." class="flex-grow-1" @keyup.enter="sendMessage" outlined hide-details></v-text-field>
         <v-btn @click="sendMessage">
           {{ editingIndex === -1 ? "Send" : "Save" }}
@@ -124,55 +119,9 @@ import ollama from "ollama/browser";
 import VueMarkdown from "vue-markdown-render";
 import OpenAI from "openai";
 import Tree from "@/components/Tree.vue";
-import { useApi } from "@/useAPI.js";
 import Cookies from "vue-cookies";
 import { useAgent } from "@/useAgent.js";
-
-const { getApiKey } = useApi();
-
-const apiKey = ref("");
-const msgMenu = ref(false);
-const menuItem = ref(null);
-const showChat = ref(true);
-const showMenu = (message, index) => {
-  msgMenu.value = !msgMenu.value;
-  menuItem.value = { message, index };
-};
-
-const openaiApi = ref(null); // Initialize as null; will set after fetching API key
-
-const fetchOpenRouterApiKey = async () => {
-  try {
-    const response = await fetch("https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=Notes", { headers: { "X-Api-Key": getApiKey() } });
-    const data = await response.json();
-    console.log(data);
-    if (Array.isArray(data) && data.length > 0) {
-      const apiKeys = data.find((item) => item.text === "API keys");
-      const openRouterKey = apiKeys?.children?.find((item) => item.text === "OpenRouter");
-      if (openRouterKey) {
-        apiKey.value = openRouterKey.children[0].text;
-        Cookies.set("OPEN_ROUTER_API_KEY", apiKey.value);
-        openaiApi.value = new OpenAI({
-          apiKey: apiKey.value,
-          baseURL: "https://openrouter.ai/api/v1",
-          dangerouslyAllowBrowser: true,
-        });
-        console.log("OpenRouter API key has been set successfully.");
-      } else {
-        console.error("OpenRouter API key not found in notes.");
-      }
-    } else {
-      console.error("Unexpected data format:", data);
-    }
-  } catch (error) {
-    console.error("Error fetching OpenRouter API key:", error);
-  }
-};
-
-// Automatically fetch and apply the OpenRouter API key on component mount
-onMounted(() => {
-  fetchOpenRouterApiKey();
-});
+import { useNotesStore } from "@/stores/useNotesStore";
 
 const props = defineProps({
   context: {
@@ -189,9 +138,52 @@ const props = defineProps({
   },
 });
 
-if (props.collapsed) {
-  showChat.value = false;
-}
+const notesStore = useNotesStore();
+
+const apiKey = ref("");
+const msgMenu = ref(false);
+const menuItem = ref(null);
+const showChat = ref(!props.collapsed);
+const toggleChat = () => {
+  showChat.value = !showChat.value;
+  props.collapsed = !showChat.value;
+  console.log("showChat toggled:", showChat.value);
+};
+
+const openaiApi = ref(null); // Initialize as null; will set after fetching API key
+
+const fetchOpenRouterApiKey = async () => {
+  try {
+    const openRouterKey = await notesStore.findApiKey("OpenRouter");
+    if (openRouterKey) {
+      apiKey.value = openRouterKey;
+      Cookies.set("OPEN_ROUTER_API_KEY", apiKey.value);
+      openaiApi.value = new OpenAI({
+        apiKey: apiKey.value,
+        baseURL: "https://openrouter.ai/api/v1",
+        dangerouslyAllowBrowser: true,
+      });
+      console.log("OpenRouter API key has been set successfully.");
+    } else {
+      console.error("OpenRouter API key not found in notes.");
+    }
+  } catch (error) {
+    console.error("Error fetching OpenRouter API key:", error);
+  }
+};
+
+// Automatically fetch and apply the OpenRouter API key on component mount
+onMounted(() => {
+  fetchOpenRouterApiKey();
+});
+
+// Watch for changes to props.collapsed
+watch(
+  () => props.collapsed,
+  (newValue) => {
+    showChat.value = !newValue;
+  }
+);
 
 const selectedModel = ref("perplexity/llama-3.1-sonar-small-128k-online");
 const modelChoices = [
@@ -361,4 +353,15 @@ function deleteMessage(index) {
 function copyToClipboard(text) {
   navigator.clipboard.writeText(text);
 }
+
+watch(showChat, (newVal) => {
+  props.collapsed = !newVal;
+  console.log("showChat changed to:", newVal);
+});
 </script>
+
+<style scoped>
+:deep(.v-toolbar) .v-btn {
+  --v-btn-size: small;
+}
+</style>

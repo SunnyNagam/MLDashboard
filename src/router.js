@@ -12,11 +12,11 @@ import BITPortfolioBeta from "@/components/BITPortfolioBeta.vue";
 import TextEditor from "@/components/TextEditor.vue";
 
 const routes = [
-  { path: "/", name: "home", component: Dashboard },
+  { path: "/", name: "home", component: ExpDash },
   { path: "/reddit", name: "reddit", component: RedditSummary },
   { path: "/screen", name: "screen", component: ScreenBot },
   { path: "/photos", name: "photos", component: PhotoGallery },
-  { path: "/experimental", name: "experimental", component: ExpDash },
+  { path: "/experimental", name: "experimental", component: Dashboard },
   {
     path: "/landing-beta",
     name: "landing-beta",

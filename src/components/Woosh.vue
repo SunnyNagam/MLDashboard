@@ -1,66 +1,32 @@
 <template>
   <v-card :class="[$attrs.class, 'mx-auto']" elevation="2" rounded="lg">
-    <v-toolbar
-      color="grey-darken-4"
-      dark
-      density="compact"
-      :border="showNotes ? 'md' : 'none'"
-    >
+    <v-toolbar color="grey-darken-4" dark density="compact">
       <v-btn icon @click="showNotes = !showNotes">
         <v-icon>{{ showNotes ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
       </v-btn>
       <v-toolbar-title>Woosh</v-toolbar-title>
-      <v-btn @click="fetchNotes"><v-icon>mdi-refresh</v-icon></v-btn>
-      <v-btn @click="saveNote"><v-icon>mdi-send</v-icon></v-btn>
-      <v-btn @click="openSearchModal"><v-icon>mdi-magnify</v-icon></v-btn>
-      <v-btn icon @click="$emit('expand')">
-        <v-icon>mdi-arrow-expand</v-icon>
-      </v-btn>
+      <v-btn icon="mdi-refresh" @click="fetchNotes" />
+      <v-btn icon="mdi-send" @click="saveNote" />
+      <v-btn icon="mdi-magnify" @click="openSearchModal" />
+      <v-btn icon="mdi-arrow-expand" @click="$emit('expand')" />
     </v-toolbar>
 
-    <v-progress-linear
-      v-if="apiIsLoading"
-      indeterminate
-      class="mx-auto"
-    ></v-progress-linear>
+    <v-progress-linear v-if="apiIsLoading" indeterminate class="mx-auto"></v-progress-linear>
 
     <div v-show="showNotes">
       <v-card-text>
-        <v-textarea
-          v-model="noteContent"
-          label="Type your note..."
-          rows="3"
-          auto-grow
-          outlined
-          hide-details
-        ></v-textarea>
-        <v-text-field
-          v-model="category"
-          label="Category (optional)"
-          class="mt-2"
-        ></v-text-field>
-        <v-alert
-          v-if="statusMessage"
-          :type="statusMessage.includes('Error') ? 'error' : 'success'"
-          class="mt-2"
-          dense
-        >
+        <v-textarea v-model="noteContent" label="Type your note..." rows="3" auto-grow outlined hide-details></v-textarea>
+        <v-text-field v-model="category" label="Category (optional)" class="mt-2"></v-text-field>
+        <v-alert v-if="statusMessage" :type="statusMessage.includes('Error') ? 'error' : 'success'" class="mt-2" dense>
           {{ statusMessage }}
         </v-alert>
       </v-card-text>
 
       <v-divider></v-divider>
 
-      <v-card-text
-        class="notes-list"
-        style="max-height: 300px; overflow-y: auto"
-      >
+      <v-card-text class="notes-list" style="max-height: 300px; overflow-y: auto">
         <v-list v-if="displayNotes.length">
-          <v-list-item
-            v-for="note in displayNotes"
-            :key="note.id || note.timetaken"
-            @click="showFullNote(note)"
-          >
+          <v-list-item v-for="note in displayNotes" :key="note.id || note.timetaken" @click="showFullNote(note)">
             <v-list-item-title>{{ note.text }}</v-list-item-title>
             <v-list-item-subtitle>
               {{ formatDateTime(note.timetaken) }}
@@ -84,42 +50,23 @@
             <v-window-item value="dates">
               <v-row>
                 <v-col cols="6">
-                  <v-text-field
-                    v-model="startDate"
-                    label="Start Date"
-                    type="date"
-                  ></v-text-field>
+                  <v-text-field v-model="startDate" label="Start Date" type="date"></v-text-field>
                 </v-col>
                 <v-col cols="6">
-                  <v-text-field
-                    v-model="endDate"
-                    label="End Date"
-                    type="date"
-                  ></v-text-field>
+                  <v-text-field v-model="endDate" label="End Date" type="date"></v-text-field>
                 </v-col>
               </v-row>
             </v-window-item>
             <v-window-item value="query">
-              <v-text-field
-                v-model="searchQuery"
-                label="Search Query"
-              ></v-text-field>
-              <v-text-field
-                v-model="topK"
-                label="Top K (optional)"
-                type="number"
-              ></v-text-field>
+              <v-text-field v-model="searchQuery" label="Search Query"></v-text-field>
+              <v-text-field v-model="topK" label="Top K (optional)" type="number"></v-text-field>
             </v-window-item>
           </v-window>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue-darken-1" text @click="searchModalOpen = false"
-            >Close</v-btn
-          >
-          <v-btn color="blue-darken-1" text @click="performSearch"
-            >Search</v-btn
-          >
+          <v-btn color="blue-darken-1" text @click="searchModalOpen = false">Close</v-btn>
+          <v-btn color="blue-darken-1" text @click="performSearch">Search</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -133,9 +80,7 @@
             <strong>Category:</strong>
             {{ selectedNote.category || "Unspecified" }}
           </p>
-          <p>
-            <strong>Date:</strong> {{ formatDateTime(selectedNote.timetaken) }}
-          </p>
+          <p><strong>Date:</strong> {{ formatDateTime(selectedNote.timetaken) }}</p>
           <p v-if="selectedNote.score !== undefined">
             <strong>Relevance Score:</strong>
             {{ selectedNote.score.toFixed(2) }}
@@ -143,9 +88,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue-darken-1" text @click="fullNoteDialog = false"
-            >Close</v-btn
-          >
+          <v-btn color="blue-darken-1" text @click="fullNoteDialog = false">Close</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -210,8 +153,7 @@ function openSearchModal() {
 async function performSearch() {
   apiIsLoading.value = true;
   try {
-    let url =
-      "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/woosh?";
+    let url = "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/woosh?";
     if (searchTab.value === "dates") {
       if (startDate.value) url += `start=${startDate.value}&`;
       if (endDate.value) url += `end=${endDate.value}&`;
@@ -245,20 +187,17 @@ async function saveNote() {
     apiIsLoading.value = true;
     statusMessage.value = "";
     try {
-      const response = await fetch(
-        "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/woosh",
-        {
-          method: "POST",
-          headers: {
-            "X-Api-Key": getApiKey(),
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            text: noteContent.value,
-            ...(category.value && { category: category.value }),
-          }),
-        }
-      );
+      const response = await fetch("https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/woosh", {
+        method: "POST",
+        headers: {
+          "X-Api-Key": getApiKey(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: noteContent.value,
+          ...(category.value && { category: category.value }),
+        }),
+      });
       if (response.ok) {
         noteContent.value = "";
         category.value = "";
@@ -279,14 +218,11 @@ async function saveNote() {
 async function fetchNotes() {
   apiIsLoading.value = true;
   try {
-    const response = await fetch(
-      "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/woosh",
-      {
-        headers: {
-          "X-Api-Key": getApiKey(),
-        },
-      }
-    );
+    const response = await fetch("https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/woosh", {
+      headers: {
+        "X-Api-Key": getApiKey(),
+      },
+    });
     if (response.ok) {
       notes.value = await response.json();
       notesLoaded.value = true;
@@ -310,5 +246,8 @@ function showFullNote(note) {
 .notes-list {
   max-height: 300px;
   overflow-y: auto;
+}
+:deep(.v-toolbar) .v-btn {
+  --v-btn-size: small;
 }
 </style>

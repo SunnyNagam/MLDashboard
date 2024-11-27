@@ -9,17 +9,19 @@ import TodoAITreeDisp from "@/components/TodoAITreeDisp.vue";
 import WooshFriendsTest from "@/components/WooshFriendsTest.vue";
 import Woosh from "./Woosh.vue";
 import { useTheme, useDisplay } from "vuetify";
+import RedditSummaryCard from "@/components/RedditSummaryCard.vue";
 
 const theme = useTheme();
 theme.global.name.value = "dark";
 
 const { smAndDown } = useDisplay();
 const { setApiKey, getApiKey } = useApi();
+const loadChatContext = ref(false);
 const enteredApiKey = ref("");
 const apiKeyModalVisible = ref(getApiKey() === null || getApiKey() === "");
 const todo = ref({ Now: [{ text: "Loading...", id: "..." }] });
 const calendarEvents = ref([]);
-const otherContext = `The User is named Sunny, and the current date is ${new Date().toDateString()}.`;
+const otherContext = `You are a helpful consise assistant for a user named Sunny, and the current date is ${new Date().toDateString()}.`;
 
 const expandedComponent = ref(null);
 const expandedProps = ref({});
@@ -88,8 +90,10 @@ function getTodoTexts(todoItems) {
     .join("\n");
 }
 
-fetchTodoData();
-fetchCalendar();
+if (loadChatContext.value) {
+  fetchTodoData();
+  fetchCalendar();
+}
 
 const chatContext = computed(() => "**Items on user's todo list (with steps):** \n\n" + getTodoTexts(todo.value.Now));
 const calContext = computed(
@@ -138,6 +142,7 @@ function handleApiKeySubmit(enteredApiKey) {
             })
           "
         />
+        <RedditSummaryCard :collapsed="true" @expand="expandComponent(RedditSummaryCard)" />
       </v-col>
     </v-row>
   </v-container>
