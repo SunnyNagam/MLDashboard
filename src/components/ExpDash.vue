@@ -7,6 +7,7 @@ import TodoAITreeDisp from "@/components/TodoAITreeDisp.vue";
 import WooshFriendsTest from "@/components/WooshFriendsTest.vue";
 import RedditSummaryCard from "@/components/RedditSummaryCard.vue";
 import Woosh from "./Woosh.vue";
+import { useNotesStore } from "@/stores/useNotesStore";
 
 import { ref, computed, shallowRef, markRaw, onMounted, watch, onUnmounted } from "vue";
 import { useApi } from "@/useAPI.js";
@@ -22,7 +23,8 @@ const theme = useTheme();
 theme.global.name.value = "dark";
 
 const otherContext = `The User is named Sunny, and the current date is ${new Date().toDateString()}.`;
-
+const notesStore = useNotesStore();
+const weatherApiKey = ref(null);
 const expandedComponent = ref(null);
 const expandedProps = ref({});
 const isExpanded = ref(false);
@@ -34,11 +36,18 @@ function expandComponent(component, props = {}) {
 }
 
 const apiIsLoading = ref(false);
-const showTime = ref(false);
+const showTime = ref(true);
 
 const list1 = shallowRef([]);
 const list2 = shallowRef([]);
 const isLayoutLoaded = ref(false);
+
+async function fetchWeatherApiKey() {
+  if (!weatherApiKey.value) {
+    weatherApiKey.value = await notesStore.findApiKey("OpenWeather");
+    fetchWeather();
+  }
+}
 
 const defaultConfig = {
   list1: [
@@ -168,7 +177,6 @@ async function saveLayout() {
   if (!getApiKey() || !isLayoutLoaded.value) return;
 
   try {
-    console.log(list1.value);
     const saveData = {
       list1: list1.value.map((item) => ({
         ...item,
@@ -191,7 +199,6 @@ async function saveLayout() {
         on: undefined,
       })),
     };
-    console.log(saveData);
 
     const response = await fetch("https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod/getData?key=DashboardLayout", {
       method: "PUT",
@@ -222,11 +229,20 @@ watch(
   { deep: true }
 );
 
+let timeInterval;
 // Modify onMounted to check shouldLoadContent
 onMounted(() => {
   if (shouldLoadContent.value) {
     fetchLayout();
   }
+  fetchWeatherApiKey();
+
+  timeInterval = setInterval(() => {
+    if (showTime.value) {
+      timeKey.value++;
+    }
+  }, 1000);
+  setInterval(fetchWeather, 900000);
 });
 
 function logoClick() {
@@ -356,19 +372,30 @@ const weekProgress = computed(() => {
   return Math.round((totalMinutes / (7 * 1440)) * 100);
 });
 
-// Update time every second
-let timeInterval;
-onMounted(() => {
-  timeInterval = setInterval(() => {
-    if (showTime.value) {
-      timeKey.value++;
-    }
-  }, 1000);
-});
 
 onUnmounted(() => {
   clearInterval(timeInterval);
 });
+
+// Add these new refs for weather
+const weather = ref(null);
+const weatherError = ref(null);
+
+// Add this function to fetch weather data
+async function fetchWeather() {
+  try {
+    const response = await fetch(
+      `https://api.openweathermap.org/data/3.0/onecall?lat=45.5236&lon=-122.675&units=metric&appid=${weatherApiKey.value}`
+    );
+    if (!response.ok) throw new Error('Weather fetch failed');
+    weather.value = await response.json();
+    console.log(weather.value);
+    weatherError.value = null;
+  } catch (error) {
+    console.error('Error fetching weather:', error);
+    weatherError.value = 'Unable to load weather data';
+  }
+}
 </script>
 
 <template>
@@ -389,14 +416,53 @@ onUnmounted(() => {
                 <!-- Time View -->
                 <div v-else class="cursor-pointer p-6 rounded-xl backdrop-blur-md transition-all duration-200 hover:scale-[1.02]" @click="showTime = !showTime">
                   <div class="flex flex-col items-center space-y-4">
-                    <!-- Time -->
-                    <div class="text-5xl md:text-6xl font-bold text-white font-mono tracking-wider">
-                      {{ currentTime }}
-                    </div>
+                    <!-- Time and Weather Container -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                      <!-- Time and Date Section -->
+                      <div class="flex flex-col items-center space-y-2">
+                        <div class="text-5xl md:text-6xl font-bold text-white font-mono tracking-wider">
+                          {{ currentTime }}
+                        </div>
+                        <div class="text-xl md:text-2xl text-white/90 font-medium">
+                          {{ currentDate }}
+                        </div>
+                      </div>
 
-                    <!-- Date -->
-                    <div class="text-xl md:text-2xl text-white/90 font-medium">
-                      {{ currentDate }}
+                      <!-- Weather Section -->
+                      <div v-if="weather && !weatherError" class="flex flex-col items-center">
+                        <!-- Current Weather -->
+                        <div class="flex items-center justify-center gap-2">
+                          <img 
+                            :src="`https://openweathermap.org/img/wn/${weather.current.weather[0].icon}@2x.png`" 
+                            :alt="weather.current.weather[0].description"
+                            class="w-12 h-12"
+                          />
+                          <span class="text-3xl">{{ Math.round(weather.current.temp) }}°C</span>
+                          <span class="text-sm text-white/60">({{ Math.round(weather.daily[0].temp.min) }}° - {{ Math.round(weather.daily[0].temp.max) }}°)</span>
+                          <span class="text-white/60">|</span>
+                          <span class="capitalize">{{ weather.current.weather[0].description }}</span>
+                        </div>
+
+                        <!-- Additional Weather Info -->
+                        <div class="text-sm text-white/60 mt-1 space-y-1">
+                          <div class="flex justify-center gap-4">
+                            <span>🌡️ {{ Math.round(weather.current.feels_like) }}°C</span>
+                            <span>🌬️ {{ Math.round(weather.current.wind_speed) }} m/s</span>
+                            <span>💧 {{ weather.current.humidity }}%</span>
+                            <span>🌞 {{ Math.round(weather.current.uvi) }}</span>
+                          </div>
+
+                          <div class="flex justify-center gap-4">
+                          </div>
+                          <!-- Daily Summary -->
+                          <div class="text-center mt-2 text-white/60">
+                            {{ weather.daily[0].summary }}
+                          </div>
+                        </div>
+                      </div>
+                      <div v-else-if="weatherError" class="text-red-400 text-sm">
+                        {{ weatherError }}
+                      </div>
                     </div>
                   </div>
                 </div>

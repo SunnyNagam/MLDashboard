@@ -1,24 +1,39 @@
 <template>
-  <v-card :class="['mx-auto', isExpanded ? 'h-full d-flex flex-column' : '']" elevation="2" rounded="lg">
+  <v-card
+    :class="['mx-auto', isExpanded ? 'h-full d-flex flex-column' : '']"
+    elevation="2"
+    rounded="lg"
+  >
     <v-toolbar color="grey-darken-4" dark density="compact">
       <v-btn icon @click="toggleChat">
         <v-icon>{{ showChat ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
       </v-btn>
-      <v-toolbar-title>Chat ({{ selectedModel.split("/")[1] }})</v-toolbar-title>
+      <v-toolbar-title>Chat</v-toolbar-title>
+      <v-spacer></v-spacer>
+
+      <!-- Model Selector -->
+      <v-select
+        v-model="selectedModel"
+        :items="modelChoices"
+        dense
+        hide-details
+        bg-color="none"
+      ></v-select>
+
       <v-btn icon="mdi-delete" @click="clearMessages" />
-      <v-btn
-        icon="mdi-cog"
-        @click="
-          fetchOpenRouterApiKey();
-          dialog = true;
-        "
-      />
       <v-btn icon="mdi-arrow-expand" @click="$emit('expand')" />
     </v-toolbar>
 
     <div :class="['d-flex flex-column', isExpanded ? 'flex-grow-1' : '']">
-      <v-card-text v-show="showChat" :class="['overflow-y-auto', isExpanded ? 'flex-grow-1' : 'h-[21vh]']">
-        <div class="space-y-2 py-2" v-for="(message, index) in messages.slice(1)" :key="message.content">
+      <v-card-text
+        v-show="showChat"
+        :class="['overflow-y-auto', isExpanded ? 'flex-grow-1' : 'h-[21vh]']"
+      >
+        <div
+          class="space-y-2 py-2"
+          v-for="(message, index) in messages.slice(1)"
+          :key="message.content"
+        >
           <div
             @click="showMenu(message, index + 1)"
             :class="{
@@ -28,8 +43,10 @@
           >
             <div
               :class="{
-                'inline-block bg-blue-500 text-white p-2 rounded-l-lg': message.role === 'user',
-                'inline-block bg-gray-900 p-2 rounded-r-lg': message.role === 'assistant',
+                'inline-block bg-blue-500 text-white p-2 rounded-l-lg':
+                  message.role === 'user',
+                'inline-block bg-gray-900 p-2 rounded-r-lg':
+                  message.role === 'assistant',
               }"
               :ref="
                 (el) => {
@@ -37,7 +54,10 @@
                 }
               "
             >
-              <vue-markdown :source="message.content" :options="{ breaks: true }" />
+              <vue-markdown
+                :source="message.content"
+                :options="{ breaks: true }"
+              />
             </div>
           </div>
           <div
@@ -88,34 +108,24 @@
         </div>
       </v-card-text>
       <v-card-actions v-show="showChat">
-        <v-text-field v-model="userInput" label="Type a message..." class="flex-grow-1" @keyup.enter="sendMessage" outlined hide-details></v-text-field>
+        <v-text-field
+          v-model="userInput"
+          label="Type a message..."
+          class="flex-grow-1"
+          @keyup.enter="sendMessage"
+          outlined
+          hide-details
+        ></v-text-field>
         <v-btn @click="sendMessage">
           {{ editingIndex === -1 ? "Send" : "Save" }}
         </v-btn>
       </v-card-actions>
     </div>
   </v-card>
-
-  <v-dialog v-model="dialog" max-width="600">
-    <v-card>
-      <v-card-title class="headline">Chat AI settings</v-card-title>
-      <v-card-text>
-        Model:
-        <v-combobox :items="modelChoices" v-model="selectedModel" label="Select or enter a model" outlined clearable></v-combobox>
-        <v-switch v-model="callAgent" label="Use Agent (beta)" color="deep-purple accent-4"></v-switch>
-        <v-form class="mt-4">
-          <v-text-field v-model="apiKey" label="API Key" outlined hint="Enter your OpenRouter API key" clearable dense></v-text-field>
-          <v-btn @click="saveApiKey" color="primary" class="mt-2" elevation="2"> Save API Key </v-btn>
-        </v-form>
-      </v-card-text>
-      <tree v-model="notes" :data="notes" group="notesParent" @input="updateData" class="mt-4"> </tree>
-    </v-card>
-  </v-dialog>
 </template>
 
 <script setup>
 import { ref, watch, onMounted } from "vue";
-import ollama from "ollama/browser";
 import VueMarkdown from "vue-markdown-render";
 import OpenAI from "openai";
 import Tree from "@/components/Tree.vue";
@@ -188,15 +198,14 @@ watch(
 const selectedModel = ref("perplexity/llama-3.1-sonar-small-128k-online");
 const modelChoices = [
   "anthropic/claude-3.5-sonnet",
+  "google/gemini-2.0-flash-exp:free",
+  "google/gemini-exp-1206:free",
   "openai/o1-mini",
-  "openai/gpt-4o-mini",
   "openai/gpt-4o-turbo",
   "perplexity/llama-3.1-sonar-small-128k-online",
   "perplexity/llama-3.1-sonar-large-128k-online",
-  "deepseek/deepseek-chat",
+  "deepseek/deepseek-r1",
   "google/gemma-2-9b-it:free",
-  "Ollama3/phi3:latest",
-  "Ollama3/llama3.1:latest",
 ];
 const dialog = ref(false);
 const callAgent = ref(false);
@@ -210,7 +219,9 @@ const messages = ref([
 ]);
 
 const clearMessages = () => {
-  messages.value = messages.value.filter((message, index) => message.role === "system" && index === 0);
+  messages.value = messages.value.filter(
+    (message, index) => message.role === "system" && index === 0
+  );
 };
 
 const lastMessage = ref(null);
@@ -279,33 +290,18 @@ async function sendMessageToApi(userMessage) {
   }
 
   try {
-    if (!selectedModel.value.startsWith("Ollama3")) {
-      const stream = await openaiApi.value.chat.completions.create({
-        model: selectedModel.value,
-        messages: messages.value,
-        stream: true,
-      });
-      messages.value.push({
-        content: "",
-        role: "assistant",
-      });
-      for await (const part of stream) {
-        messages.value[messages.value.length - 1].content += part.choices[0]?.delta?.content || "";
-      }
-    } else {
-      const localModelName = selectedModel.value.split("/")[1];
-      const response = await ollama.chat({
-        model: localModelName,
-        messages: messages.value,
-        stream: true,
-      });
-      messages.value.push({
-        content: "",
-        role: "assistant",
-      });
-      for await (const part of response) {
-        messages.value[messages.value.length - 1].content += part.message.content;
-      }
+    const stream = await openaiApi.value.chat.completions.create({
+      model: selectedModel.value,
+      messages: messages.value,
+      stream: true,
+    });
+    messages.value.push({
+      content: "",
+      role: "assistant",
+    });
+    for await (const part of stream) {
+      messages.value[messages.value.length - 1].content +=
+        part.choices[0]?.delta?.content || "";
     }
   } catch (error) {
     console.error("Chat API error:", error);
