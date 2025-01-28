@@ -385,7 +385,7 @@ const weatherError = ref(null);
 async function fetchWeather() {
   try {
     const response = await fetch(
-      `https://api.openweathermap.org/data/3.0/onecall?lat=45.5236&lon=-122.675&units=metric&appid=${weatherApiKey.value}`
+      `https://api.openweathermap.org/data/3.0/onecall?lat=51.050384lon=--114.078262&units=metric&appid=${weatherApiKey.value}`
     );
     if (!response.ok) throw new Error('Weather fetch failed');
     weather.value = await response.json();
@@ -414,12 +414,12 @@ async function fetchWeather() {
                 </h1>
 
                 <!-- Time View -->
-                <div v-else class="cursor-pointer p-6 rounded-xl backdrop-blur-md transition-all duration-200 hover:scale-[1.02]" @click="showTime = !showTime">
-                  <div class="flex flex-col items-center space-y-4">
+                <div v-else class="cursor-pointer p-4 rounded-xl backdrop-blur-md transition-all duration-200 hover:scale-[1.02]" @click="showTime = !showTime">
+                  <div class="flex flex-col items-center space-y-2">
                     <!-- Time and Weather Container -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                       <!-- Time and Date Section -->
-                      <div class="flex flex-col items-center space-y-2">
+                      <div class="flex flex-col items-center space-y-1">
                         <div class="text-5xl md:text-6xl font-bold text-white font-mono tracking-wider">
                           {{ currentTime }}
                         </div>
