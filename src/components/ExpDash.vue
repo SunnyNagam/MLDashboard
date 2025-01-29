@@ -434,7 +434,7 @@ async function fetchWeather() {
   if (!weatherApiKey.value) return; // Do not fetch weather if API key is not available
 
   try {
-    const response = await fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=51.050384lon=-114.078262&units=metric&appid=${weatherApiKey.value}`);
+    const response = await fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=51.050384&lon=-114.078262&units=metric&appid=${weatherApiKey.value}`);
     if (!response.ok) throw new Error("Weather fetch failed");
     weather.value = await response.json();
     weatherError.value = null; // Clear any previous error
