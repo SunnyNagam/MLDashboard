@@ -1,53 +1,73 @@
 <script setup>
-import TodoListCard from "@/components/ToDo/TodoListCard.vue";
-import Chat from "@/components/Chat.vue";
-import Calendar from "@/components/Calendar.vue";
-import TreeNotes from "@/components/TreeNotes.vue";
-import TodoAITreeDisp from "@/components/TodoAITreeDisp.vue";
-import WooshFriendsTest from "@/components/WooshFriendsTest.vue";
-import RedditSummaryCard from "@/components/RedditSummaryCard.vue";
-import Woosh from "./Woosh.vue";
+// SECTION: Imports
+import { ref, computed, shallowRef, markRaw, onMounted, watch, onUnmounted } from "vue";
+import draggable from "vuedraggable";
+import { useDisplay, useTheme } from "vuetify";
+
+// Composables
+import { useApi } from "@/useAPI.js";
 import { useNotesStore } from "@/stores/useNotesStore";
 
-import { ref, computed, shallowRef, markRaw, onMounted, watch, onUnmounted } from "vue";
-import { useApi } from "@/useAPI.js";
-import { useTheme, useDisplay } from "vuetify";
-import draggable from "vuedraggable";
+// Component Imports
+import Calendar from "@/components/Calendar.vue";
+import Chat from "@/components/Chat.vue";
+import RedditSummaryCard from "@/components/RedditSummaryCard.vue";
+import TodoAITreeDisp from "@/components/TodoAITreeDisp.vue";
+import TodoListCard from "@/components/ToDo/TodoListCard.vue";
+import TreeNotes from "@/components/TreeNotes.vue";
+import Woosh from "./Woosh.vue";
+import WooshFriendsTest from "@/components/WooshFriendsTest.vue";
 
-const { smAndDown } = useDisplay();
-const { setApiKey, getApiKey } = useApi();
+// SECTION: API Key Management
+const apiKeyModalVisible = ref(false);
 const enteredApiKey = ref("");
-const apiKeyModalVisible = ref(getApiKey() === null || getApiKey() === "");
+const { getApiKey, setApiKey } = useApi();
 
+// Check if API key is present on component mount, if not, show modal
+if (getApiKey() === null || getApiKey() === "") {
+  apiKeyModalVisible.value = true;
+}
+
+/**
+ * Handles API key submission.
+ * Saves the API key and reloads the window.
+ *
+ * @param {string} apiKey - The API key entered by the user.
+ */
+function handleApiKeySubmit(apiKey) {
+  setApiKey(apiKey);
+  apiKeyModalVisible.value = false;
+  window.location.reload();
+}
+
+// SECTION: Theme and Context Configuration
 const theme = useTheme();
-theme.global.name.value = "dark";
+theme.global.name.value = "dark"; // Set default theme to dark
 
 const otherContext = `The User is named Sunny, and the current date is ${new Date().toDateString()}.`;
-const notesStore = useNotesStore();
-const weatherApiKey = ref(null);
+
+// SECTION: Component Expansion Logic
 const expandedComponent = ref(null);
 const expandedProps = ref({});
 const isExpanded = ref(false);
 
+/**
+ * Expands a given component in a dialog.
+ *
+ * @param {Component} component - The component to expand.
+ * @param {object} [props={}] - Optional props to pass to the expanded component.
+ */
 function expandComponent(component, props = {}) {
   expandedComponent.value = markRaw(component);
   expandedProps.value = { ...props, isExpanded: true };
   isExpanded.value = true;
 }
 
-const apiIsLoading = ref(false);
-const showTime = ref(true);
-
-const list1 = shallowRef([]);
-const list2 = shallowRef([]);
+// SECTION: Layout Management (Loading, Saving, Default Configuration)
+const list1 = shallowRef([]); // Left column components
+const list2 = shallowRef([]); // Right column components
 const isLayoutLoaded = ref(false);
-
-async function fetchWeatherApiKey() {
-  if (!weatherApiKey.value) {
-    weatherApiKey.value = await notesStore.findApiKey("OpenWeather");
-    fetchWeather();
-  }
-}
+const apiIsLoading = ref(false);
 
 const defaultConfig = {
   list1: [
@@ -103,7 +123,7 @@ const defaultConfig = {
       },
       on: {
         expand: () => expandComponent(Chat, { collapsed: false, context: otherContext }),
-        collapse: () => collapseComponent(Chat, { collapsed: true }),
+        collapse: () => collapseComponent(Chat, { collapsed: true }), // Note: collapseComponent is not defined in the provided code. Consider if this is needed.
       },
     },
     {
@@ -115,24 +135,26 @@ const defaultConfig = {
   ],
 };
 
-// Add a component map to lookup components by name
 const componentMap = {
-  TodoListCard,
-  Chat,
   Calendar,
-  TreeNotes,
-  TodoAITreeDisp,
-  WooshFriendsTest,
-  Woosh,
+  Chat,
   RedditSummaryCard,
+  TodoAITreeDisp,
+  TodoListCard,
+  TreeNotes,
+  Woosh,
+  WooshFriendsTest,
 };
 
-// Add a computed property to check if we should load content
-const shouldLoadContent = computed(() => !apiKeyModalVisible.value);
+const shouldLoadContent = computed(() => !apiKeyModalVisible.value); // Only load content if API key is available
 
-// Modify fetchLayout to check shouldLoadContent
+/**
+ * Fetches the dashboard layout from the API.
+ * If successful, updates list1 and list2 with the fetched layout.
+ * If fails or no layout is found, defaults to defaultConfig.
+ */
 async function fetchLayout() {
-  if (!shouldLoadContent.value) return;
+  if (!shouldLoadContent.value) return; // Do not fetch layout if API key modal is visible
 
   apiIsLoading.value = true;
   try {
@@ -147,24 +169,24 @@ async function fetchLayout() {
     const data = await response.json();
 
     if (data.list1 && data.list2) {
-      // Use componentMap instead of eval
       list1.value = data.list1.map((item) => ({
         ...item,
         component: markRaw(componentMap[item.componentName]),
         on: [...defaultConfig.list1, ...defaultConfig.list2].find((d) => d.name === item.name)?.on || {},
       }));
-
       list2.value = data.list2.map((item) => ({
         ...item,
         component: markRaw(componentMap[item.componentName]),
         on: [...defaultConfig.list1, ...defaultConfig.list2].find((d) => d.name === item.name)?.on || {},
       }));
     } else {
+      // Fallback to default layout if API data is missing lists
       list1.value = defaultConfig.list1;
       list2.value = defaultConfig.list2;
     }
   } catch (error) {
     console.error("Error fetching layout:", error);
+    // Fallback to default layout on error
     list1.value = defaultConfig.list1;
     list2.value = defaultConfig.list2;
   } finally {
@@ -173,8 +195,12 @@ async function fetchLayout() {
   }
 }
 
+/**
+ * Saves the current dashboard layout to the API.
+ * Skips saving if API key is not available or layout is not loaded yet.
+ */
 async function saveLayout() {
-  if (!getApiKey() || !isLayoutLoaded.value) return;
+  if (!getApiKey() || !isLayoutLoaded.value) return; // Do not save if no API key or layout not loaded
 
   try {
     const saveData = {
@@ -183,9 +209,9 @@ async function saveLayout() {
         componentName: item.component.__name,
         props: {
           ...item.props,
-          collapsed: item.props?.collapsed ?? true, // Save collapsed state
+          collapsed: item.props?.collapsed ?? true, // Ensure collapsed state is saved
         },
-        component: undefined,
+        component: undefined, // Remove component and on properties before saving to API
         on: undefined,
       })),
       list2: list2.value.map((item) => ({
@@ -193,9 +219,9 @@ async function saveLayout() {
         componentName: item.component.__name,
         props: {
           ...item.props,
-          collapsed: item.props?.collapsed ?? true, // Save collapsed state
+          collapsed: item.props?.collapsed ?? true, // Ensure collapsed state is saved
         },
-        component: undefined,
+        component: undefined, // Remove component and on properties before saving to API
         on: undefined,
       })),
     };
@@ -218,7 +244,7 @@ async function saveLayout() {
   }
 }
 
-// Modify watch to check shouldLoadContent
+// Watch for changes in list1 or list2 to save the layout
 watch(
   [list1, list2],
   () => {
@@ -229,48 +255,26 @@ watch(
   { deep: true }
 );
 
-let timeInterval;
-// Modify onMounted to check shouldLoadContent
-onMounted(() => {
-  if (shouldLoadContent.value) {
-    fetchLayout();
-  }
-  fetchWeatherApiKey();
-
-  timeInterval = setInterval(() => {
-    if (showTime.value) {
-      timeKey.value++;
-    }
-  }, 1000);
-  setInterval(fetchWeather, 900000);
-});
-
-function logoClick() {
-  apiKeyModalVisible.value = true;
-}
-
-function handleApiKeySubmit(enteredApiKey) {
-  setApiKey(enteredApiKey);
-  apiKeyModalVisible.value = false;
-  window.location.reload();
-}
-
+// SECTION: Component Registration and Management (Adding, Removing)
 const availableComponents = computed(() => [
-  { name: "Todo List", componentName: "TodoListCard" },
-  { name: "Tree Notes", componentName: "TreeNotes" },
   { name: "Calendar", componentName: "Calendar" },
   { name: "Chat", componentName: "Chat" },
+  { name: "Reddit Summary", componentName: "RedditSummaryCard" },
   { name: "Todo AI Tree", componentName: "TodoAITreeDisp" },
+  { name: "Todo List", componentName: "TodoListCard" },
+  { name: "Tree Notes", componentName: "TreeNotes" },
   { name: "Woosh", componentName: "Woosh" },
   { name: "WooshFriendsTest", componentName: "WooshFriendsTest" },
-  { name: "Reddit Summary", componentName: "RedditSummaryCard" },
 ]);
 
 const addComponentDialog = ref(false);
 const selectedComponent = ref(null);
-// Add this ref for the collapsed state
-const newComponentCollapsed = ref(true);
+const newComponentCollapsed = ref(true); // Default collapsed state for new components
 
+/**
+ * Adds a new component to the dashboard layout.
+ * Uses selectedComponent and newComponentCollapsed refs for configuration.
+ */
 function addNewComponent() {
   if (!selectedComponent.value) return;
 
@@ -282,18 +286,25 @@ function addNewComponent() {
     component: markRaw(componentMap[component.componentName]),
     props: {
       ...componentConfig.props,
-      collapsed: newComponentCollapsed.value, // Use the checkbox value
+      collapsed: newComponentCollapsed.value, // Use the checkbox value for collapsed state
     },
     on: componentConfig.on || {},
   };
 
-  list1.value = [...list1.value, newComponent];
+  list1.value = [...list1.value, newComponent]; // Add new component to list1 (left column by default)
 
+  // Reset dialog state
   addComponentDialog.value = false;
   selectedComponent.value = null;
-  newComponentCollapsed.value = true; // Reset to default
+  newComponentCollapsed.value = true; // Reset collapsed state for next component addition
 }
 
+/**
+ * Removes a component from the specified list at the given index.
+ *
+ * @param {string} list - The list to remove from ('list1' or 'list2').
+ * @param {number} index - The index of the component to remove.
+ */
 function removeComponent(list, index) {
   if (list === "list1") {
     list1.value = list1.value.filter((_, i) => i !== index);
@@ -302,13 +313,26 @@ function removeComponent(list, index) {
   }
 }
 
-// Add these new refs and functions
-const leftColumnWidth = ref(33); // Initial width percentage
+// SECTION: Responsive Layout and Column Resize
+const { smAndDown } = useDisplay();
+const leftColumnWidth = ref(33); // Initial width percentage for left column
 
+/**
+ * Starts the column resize interaction.
+ * Attaches mousemove and mouseup event listeners to handle resizing.
+ *
+ * @param {MouseEvent} e - The mousedown event.
+ */
 function startResize(e) {
   const startX = e.clientX;
   const startWidth = leftColumnWidth.value;
 
+  /**
+   * Handles mousemove event during resize.
+   * Calculates and updates the left column width based on mouse position.
+   *
+   * @param {MouseEvent} e - The mousemove event.
+   */
   function onMouseMove(e) {
     const containerWidth = document.querySelector(".d-flex").offsetWidth;
     const delta = e.clientX - startX;
@@ -318,6 +342,10 @@ function startResize(e) {
     leftColumnWidth.value = Math.min(Math.max(newWidth, 20), 80);
   }
 
+  /**
+   * Handles mouseup event to stop resizing.
+   * Removes mousemove and mouseup event listeners.
+   */
   function onMouseUp() {
     document.removeEventListener("mousemove", onMouseMove);
     document.removeEventListener("mouseup", onMouseUp);
@@ -327,20 +355,20 @@ function startResize(e) {
   document.addEventListener("mouseup", onMouseUp);
 }
 
-// Add this computed property after other computed properties
+// Combined list for mobile view (smAndDown)
 const combinedList = computed(() => {
   if (smAndDown.value) {
-    // Combine both lists for mobile view
-    return [...list1.value, ...list2.value];
+    return [...list1.value, ...list2.value]; // Combine lists for mobile view
   }
-  return null;
+  return null; // Return null for desktop view, lists are rendered separately
 });
 
-// Add these computed properties
-const timeKey = ref(0);
+// SECTION: Time and Date Display
+const showTime = ref(true); // Toggle between dashboard title and time display
+const timeKey = ref(0); // Force update time display every second
 
 const currentTime = computed(() => {
-  timeKey.value;
+  timeKey.value; // Reactive dependency to update time every second
   const now = new Date();
   return now.toLocaleTimeString("en-US", {
     hour: "2-digit",
@@ -362,40 +390,81 @@ const currentDate = computed(() => {
 const dayProgress = computed(() => {
   const now = new Date();
   const totalMinutes = now.getHours() * 60 + now.getMinutes();
-  return Math.round((totalMinutes / 1440) * 100);
+  return Math.round((totalMinutes / 1440) * 100); // Percentage of day passed
 });
 
 const weekProgress = computed(() => {
   const now = new Date();
-  const dayOfWeek = now.getDay();
+  const dayOfWeek = now.getDay(); // 0 (Sunday) - 6 (Saturday)
   const totalMinutes = dayOfWeek * 1440 + now.getHours() * 60 + now.getMinutes();
-  return Math.round((totalMinutes / (7 * 1440)) * 100);
+  return Math.round((totalMinutes / (7 * 1440)) * 100); // Percentage of week passed
 });
 
+let timeInterval; // Interval for updating time
 
-onUnmounted(() => {
-  clearInterval(timeInterval);
-});
+/**
+ * Handles logo click to toggle API key modal visibility.
+ */
+function logoClick() {
+  apiKeyModalVisible.value = true;
+}
 
-// Add these new refs for weather
+// SECTION: Weather Data Fetching and Display
 const weather = ref(null);
 const weatherError = ref(null);
+const weatherApiKey = ref(null); // API key for OpenWeatherMap
+const notesStore = useNotesStore(); // Using notesStore to fetch API keys
 
-// Add this function to fetch weather data
-async function fetchWeather() {
-  try {
-    const response = await fetch(
-      `https://api.openweathermap.org/data/3.0/onecall?lat=51.050384lon=--114.078262&units=metric&appid=${weatherApiKey.value}`
-    );
-    if (!response.ok) throw new Error('Weather fetch failed');
-    weather.value = await response.json();
-    console.log(weather.value);
-    weatherError.value = null;
-  } catch (error) {
-    console.error('Error fetching weather:', error);
-    weatherError.value = 'Unable to load weather data';
+/**
+ * Fetches the OpenWeather API key from notesStore and then fetches weather data.
+ */
+async function fetchWeatherApiKey() {
+  if (!weatherApiKey.value) {
+    weatherApiKey.value = await notesStore.findApiKey("OpenWeather");
+    fetchWeather(); // Fetch weather data immediately after getting API key
   }
 }
+
+/**
+ * Fetches weather data from OpenWeatherMap API.
+ * Uses weatherApiKey ref for API key and hardcoded lat/lon for Calgary.
+ * Updates weather ref with fetched data or weatherError ref in case of error.
+ */
+async function fetchWeather() {
+  if (!weatherApiKey.value) return; // Do not fetch weather if API key is not available
+
+  try {
+    const response = await fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=51.050384lon=-114.078262&units=metric&appid=${weatherApiKey.value}`);
+    if (!response.ok) throw new Error("Weather fetch failed");
+    weather.value = await response.json();
+    weatherError.value = null; // Clear any previous error
+  } catch (error) {
+    console.error("Error fetching weather:", error);
+    weatherError.value = "Unable to load weather data";
+  }
+}
+
+// SECTION: Lifecycle Hooks
+onMounted(() => {
+  if (shouldLoadContent.value) {
+    fetchLayout(); // Fetch layout on mount if API key is available
+  }
+  fetchWeatherApiKey(); // Fetch weather API key and then weather data
+
+  // Set up interval to update time every second
+  timeInterval = setInterval(() => {
+    if (showTime.value) {
+      timeKey.value++; // Increment timeKey to trigger time update
+    }
+  }, 1000);
+
+  // Set up interval to fetch weather data every 15 minutes (900000 ms)
+  setInterval(fetchWeather, 900000);
+});
+
+onUnmounted(() => {
+  clearInterval(timeInterval); // Clear time interval on unmount to prevent memory leaks
+});
 </script>
 
 <template>
@@ -432,13 +501,15 @@ async function fetchWeather() {
                       <div v-if="weather && !weatherError" class="flex flex-col items-center">
                         <!-- Current Weather -->
                         <div class="flex items-center justify-center gap-2">
-                          <img 
-                            :src="`https://openweathermap.org/img/wn/${weather.current.weather[0].icon}@2x.png`" 
+                          <img
+                            :src="`https://openweathermap.org/img/wn/${weather.current.weather[0].icon}@2x.png`"
                             :alt="weather.current.weather[0].description"
                             class="w-12 h-12"
                           />
                           <span class="text-3xl">{{ Math.round(weather.current.temp) }}°C</span>
-                          <span class="text-sm text-white/60">({{ Math.round(weather.daily[0].temp.min) }}° - {{ Math.round(weather.daily[0].temp.max) }}°)</span>
+                          <span class="text-sm text-white/60"
+                            >({{ Math.round(weather.daily[0].temp.min) }}° - {{ Math.round(weather.daily[0].temp.max) }}°)</span
+                          >
                           <span class="text-white/60">|</span>
                           <span class="capitalize">{{ weather.current.weather[0].description }}</span>
                         </div>
@@ -452,8 +523,7 @@ async function fetchWeather() {
                             <span>🌞 {{ Math.round(weather.current.uvi) }}</span>
                           </div>
 
-                          <div class="flex justify-center gap-4">
-                          </div>
+                          <div class="flex justify-center gap-4"></div>
                           <!-- Daily Summary -->
                           <div class="text-center mt-2 text-white/60">
                             {{ weather.daily[0].summary }}
