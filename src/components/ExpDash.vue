@@ -11,6 +11,7 @@ import { useNotesStore } from "@/stores/useNotesStore";
 // Component Imports
 import Calendar from "@/components/Calendar.vue";
 import Chat from "@/components/Chat.vue";
+import FlexibleChallengeCard from "@/components/FlexibleChallengeCard.vue";
 import RedditSummaryCard from "@/components/RedditSummaryCard.vue";
 import TodoAITreeDisp from "@/components/TodoAITreeDisp.vue";
 import TodoListCard from "@/components/ToDo/TodoListCard.vue";
@@ -28,12 +29,6 @@ if (getApiKey() === null || getApiKey() === "") {
   apiKeyModalVisible.value = true;
 }
 
-/**
- * Handles API key submission.
- * Saves the API key and reloads the window.
- *
- * @param {string} apiKey - The API key entered by the user.
- */
 function handleApiKeySubmit(apiKey) {
   setApiKey(apiKey);
   apiKeyModalVisible.value = false;
@@ -71,6 +66,12 @@ const apiIsLoading = ref(false);
 
 const defaultConfig = {
   list1: [
+    {
+      name: "Flexible Challenge System",
+      component: FlexibleChallengeCard,
+      props: { collapsed: false },
+      on: { expand: (event) => expandComponent(FlexibleChallengeCard, { collapsed: false }) },
+    },
     {
       name: "Todo List",
       component: TodoListCard,
@@ -139,6 +140,7 @@ const componentMap = {
   Calendar,
   Chat,
   RedditSummaryCard,
+  FlexibleChallengeCard,
   TodoAITreeDisp,
   TodoListCard,
   TreeNotes,
@@ -169,6 +171,7 @@ async function fetchLayout() {
     const data = await response.json();
 
     if (data.list1 && data.list2) {
+      console.log("data.list1", data.list1);
       list1.value = data.list1.map((item) => ({
         ...item,
         component: markRaw(componentMap[item.componentName]),
@@ -259,6 +262,7 @@ watch(
 const availableComponents = computed(() => [
   { name: "Calendar", componentName: "Calendar" },
   { name: "Chat", componentName: "Chat" },
+  { name: "Flexible Challenge System", componentName: "FlexibleChallengeCard" },
   { name: "Reddit Summary", componentName: "RedditSummaryCard" },
   { name: "Todo AI Tree", componentName: "TodoAITreeDisp" },
   { name: "Todo List", componentName: "TodoListCard" },
@@ -290,6 +294,8 @@ function addNewComponent() {
     },
     on: componentConfig.on || {},
   };
+  console.log("newComponent", newComponent);
+  console.log("list1.value", list1.value);
 
   list1.value = [...list1.value, newComponent]; // Add new component to list1 (left column by default)
 
@@ -317,22 +323,10 @@ function removeComponent(list, index) {
 const { smAndDown } = useDisplay();
 const leftColumnWidth = ref(33); // Initial width percentage for left column
 
-/**
- * Starts the column resize interaction.
- * Attaches mousemove and mouseup event listeners to handle resizing.
- *
- * @param {MouseEvent} e - The mousedown event.
- */
 function startResize(e) {
   const startX = e.clientX;
   const startWidth = leftColumnWidth.value;
 
-  /**
-   * Handles mousemove event during resize.
-   * Calculates and updates the left column width based on mouse position.
-   *
-   * @param {MouseEvent} e - The mousemove event.
-   */
   function onMouseMove(e) {
     const containerWidth = document.querySelector(".d-flex").offsetWidth;
     const delta = e.clientX - startX;
@@ -342,10 +336,6 @@ function startResize(e) {
     leftColumnWidth.value = Math.min(Math.max(newWidth, 20), 80);
   }
 
-  /**
-   * Handles mouseup event to stop resizing.
-   * Removes mousemove and mouseup event listeners.
-   */
   function onMouseUp() {
     document.removeEventListener("mousemove", onMouseMove);
     document.removeEventListener("mouseup", onMouseUp);

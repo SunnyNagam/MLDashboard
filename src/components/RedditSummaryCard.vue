@@ -157,7 +157,6 @@ async function getReddit() {
 }
 
 const selectedSubredditData = computed(() => {
-  console.log(redditData);
   return redditData.value.find((subreddit) => subreddit.subreddit === selectedSubreddit.value) || null;
 });
 
