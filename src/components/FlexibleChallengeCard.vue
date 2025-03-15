@@ -70,6 +70,7 @@
               ghost-class="ghost-task"
               drag-class="dragging-task"
               :animation="200"
+              @change="handleTodayChange"
             >
               <template #item="{ element }">
                 <v-chip
@@ -108,6 +109,21 @@
               <v-icon color="purple-lighten-1">mdi-checkbox-marked-circle-outline</v-icon>
               <span>To-Do</span>
               <v-spacer></v-spacer>
+              <div class="bg-[rgba(255,9,9,0.1)] rounded-md h-full text-center">
+                <draggable
+                  v-model="trashZone"
+                  :group="{ name: 'tasks', put: true, pull: false }"
+                  item-key="id"
+                  ghost-class="ghost-task"
+                  :animation="200"
+                  @change="handleTrashDrop"
+                >
+                  <template #header>
+                    <v-icon color="rgba(255, 9, 9, 0.2)" size="large" class="">mdi-delete-circle</v-icon>
+                  </template>
+                  <template #item="{ element }"> </template>
+                </draggable>
+              </div>
               <v-btn icon="mdi-plus" size="x-small" @click="openItemDialog('todo')"></v-btn>
             </v-card-title>
 
@@ -124,11 +140,7 @@
                 drag-class="dragging-task"
               >
                 <template #item="{ element }">
-                  <v-chip
-                    class="ma-1 w-full justify-start mb-2 cursor-grab relative"
-                    @click="showTaskDetails(element)"
-                    :class="{ 'line-through': element.completed }"
-                  >
+                  <v-chip class="ma-1 justify-start mb-2 cursor-grab relative" @click="showTaskDetails(element)" :class="{ 'line-through': element.completed }">
                     <template v-slot:prepend>
                       <v-icon
                         size="small"
@@ -138,9 +150,9 @@
                       ></v-icon>
                     </template>
                     {{ element.title }}
-                    <span v-if="element.dueDate" class="text-xs ms-2 text-grey-500"
-                      >({{ new Date(element.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) }})</span
-                    >
+                    <v-chip v-if="element.dueDate" size="x-small" color="grey" class="ml-1">{{
+                      new Date(element.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                    }}</v-chip>
                   </v-chip>
                 </template>
               </draggable>
@@ -152,6 +164,22 @@
             <v-card-title class="d-flex align-center gap-2 py-2">
               <v-icon>mdi-lightning-bolt</v-icon>
               <span>Habits</span>
+              <v-spacer></v-spacer>
+              <div class="bg-[rgba(255,9,9,0.1)] rounded-md h-full text-center">
+                <draggable
+                  v-model="trashZone"
+                  :group="{ name: 'tasks', put: true, pull: false }"
+                  item-key="id"
+                  ghost-class="ghost-task"
+                  :animation="200"
+                  @change="handleTrashDrop"
+                >
+                  <template #header>
+                    <v-icon color="rgba(255, 9, 9, 0.2)" size="large" class="">mdi-delete-circle</v-icon>
+                  </template>
+                  <template #item="{ element }"> </template>
+                </draggable>
+              </div>
             </v-card-title>
 
             <v-divider></v-divider>
@@ -188,7 +216,7 @@
                     drag-class="dragging-task"
                   >
                     <template #item="{ element }">
-                      <v-chip :color="element.color || undefined" class="ma-1 w-full justify-start cursor-grab relative" @click="showTaskDetails(element)">
+                      <v-chip :color="element.color || undefined" class="ma-1 justify-start cursor-grab relative" @click="showTaskDetails(element)">
                         <template v-slot:prepend>
                           <v-icon
                             size="small"
@@ -202,7 +230,14 @@
                           ></v-icon>
                         </template>
                         {{ element.title }}
-                        <span class="text-xs ms-2 text-grey-100">({{ element.duration }})</span>
+                        <!-- Duration as a chip -->
+                        <v-chip size="x-small" color="grey" class="ml-1">{{ element.duration }}</v-chip>
+
+                        <!-- Show streak if exists -->
+                        <v-chip v-if="element.currentStreak > 0" size="x-small" color="amber" class="ml-1" :text="`${element.currentStreak}🔥`"></v-chip>
+
+                        <!-- Show total completions instead of complete button -->
+                        <v-chip size="x-small" color="success" class="ml-1">{{ element.totalCompletions || 0 }}</v-chip>
                       </v-chip>
                     </template>
                   </draggable>
@@ -240,6 +275,48 @@
             </template>
           </v-form>
         </v-card-text>
+
+        <!-- Add tracking section for tasks -->
+        <template v-if="currentItem.type === 'task'">
+          <v-divider class="my-3"></v-divider>
+
+          <v-card-text>
+            <div class="d-flex justify-space-between align-center mb-2">
+              <span class="text-subtitle-1">Progress Tracking</span>
+
+              <!-- Remove the complete button and add instruction text -->
+              <v-chip color="info" size="small">
+                <v-icon start size="small">mdi-information-outline</v-icon>
+                Drag to Today's Plan to complete
+              </v-chip>
+            </div>
+
+            <div class="d-flex align-center mb-2">
+              <v-icon color="amber" class="mr-2">mdi-trophy</v-icon>
+              <span>Total completions: {{ currentItem.totalCompletions || 0 }}</span>
+            </div>
+
+            <div class="d-flex align-center mb-2">
+              <v-icon color="orange" class="mr-2">mdi-fire</v-icon>
+              <span>Current streak: {{ currentItem.currentStreak || 0 }} days</span>
+            </div>
+
+            <div class="mt-4">
+              <div class="text-subtitle-2 mb-1">Last 7 days:</div>
+              <div class="d-flex justify-space-between">
+                <span v-for="i in 7" :key="i">
+                  {{ ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][(new Date().getDay() + i - 6) % 7].substring(0, 1) }}
+                </span>
+              </div>
+              <div class="d-flex justify-space-between">
+                <span v-for="i in 7" :key="i" :class="{ 'text-success': (currentItem.completionBitMap & (1 << (i - 1))) !== 0 }">
+                  {{ (currentItem.completionBitMap & (1 << (i - 1))) !== 0 ? "●" : "○" }}
+                </span>
+              </div>
+            </div>
+          </v-card-text>
+        </template>
+
         <v-card-actions>
           <v-btn
             v-if="currentItem.id"
@@ -320,55 +397,41 @@ const categories = [
 // Color options for tasks
 const colorOptions = ["primary", "secondary", "success", "info", "warning", "error", "blue", "green", "purple", "teal", "cyan"];
 
-// Initial tasks database
+// In the initial tasks database (tasksDB) and when creating new items, add the tracking fields:
+const getNewHabit = (title, description, duration, level) => {
+  return {
+    id: `habit-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+    title,
+    description,
+    duration,
+    level,
+    // New tracking fields
+    totalCompletions: 0,
+    currentStreak: 0,
+    completionBitMap: 0, // 30-day rolling window as a binary number
+    lastUpdated: new Date().toISOString().split("T")[0], // Store date as YYYY-MM-DD
+  };
+};
+
+// Update tasksDB to use the new function
 const tasksDB = {
   "Low Options": [
-    {
-      id: "l1",
-      title: "5-min walk",
-      description: "A quick walk around the block to get some fresh air",
-      duration: "5 mins",
-      level: "Low Options",
-    },
-    { id: "l2", title: "Quick shower/self-care", description: "Basic self-care routine", duration: "10 mins", level: "Low Options" },
-    {
-      id: "l3",
-      title: "Short journaling",
-      description: "Write down current thoughts and feelings",
-      duration: "5 mins",
-      level: "Low Options",
-    },
-    { id: "l4", title: "5-min meditation", description: "Brief mindfulness practice", duration: "5 mins", level: "Low Options" },
+    getNewHabit("5-min walk", "A quick walk around the block to get some fresh air", "5 mins", "Low Options"),
+    getNewHabit("Quick shower/self-care", "Basic self-care routine", "10 mins", "Low Options"),
+    getNewHabit("Short journaling", "Write down current thoughts and feelings", "5 mins", "Low Options"),
+    getNewHabit("5-min meditation", "Brief mindfulness practice", "5 mins", "Low Options"),
   ],
   "Medium Options": [
-    {
-      id: "m1",
-      title: "15-min home workout",
-      description: "Quick home fitness routine (HFR)",
-      duration: "15 mins",
-      level: "Medium Options",
-    },
-    { id: "m2", title: "20-30 min coding", description: "Short coding practice session", duration: "25 mins", level: "Medium Options" },
-    {
-      id: "m3",
-      title: "Quick social interaction",
-      description: "Brief chat or call with friend/family",
-      duration: "15 mins",
-      level: "Medium Options",
-    },
-    { id: "m4", title: "Cook easy meal", description: "Prepare a simple, healthy meal", duration: "30 mins", level: "Medium Options" },
+    getNewHabit("15-min home workout", "Quick home fitness routine (HFR)", "15 mins", "Medium Options"),
+    getNewHabit("20-30 min coding", "Short coding practice session", "25 mins", "Medium Options"),
+    getNewHabit("Quick social interaction", "Brief chat or call with friend/family", "15 mins", "Medium Options"),
+    getNewHabit("Cook easy meal", "Prepare a simple, healthy meal", "30 mins", "Medium Options"),
   ],
   "High Options": [
-    { id: "h1", title: "Full gym session", description: "Complete workout at the gym", duration: "60 mins", level: "High Options" },
-    {
-      id: "h2",
-      title: "Exciting coding project",
-      description: "Work on a challenging coding project",
-      duration: "60+ mins",
-      level: "High Options",
-    },
-    { id: "h3", title: "Social event", description: "Attend or plan a social gathering", duration: "Flexible", level: "High Options" },
-    { id: "h4", title: "New experience", description: "Try something new and stimulating", duration: "Flexible", level: "High Options" },
+    getNewHabit("Full gym session", "Complete workout at the gym", "60 mins", "High Options"),
+    getNewHabit("Exciting coding project", "Work on a challenging coding project", "60+ mins", "High Options"),
+    getNewHabit("Social event", "Attend or plan a social gathering", "Flexible", "High Options"),
+    getNewHabit("New experience", "Try something new and stimulating", "Flexible", "High Options"),
   ],
 };
 
@@ -408,7 +471,6 @@ const totalTodayDuration = computed(() => {
 
   let totalMinutes = 0;
   todayActivities.value.forEach((task) => {
-    // Simpler regex extraction
     const match = task.duration?.match(/\d+/);
     totalMinutes += match ? parseInt(match[0]) : 0;
   });
@@ -477,6 +539,7 @@ const loadSavedState = async () => {
         todoTasks.value = data.todoTasks;
       }
     }
+    updateHabitTracking();
   } catch (error) {
     console.error("Error loading saved state:", error);
   }
@@ -667,6 +730,38 @@ const handleDragChange = (evt) => {
   saveState();
 };
 
+// Update the handleTodayChange function to be very explicit about its purpose
+const handleTodayChange = (evt) => {
+  if (evt.added) {
+    const task = evt.added.element;
+
+    // If it's a habit (not a todo), mark it as completed for today
+    if (!task.isTodo) {
+      // This is the ONLY place where habits get marked complete
+      completeHabit(task);
+
+      // Optionally add a visual indicator or notification
+      console.log(`Habit "${task.title}" marked as completed for today!`);
+    }
+  }
+  saveState();
+};
+
+// Add handler for trash drop
+const trashZone = ref([]);
+const handleTrashDrop = (evt) => {
+  if (evt.added) {
+    const item = evt.added.element;
+
+    // Confirm deletion
+    if (confirm(`Are you sure you want to delete "${item.title}"?`)) {
+      deleteItem(item);
+      console.log(`Item "${item.title}" has been deleted`);
+      trashZone.value = [];
+    }
+  }
+};
+
 // Watch for changes in categoryTasks to save state
 watch(
   [categoryTasks, todoTasks, todayActivities],
@@ -714,6 +809,109 @@ watch(
     showContent.value = !newValue;
   }
 );
+
+// Add these helper functions for bitmap manipulation
+const completeHabit = (habit) => {
+  // Update last updated date
+  const today = new Date().toISOString().split("T")[0];
+  const lastDate = habit.lastUpdated || today;
+
+  // Calculate days since last update
+  const daysSinceUpdate = Math.floor((new Date(today) - new Date(lastDate)) / (1000 * 60 * 60 * 24));
+
+  // Shift the bitmap by the number of days since last update (up to 30 days)
+  if (daysSinceUpdate > 0) {
+    // Shift bits to the left (older days)
+    habit.completionBitMap = habit.completionBitMap << daysSinceUpdate;
+
+    // Clear any bits beyond 30 days (using a 30-bit mask)
+    habit.completionBitMap = habit.completionBitMap & 0x3fffffff; // 30 bits of 1s
+
+    // If more than 1 day has passed, streak is broken
+    if (daysSinceUpdate > 1) {
+      habit.currentStreak = 0;
+    }
+  }
+
+  // Set today's bit (rightmost bit) to 1
+  habit.completionBitMap = habit.completionBitMap | 1;
+
+  // Update totalCompletions
+  habit.totalCompletions = (habit.totalCompletions || 0) + 1;
+
+  // Update streak - currentStreak+1 if yesterday was completed, otherwise reset to 1
+  if (daysSinceUpdate === 1) {
+    // Check if yesterday's bit is 1 (second bit from right)
+    const yesterdayCompleted = (habit.completionBitMap & 2) !== 0;
+    if (yesterdayCompleted) {
+      habit.currentStreak++;
+    } else {
+      habit.currentStreak = 1;
+    }
+  } else if (daysSinceUpdate > 1 || daysSinceUpdate === 0) {
+    // If more than 1 day passed or it's the same day, start/continue streak at 1
+    habit.currentStreak = 1;
+  }
+
+  // Update lastUpdated
+  habit.lastUpdated = today;
+
+  // Save state
+  saveState();
+};
+
+// Function to check completion status and update streaks on component load
+const updateHabitTracking = () => {
+  const today = new Date().toISOString().split("T")[0];
+
+  for (const category in categoryTasks.value) {
+    categoryTasks.value[category].forEach((habit) => {
+      // Initialize tracking fields if not present
+      if (habit.completionBitMap === undefined) {
+        habit.completionBitMap = 0;
+        habit.totalCompletions = 0;
+        habit.currentStreak = 0;
+        habit.lastUpdated = today;
+      } else if (habit.lastUpdated !== today) {
+        // Calculate days since last update
+        const daysSinceUpdate = Math.floor((new Date(today) - new Date(habit.lastUpdated || today)) / (1000 * 60 * 60 * 24));
+
+        if (daysSinceUpdate > 0) {
+          // Shift bitmap without marking today as complete
+          habit.completionBitMap = habit.completionBitMap << daysSinceUpdate;
+          habit.completionBitMap = habit.completionBitMap & 0x3fffffff;
+
+          // Check if streak is broken (more than 1 day passed)
+          if (daysSinceUpdate > 1) {
+            habit.currentStreak = 0;
+          }
+
+          habit.lastUpdated = today;
+        }
+      }
+    });
+  }
+
+  saveState();
+};
+
+// Function to get completion history array from bitmap
+const getCompletionHistory = (bitmap) => {
+  const history = [];
+  for (let i = 0; i < 30; i++) {
+    history.push((bitmap & (1 << i)) !== 0);
+  }
+  return history;
+};
+
+// Function to get a visual representation of the last 7 days
+const getWeeklyHistory = (bitmap) => {
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    days.push((bitmap & (1 << i)) !== 0 ? "🟢" : "⚪");
+  }
+  return days.join(" ");
+};
 </script>
 
 <style scoped>
@@ -766,5 +964,15 @@ watch(
 /* Fix Safari scrolling issues if any */
 .overflow-y-auto {
   -webkit-overflow-scrolling: touch;
+}
+
+/* Trash zone styling */
+.trash-zone {
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.trash-zone:hover {
+  background-color: rgba(244, 67, 54, 0.1);
 }
 </style>
