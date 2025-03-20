@@ -18,6 +18,7 @@ import TodoListCard from "@/components/ToDo/TodoListCard.vue";
 import TreeNotes from "@/components/TreeNotes.vue";
 import Woosh from "./Woosh.vue";
 import WooshFriendsTest from "@/components/WooshFriendsTest.vue";
+import TranscriptSummarizer from "@/components/TranscriptSummarizer.vue";
 
 // SECTION: API Key Management
 const apiKeyModalVisible = ref(false);
@@ -115,6 +116,12 @@ const defaultConfig = {
       on: { expand: () => expandComponent(TodoAITreeDisp, { collapsed: true }) },
     },
     {
+      name: "Transcript Summarizer",
+      component: TranscriptSummarizer,
+      props: { collapsed: false },
+      on: { expand: () => expandComponent(TranscriptSummarizer, { collapsed: false }) },
+    },
+    {
       name: "Chat",
       component: Chat,
       props: {
@@ -146,6 +153,7 @@ const componentMap = {
   TreeNotes,
   Woosh,
   WooshFriendsTest,
+  TranscriptSummarizer,
 };
 
 const shouldLoadContent = computed(() => !apiKeyModalVisible.value); // Only load content if API key is available
@@ -269,6 +277,7 @@ const availableComponents = computed(() => [
   { name: "Tree Notes", componentName: "TreeNotes" },
   { name: "Woosh", componentName: "Woosh" },
   { name: "WooshFriendsTest", componentName: "WooshFriendsTest" },
+  { name: "Transcript Summarizer", componentName: "TranscriptSummarizer" },
 ]);
 
 const addComponentDialog = ref(false);

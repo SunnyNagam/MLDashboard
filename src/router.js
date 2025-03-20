@@ -10,6 +10,7 @@ import CommunityBoard from "@/components/views/CommunityBoard.vue";
 import Landing2 from "@/components/Landing2Test.vue";
 import BITPortfolioBeta from "@/components/BITPortfolioBeta.vue";
 import TextEditor from "@/components/TextEditor.vue";
+import TranscriptSummarizer from "@/components/TranscriptSummarizer.vue";
 
 const routes = [
   { path: "/", name: "home", component: ExpDash },
@@ -41,6 +42,11 @@ const routes = [
     path: "/text-editor",
     name: "text-editor",
     component: TextEditor,
+  },
+  {
+    path: "/transcript-summarizer",
+    name: "transcript-summarizer",
+    component: TranscriptSummarizer,
   },
 ];
 

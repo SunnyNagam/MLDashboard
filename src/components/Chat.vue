@@ -1,9 +1,5 @@
 <template>
-  <v-card
-    :class="['mx-auto', isExpanded ? 'h-full d-flex flex-column' : '']"
-    elevation="2"
-    rounded="lg"
-  >
+  <v-card :class="['mx-auto', isExpanded ? 'h-full d-flex flex-column' : '']" elevation="2" rounded="lg">
     <v-toolbar color="grey-darken-4" dark density="compact">
       <v-btn icon @click="toggleChat">
         <v-icon>{{ showChat ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
@@ -12,28 +8,15 @@
       <v-spacer></v-spacer>
 
       <!-- Model Selector -->
-      <v-select
-        v-model="selectedModel"
-        :items="modelChoices"
-        dense
-        hide-details
-        bg-color="none"
-      ></v-select>
+      <v-select v-model="selectedModel" :items="modelChoices" dense hide-details bg-color="none"></v-select>
 
       <v-btn icon="mdi-delete" @click="clearMessages" />
       <v-btn icon="mdi-arrow-expand" @click="$emit('expand')" />
     </v-toolbar>
 
     <div :class="['d-flex flex-column', isExpanded ? 'flex-grow-1' : '']">
-      <v-card-text
-        v-show="showChat"
-        :class="['overflow-y-auto', isExpanded ? 'flex-grow-1' : 'h-[21vh]']"
-      >
-        <div
-          class="space-y-2 py-2"
-          v-for="(message, index) in messages.slice(1)"
-          :key="message.content"
-        >
+      <v-card-text v-show="showChat" :class="['overflow-y-auto', isExpanded ? 'flex-grow-1' : 'h-[21vh]']">
+        <div class="space-y-2 py-2" v-for="(message, index) in messages.slice(1)" :key="message.content">
           <div
             @click="showMenu(message, index + 1)"
             :class="{
@@ -43,10 +26,8 @@
           >
             <div
               :class="{
-                'inline-block bg-blue-500 text-white p-2 rounded-l-lg':
-                  message.role === 'user',
-                'inline-block bg-gray-900 p-2 rounded-r-lg':
-                  message.role === 'assistant',
+                'inline-block bg-blue-500 text-white p-2 rounded-l-lg': message.role === 'user',
+                'inline-block bg-gray-900 p-2 rounded-r-lg': message.role === 'assistant',
               }"
               :ref="
                 (el) => {
@@ -54,10 +35,7 @@
                 }
               "
             >
-              <vue-markdown
-                :source="message.content"
-                :options="{ breaks: true }"
-              />
+              <vue-markdown :source="message.content" :options="{ breaks: true }" />
             </div>
           </div>
           <div
@@ -108,14 +86,7 @@
         </div>
       </v-card-text>
       <v-card-actions v-show="showChat">
-        <v-text-field
-          v-model="userInput"
-          label="Type a message..."
-          class="flex-grow-1"
-          @keyup.enter="sendMessage"
-          outlined
-          hide-details
-        ></v-text-field>
+        <v-text-field v-model="userInput" label="Type a message..." class="flex-grow-1" @keyup.enter="sendMessage" outlined hide-details></v-text-field>
         <v-btn @click="sendMessage">
           {{ editingIndex === -1 ? "Send" : "Save" }}
         </v-btn>
@@ -197,15 +168,15 @@ watch(
 
 const selectedModel = ref("perplexity/llama-3.1-sonar-small-128k-online");
 const modelChoices = [
-  "anthropic/claude-3.5-sonnet",
-  "google/gemini-2.0-flash-exp:free",
-  "google/gemini-exp-1206:free",
-  "openai/o1-mini",
-  "openai/gpt-4o-turbo",
+  "anthropic/claude-3.7-sonnet",
   "perplexity/llama-3.1-sonar-small-128k-online",
-  "perplexity/llama-3.1-sonar-large-128k-online",
-  "deepseek/deepseek-r1",
-  "google/gemma-2-9b-it:free",
+  "nousresearch/hermes-2-pro-llama-3-8b",
+  "meta-llama/llama-3.3-70b-instruct",
+  "deepseek/deepseek-chat",
+  "google/gemini-2.0-flash-lite-001",
+  "deepseek/deepseek-r1-distill-llama-8b",
+  "qwen/qwen-2.5-coder-32b-instruct",
+  "google/gemini-2.0-flash-001",
 ];
 const dialog = ref(false);
 const callAgent = ref(false);
@@ -219,9 +190,7 @@ const messages = ref([
 ]);
 
 const clearMessages = () => {
-  messages.value = messages.value.filter(
-    (message, index) => message.role === "system" && index === 0
-  );
+  messages.value = messages.value.filter((message, index) => message.role === "system" && index === 0);
 };
 
 const lastMessage = ref(null);
@@ -300,8 +269,7 @@ async function sendMessageToApi(userMessage) {
       role: "assistant",
     });
     for await (const part of stream) {
-      messages.value[messages.value.length - 1].content +=
-        part.choices[0]?.delta?.content || "";
+      messages.value[messages.value.length - 1].content += part.choices[0]?.delta?.content || "";
     }
   } catch (error) {
     console.error("Chat API error:", error);
