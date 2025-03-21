@@ -887,7 +887,7 @@ const refineNode = async (currentText, context, mode = selectedSummaryMode.value
   // Extract tagline if present to ensure we preserve it
   const taglineMatches = [...currentText.matchAll(/<([^<>]+)>/g)];
   const tagline = taglineMatches.length > 0 ? taglineMatches[taglineMatches.length - 1][1] : "";
-  const textWithoutTagline = tagline ? currentText.replace(/\s*<.*?>$/, "").trim() : currentText;
+  const textWithoutTagline = tagline ? currentText.replace(tagline, "").trim() : currentText;
 
   // Get the original prompt for this mode
   const originalPrompt = mode === "custom" ? customPrompt.value : SUMMARY_PROMPTS[mode] || summarizationPrompt.value;

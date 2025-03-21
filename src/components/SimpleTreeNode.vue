@@ -87,7 +87,7 @@ const taglineData = computed(() => {
   if (taglineMatches.length > 0) {
     return {
       tagline: taglineMatches[taglineMatches.length - 1][1],
-      fullText: text.replace(/\s*<.*?>$/, "").trim(),
+      fullText: text.replace(taglineMatches[taglineMatches.length - 1][0], "").trim(),
       hasTagline: true,
     };
   }
