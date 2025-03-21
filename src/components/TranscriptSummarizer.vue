@@ -777,6 +777,31 @@ const refineTree = async () => {
   try {
     // Traverse tree and collect all nodes with context
     const allNodes = collectNodesWithContext(treeRoot.value);
+
+    // Create a flattened sequence based on content percentages
+    // This helps identify sequential neighbors even across different branches
+    allNodes.sort((a, b) => {
+      // If percentStart is available, use it for ordering
+      if (a.node.percentStart !== undefined && b.node.percentStart !== undefined) {
+        return a.node.percentStart - b.node.percentStart;
+      }
+      // Fallback to path-based ordering
+      return a.path.join(".").localeCompare(b.path.join("."));
+    });
+
+    // Add sequential neighbor information
+    for (let i = 0; i < allNodes.length; i++) {
+      // Left neighbor (previous in sequence)
+      if (i > 0) {
+        allNodes[i].context.leftNeighbor = allNodes[i - 1].node.text;
+      }
+
+      // Right neighbor (next in sequence)
+      if (i < allNodes.length - 1) {
+        allNodes[i].context.rightNeighbor = allNodes[i + 1].node.text;
+      }
+    }
+
     totalCallsNeeded.value = allNodes.length;
     counter.value = 0;
 
@@ -833,6 +858,9 @@ const collectNodesWithContext = (node, parent = null, siblings = [], path = [], 
     depth: path.length,
     position: path.join(".") || "root",
     percentRange: node.percentStart !== undefined ? `${Math.round(node.percentStart)}%-${Math.round(node.percentEnd)}%` : undefined,
+    // These will be filled in later after we have the full flattened sequence
+    leftNeighbor: null,
+    rightNeighbor: null,
   };
 
   acc.push({ node, context, path });
@@ -857,9 +885,9 @@ const refineNode = async (currentText, context, mode = selectedSummaryMode.value
   if (!openaiApi.value && !testingMode.value) return currentText;
 
   // Extract tagline if present to ensure we preserve it
-  const taglineMatch = currentText.match(/<(.*?)>$/);
-  const tagline = taglineMatch ? taglineMatch[0] : "";
-  const textWithoutTagline = taglineMatch ? currentText.replace(/\s*<.*?>$/, "").trim() : currentText;
+  const taglineMatches = [...currentText.matchAll(/<([^<>]+)>/g)];
+  const tagline = taglineMatches.length > 0 ? taglineMatches[taglineMatches.length - 1][1] : "";
+  const textWithoutTagline = tagline ? currentText.replace(/\s*<.*?>$/, "").trim() : currentText;
 
   // Get the original prompt for this mode
   const originalPrompt = mode === "custom" ? customPrompt.value : SUMMARY_PROMPTS[mode] || summarizationPrompt.value;
@@ -872,6 +900,8 @@ const refineNode = async (currentText, context, mode = selectedSummaryMode.value
     parent: truncateText(context.parent, 120),
     siblings: context.siblings.map((s) => extractCore(s)),
     children: context.children.map((c) => extractCore(c)),
+    leftNeighbor: context.leftNeighbor ? extractCore(context.leftNeighbor) : null,
+    rightNeighbor: context.rightNeighbor ? extractCore(context.rightNeighbor) : null,
   };
 
   const refinementPrompt = `Refine this current node in a ${mode} tree structure using the provided surrounding context. 
@@ -887,18 +917,16 @@ ESSENTIAL CONTEXT:
 ${conciseContext.parent ? `- PARENT NODE: "${conciseContext.parent}"` : "- ROOT NODE"}
 ${conciseContext.children.length > 0 ? `- CHILD NODES: ${conciseContext.children.map((c) => `• "${c}"`).join(", ")}` : "- NO CHILDREN (leaf node)"}
 ${conciseContext.siblings.length > 0 ? `- SIBLING NODES: ${conciseContext.siblings.map((s) => `• "${s}"`).join(", ")}` : "- NO SIBLINGS"}
+${conciseContext.leftNeighbor ? `- SEQUENTIAL PREDECESSOR: "${conciseContext.leftNeighbor}"` : ""}
+${conciseContext.rightNeighbor ? `- SEQUENTIAL SUCCESSOR: "${conciseContext.rightNeighbor}"` : ""}
 
 REFINEMENT INSTRUCTIONS:
 1. Preserve the core meaning of the node
 2. Ensure it properly represents its children's content
 3. Make it distinct from but complementary to siblings
-4. ${formatGuidance ? `Follow original format: ${formatGuidance}` : "Maintain consistent formatting"}
-5. ${
-    tagline
-      ? `Keep a concise ${tagline.includes("<") ? "short summary in angle brackets" : "summary"} at the end`
-      : "Add a brief <summary in angle brackets> at the end"
-  }
-6. Keep your response concise and focused and output
+4. Consider the natural flow from previous to next sequential content
+5. ${tagline ? `Keep a concise short summary in <angle brackets> at the end` : "Add a brief <summary in angle brackets> at the end"}
+6. Keep your response concise and focused and don't add any unneeded explanation or commentary
 
 REFINED NODE:`;
 
@@ -943,9 +971,9 @@ const truncateText = (text, maxLength) => {
 const extractCore = (text) => {
   if (!text) return "";
 
-  // Extract tagline if present
-  const taglineMatch = text.match(/<(.*?)>$/);
-  const tagline = taglineMatch ? taglineMatch[1] : "";
+  // Find all taglines (anything in angle brackets) and take the last one
+  const taglineMatches = [...text.matchAll(/<([^<>]+)>/g)];
+  const tagline = taglineMatches.length > 0 ? taglineMatches[taglineMatches.length - 1][1] : "";
 
   // Get the first sentence or a portion of the text
   let core = text.split(/\.|\!|\?/)[0];
@@ -1001,19 +1029,27 @@ const exportTreeToJson = () => {
   }, 100);
 };
 
-// Helper function to clean tree for export - simplified since SimpleTreeNode now handles taglines
+// Helper function to clean tree for export
 const cleanTreeForExport = (node) => {
   if (!node) return null;
 
-  // Use SimpleTreeNode's approach to extract tagline
-  const taglineMatch = node.text.match(/<(.*?)>$/);
+  // Find all taglines (anything in angle brackets) and take the last one
+  const taglineMatches = [...node.text.matchAll(/<([^<>]+)>/g)];
 
   const cleanNode = {};
 
   // Add tagline info if present
-  if (taglineMatch) {
-    cleanNode.tagline = taglineMatch[1];
-    cleanNode.text = node.text.replace(/\s*<.*?>$/, "").trim();
+  if (taglineMatches.length > 0) {
+    const lastMatch = taglineMatches[taglineMatches.length - 1];
+    cleanNode.tagline = lastMatch[1];
+
+    // Remove the last tagline from the text
+    const lastTaglinePos = lastMatch.index;
+    const lastTaglineText = lastMatch[0];
+    const textBeforeLastTagline = node.text.substring(0, lastTaglinePos);
+    const textAfterLastTagline = node.text.substring(lastTaglinePos + lastTaglineText.length);
+
+    cleanNode.text = (textBeforeLastTagline + textAfterLastTagline).trim();
   } else {
     cleanNode.text = node.text;
   }

@@ -82,11 +82,11 @@ const isPartOfSearchPath = ref(false);
 // Extract tagline from text
 const taglineData = computed(() => {
   const text = props.node.text || "";
-  const taglineMatch = text.match(/<(.*?)>$/);
+  const taglineMatches = [...text.matchAll(/<([^<>]+)>/g)];
 
-  if (taglineMatch) {
+  if (taglineMatches.length > 0) {
     return {
-      tagline: taglineMatch[1],
+      tagline: taglineMatches[taglineMatches.length - 1][1],
       fullText: text.replace(/\s*<.*?>$/, "").trim(),
       hasTagline: true,
     };
