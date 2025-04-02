@@ -14,6 +14,12 @@
 
       <v-toolbar-title>ToDo</v-toolbar-title>
 
+      <!-- Display Total Habit Score -->
+      <v-chip color="amber" class="ml-2">
+        <v-icon start>mdi-trophy</v-icon>
+        {{ totalHabitCompletionsScore }}
+      </v-chip>
+
       <v-spacer></v-spacer>
 
       <v-btn icon="mdi-arrow-expand" @click="$emit('expand')" />
@@ -197,8 +203,7 @@
                     @click.stop="
                       () => {
                         openItemDialog('task');
-                        currentItem.energyLevel = categories.find((c) => c.level === category.level);
-                        currentItem.level = category.level;
+                        currentItem.energyLevel = categories.find((c) => c.level === category.level).level;
                       }
                     "
                   ></v-btn>
@@ -264,7 +269,7 @@
             <template v-if="currentItem.type === 'task'">
               <v-text-field v-model="currentItem.duration" label="Duration (e.g. '15 mins')"></v-text-field>
               <v-select v-model="currentItem.color" :items="colorOptions" label="Color" clearable></v-select>
-              <v-select v-model="currentItem.energyLevel" :items="categories" item-title="level" label="Energy Level" return-object></v-select>
+              <v-select v-model="currentItem.energyLevel" :items="categories" item-title="level" item-value="level" label="Energy Level"></v-select>
             </template>
 
             <!-- Todo-specific fields -->
@@ -302,14 +307,14 @@
             </div>
 
             <div class="mt-4">
-              <div class="text-subtitle-2 mb-1">Last 7 days:</div>
-              <div class="d-flex justify-space-between">
-                <span v-for="i in 7" :key="i">
-                  {{ ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][(new Date().getDay() + i - 6) % 7].substring(0, 1) }}
-                </span>
-              </div>
-              <div class="d-flex justify-space-between">
-                <span v-for="i in 7" :key="i" :class="{ 'text-success': (currentItem.completionBitMap & (1 << (i - 1))) !== 0 }">
+              <div class="text-subtitle-2 mb-1">Last 30 days:</div>
+              <div class="d-flex justify-space-between flex-wrap">
+                <span
+                  v-for="i in 30"
+                  :key="i"
+                  :class="{ 'text-success': (currentItem.completionBitMap & (1 << (i - 1))) !== 0 }"
+                  class="mx-px text-lg leading-none"
+                >
                   {{ (currentItem.completionBitMap & (1 << (i - 1))) !== 0 ? "●" : "○" }}
                 </span>
               </div>
@@ -478,6 +483,20 @@ const totalTodayDuration = computed(() => {
   return `${totalMinutes} mins`;
 });
 
+// Computed property for total habit completions score
+const totalHabitCompletionsScore = computed(() => {
+  let totalScore = 0;
+  for (const category in categoryTasks.value) {
+    categoryTasks.value[category].forEach((habit) => {
+      // Ensure we only count habits (tasks), not todos
+      if (!habit.isTodo) {
+        totalScore += habit.totalCompletions * habit.duration.replace(/[^0-9]/g, "") || 0;
+      }
+    });
+  }
+  return totalScore;
+});
+
 // Reactive task lists for each mood
 const categoryTasks = ref({
   "Low Options": [...tasksDB["Low Options"]],
@@ -514,29 +533,39 @@ const loadSavedState = async () => {
   try {
     // Try to load from API first
     if (getApiKey()) {
-      const data = await apiCall(`${BASE_URL}/getData?key=HabitAndTodoHub`);
-      if (data && data.categoryTasks) {
-        categoryTasks.value = data.categoryTasks;
-        if (data.todayActivities) {
-          todayActivities.value = data.todayActivities;
+      // Load habits data
+      const habitData = await apiCall(`${BASE_URL}/getData?key=HabitAndTodoHub`);
+      if (habitData && habitData.categoryTasks) {
+        categoryTasks.value = habitData.categoryTasks;
+        if (habitData.todayActivities) {
+          todayActivities.value = habitData.todayActivities;
         }
-        if (data.todoTasks) {
-          todoTasks.value = data.todoTasks;
-        }
-        return;
       }
+
+      // Load todo data from separate key
+      const todoData = await apiCall(`${BASE_URL}/getData?key=TodoList`);
+      if (todoData) {
+        todoTasks.value = todoData;
+      }
+      return;
     }
 
     // Fall back to localStorage if API fails or no API key
-    const savedState = localStorage.getItem("habitAndTodoHub");
-    if (savedState) {
-      const data = JSON.parse(savedState);
+    const savedHabitState = localStorage.getItem("habitAndTodoHub");
+    if (savedHabitState) {
+      const data = JSON.parse(savedHabitState);
       categoryTasks.value = data.categoryTasks;
       if (data.todayActivities) {
         todayActivities.value = data.todayActivities;
       }
-      if (data.todoTasks) {
-        todoTasks.value = data.todoTasks;
+    }
+
+    // Load todos from localStorage
+    const savedTodoState = localStorage.getItem("todoList");
+    if (savedTodoState) {
+      const data = JSON.parse(savedTodoState);
+      if (data) {
+        todoTasks.value = data;
       }
     }
     updateHabitTracking();
@@ -547,19 +576,21 @@ const loadSavedState = async () => {
 
 // Save current state to API and localStorage
 const saveState = async () => {
-  const stateToSave = {
+  // Save habits state
+  const habitStateToSave = {
     categoryTasks: categoryTasks.value,
     todayActivities: todayActivities.value,
-    todoTasks: todoTasks.value,
     lastSaved: new Date().toISOString(),
   };
 
   // Save to localStorage
-  localStorage.setItem("habitAndTodoHub", JSON.stringify(stateToSave));
+  localStorage.setItem("habitAndTodoHub", JSON.stringify(habitStateToSave));
+  localStorage.setItem("todoList", JSON.stringify(todoTasks.value));
 
-  // Simplified API call - remove try/catch for one-time component
+  // Save to API if key exists
   if (getApiKey()) {
-    apiCall(`${BASE_URL}/getData?key=HabitAndTodoHub`, "PUT", stateToSave);
+    apiCall(`${BASE_URL}/getData?key=HabitAndTodoHub`, "PUT", habitStateToSave);
+    apiCall(`${BASE_URL}/getData?key=TodoList`, "PUT", todoTasks.value);
   }
 };
 
@@ -621,6 +652,10 @@ const openItemDialog = (type, item = null) => {
     favorite: false,
     dueDate: null,
     completed: false,
+    completionBitMap: 0,
+    currentStreak: 0,
+    totalCompletions: 0,
+    lastUpdated: new Date().toISOString().split("T")[0],
     isTodo: type === "todo",
   };
 
@@ -631,11 +666,6 @@ const openItemDialog = (type, item = null) => {
         currentItem.value[key] = item[key];
       }
     });
-
-    // Set the energy level object for tasks
-    if (type === "task" && item.level) {
-      currentItem.value.energyLevel = categories.find((c) => c.level === item.level);
-    }
 
     // Handle due date for todos
     if (type === "todo") {
@@ -659,7 +689,7 @@ const saveItem = () => {
 
   if (item.type === "task") {
     // Handle task-specific fields
-    item.level = item.energyLevel?.level;
+    item.level = item.energyLevel;
     item.duration = item.duration || "Flexible";
 
     // Save to appropriate collection
@@ -730,7 +760,6 @@ const handleDragChange = (evt) => {
   saveState();
 };
 
-// Update the handleTodayChange function to be very explicit about its purpose
 const handleTodayChange = (evt) => {
   if (evt.added) {
     const task = evt.added.element;
@@ -764,7 +793,16 @@ const handleTrashDrop = (evt) => {
 
 // Watch for changes in categoryTasks to save state
 watch(
-  [categoryTasks, todoTasks, todayActivities],
+  [categoryTasks, todayActivities],
+  () => {
+    saveState();
+  },
+  { deep: true }
+);
+
+// Watch for changes in todoTasks separately
+watch(
+  todoTasks,
   () => {
     saveState();
   },
@@ -902,15 +940,6 @@ const getCompletionHistory = (bitmap) => {
     history.push((bitmap & (1 << i)) !== 0);
   }
   return history;
-};
-
-// Function to get a visual representation of the last 7 days
-const getWeeklyHistory = (bitmap) => {
-  const days = [];
-  for (let i = 6; i >= 0; i--) {
-    days.push((bitmap & (1 << i)) !== 0 ? "🟢" : "⚪");
-  }
-  return days.join(" ");
 };
 </script>
 

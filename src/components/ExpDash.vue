@@ -16,6 +16,7 @@ import RedditSummaryCard from "@/components/RedditSummaryCard.vue";
 import TodoAITreeDisp from "@/components/TodoAITreeDisp.vue";
 import TodoListCard from "@/components/ToDo/TodoListCard.vue";
 import TreeNotes from "@/components/TreeNotes.vue";
+import TodoList from "@/components/TodoList.vue";
 import Woosh from "./Woosh.vue";
 import WooshFriendsTest from "@/components/WooshFriendsTest.vue";
 import TranscriptSummarizer from "@/components/TranscriptSummarizer.vue";
@@ -149,7 +150,7 @@ const componentMap = {
   RedditSummaryCard,
   FlexibleChallengeCard,
   TodoAITreeDisp,
-  TodoListCard,
+  TodoList,
   TreeNotes,
   Woosh,
   WooshFriendsTest,
@@ -273,7 +274,7 @@ const availableComponents = computed(() => [
   { name: "Flexible Challenge System", componentName: "FlexibleChallengeCard" },
   { name: "Reddit Summary", componentName: "RedditSummaryCard" },
   { name: "Todo AI Tree", componentName: "TodoAITreeDisp" },
-  { name: "Todo List", componentName: "TodoListCard" },
+  { name: "Todo List", componentName: "TodoList" },
   { name: "Tree Notes", componentName: "TreeNotes" },
   { name: "Woosh", componentName: "Woosh" },
   { name: "WooshFriendsTest", componentName: "WooshFriendsTest" },
