@@ -20,8 +20,6 @@
         {{ totalCompletionsScore }}
       </v-chip>
 
-      <v-spacer></v-spacer>
-
       <v-btn icon="mdi-arrow-expand" @click="$emit('expand')" />
 
       <v-menu>

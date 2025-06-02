@@ -4,7 +4,7 @@
       <v-btn icon @click="showTasks = !showTasks">
         <v-icon>{{ showTasks ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
       </v-btn>
-      <v-toolbar-title>Google Tasks</v-toolbar-title>
+      <v-toolbar-title>Tasks</v-toolbar-title>
       <v-btn icon @click="addDialog = true">
         <v-icon>mdi-plus</v-icon>
       </v-btn>
