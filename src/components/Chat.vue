@@ -10,6 +10,7 @@
       <!-- Model Selector -->
       <v-select v-model="selectedModel" :items="modelChoices" dense hide-details bg-color="none"></v-select>
 
+      <v-btn icon="mdi-cog" @click="editModelsDialog = true" />
       <v-btn icon="mdi-delete" @click="clearMessages" />
       <v-btn icon="mdi-arrow-expand" @click="$emit('expand')" />
     </v-toolbar>
@@ -92,6 +93,46 @@
         </v-btn>
       </v-card-actions>
     </div>
+
+    <!-- Edit Models Dialog -->
+    <v-dialog v-model="editModelsDialog" max-width="600">
+      <v-card>
+        <v-card-title>Edit Model Choices</v-card-title>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="newModelName"
+                  label="Add new model"
+                  @keyup.enter="addModel"
+                  append-icon="mdi-plus"
+                  @click:append="addModel"
+                ></v-text-field>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="12">
+                <v-list>
+                  <v-list-item v-for="(model, index) in modelChoices" :key="index" class="mb-2">
+                    <v-list-item-content>
+                      <v-list-item-title>{{ model }}</v-list-item-title>
+                    </v-list-item-content>
+                    <v-list-item-action>
+                      <v-btn icon="mdi-delete" variant="text" @click="removeModel(index)"></v-btn>
+                    </v-list-item-action>
+                  </v-list-item>
+                </v-list>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="grey-darken-1" @click="editModelsDialog = false">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
@@ -103,6 +144,7 @@ import Tree from "@/components/Tree.vue";
 import Cookies from "vue-cookies";
 import { useAgent } from "@/useAgent.js";
 import { useNotesStore } from "@/stores/useNotesStore";
+import { useApi } from "@/useAPI.js";
 
 const props = defineProps({
   context: {
@@ -121,10 +163,15 @@ const props = defineProps({
 
 const notesStore = useNotesStore();
 
+// API Base URL
+const BASE_URL = "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod";
+
 const apiKey = ref("");
 const msgMenu = ref(false);
 const menuItem = ref(null);
 const showChat = ref(!props.collapsed);
+const editModelsDialog = ref(false);
+const newModelName = ref("");
 const toggleChat = () => {
   showChat.value = !showChat.value;
   props.collapsed = !showChat.value;
@@ -153,9 +200,91 @@ const fetchOpenRouterApiKey = async () => {
   }
 };
 
+// API Call Helper
+const apiCall = async (endpoint, method = "GET", body = null) => {
+  try {
+    const response = await fetch(endpoint, {
+      method,
+      headers: { "X-Api-Key": useApi().getApiKey() },
+      body: body ? JSON.stringify(body) : null,
+    });
+    return await response.json();
+  } catch (error) {
+    console.error("API call error:", error);
+    return null;
+  }
+};
+
+// Load model choices from storage
+const loadModelChoices = async () => {
+  try {
+    if (useApi().getApiKey()) {
+      const data = await apiCall(`${BASE_URL}/getData?key=ChatModelChoices`);
+      if (data && Array.isArray(data)) {
+        modelChoices.value = data;
+        return;
+      }
+    }
+
+    // Fallback to localStorage if API fails or no API key
+    const saved = localStorage.getItem("chatModelChoices");
+    if (saved) {
+      const data = JSON.parse(saved);
+      if (Array.isArray(data)) {
+        modelChoices.value = data;
+        return;
+      }
+    }
+
+    // If nothing loaded, use defaults
+    modelChoices.value = [
+      "anthropic/claude-3.7-sonnet",
+      "perplexity/llama-3.1-sonar-small-128k-online",
+      "nousresearch/hermes-2-pro-llama-3-8b",
+      "meta-llama/llama-3.3-70b-instruct",
+      "deepseek/deepseek-chat",
+      "google/gemini-2.0-flash-lite-001",
+      "deepseek/deepseek-r1-distill-llama-8b",
+      "qwen/qwen-2.5-coder-32b-instruct",
+      "google/gemini-2.0-flash-001",
+    ];
+  } catch (error) {
+    console.error("Error loading model choices:", error);
+  }
+};
+
+// Save model choices to storage
+const saveModelChoices = async () => {
+  // Save to localStorage
+  localStorage.setItem("chatModelChoices", JSON.stringify(modelChoices.value));
+
+  // Save to API if key exists
+  if (useApi().getApiKey()) {
+    apiCall(`${BASE_URL}/getData?key=ChatModelChoices`, "PUT", modelChoices.value);
+  }
+};
+
+// Add new model
+const addModel = () => {
+  if (newModelName.value.trim()) {
+    modelChoices.value.push(newModelName.value.trim());
+    newModelName.value = "";
+    saveModelChoices();
+  }
+};
+
+// Remove model
+const removeModel = (index) => {
+  if (confirm(`Remove model "${modelChoices.value[index]}"?`)) {
+    modelChoices.value.splice(index, 1);
+    saveModelChoices();
+  }
+};
+
 // Automatically fetch and apply the OpenRouter API key on component mount
 onMounted(() => {
   fetchOpenRouterApiKey();
+  loadModelChoices();
 });
 
 // Watch for changes to props.collapsed
@@ -167,17 +296,7 @@ watch(
 );
 
 const selectedModel = ref("perplexity/llama-3.1-sonar-small-128k-online");
-const modelChoices = [
-  "anthropic/claude-3.7-sonnet",
-  "perplexity/llama-3.1-sonar-small-128k-online",
-  "nousresearch/hermes-2-pro-llama-3-8b",
-  "meta-llama/llama-3.3-70b-instruct",
-  "deepseek/deepseek-chat",
-  "google/gemini-2.0-flash-lite-001",
-  "deepseek/deepseek-r1-distill-llama-8b",
-  "qwen/qwen-2.5-coder-32b-instruct",
-  "google/gemini-2.0-flash-001",
-];
+const modelChoices = ref([]);
 const dialog = ref(false);
 const callAgent = ref(false);
 let { invoke: invokeAgent } = callAgent.value ? await useAgent("") : {};
@@ -215,6 +334,11 @@ function saveEditedMessage() {
 function cancelEditMode() {
   editingIndex.value = -1;
   userInput.value = ""; // Clear input field
+}
+
+function showMenu(message, index) {
+  msgMenu.value = !msgMenu.value;
+  menuItem.value = { message, index };
 }
 
 watch(

@@ -4,6 +4,7 @@ import { useApi } from "@/useAPI.js";
 import TodoListCard from "@/components/ToDo/TodoListCard.vue";
 import Chat from "@/components/Chat.vue";
 import Calendar from "@/components/Calendar.vue";
+import Tasks from "@/components/Tasks.vue";
 import TreeNotes from "@/components/TreeNotes.vue";
 import TodoAITreeDisp from "@/components/TodoAITreeDisp.vue";
 import WooshFriendsTest from "@/components/WooshFriendsTest.vue";
@@ -123,6 +124,7 @@ function handleApiKeySubmit(enteredApiKey) {
     <v-row>
       <v-col cols="12" sm="8" order-sm="2">
         <Calendar :collapsed="smAndDown" class="mb-4" @expand="expandComponent(Calendar)" />
+        <Tasks :collapsed="smAndDown" class="mb-4" @expand="expandComponent(Tasks)" />
         <TreeNotes :collapsed="true" class="mb-4" v-if="!smAndDown" @expand="expandComponent(TreeNotes)" />
         <TodoAITreeDisp :collapsed="true" class="mb-4" @expand="expandComponent(TodoAITreeDisp)" />
         <WooshFriendsTest :collapsed="true" class="mb-4" v-if="!smAndDown" @expand="expandComponent(WooshFriendsTest)" />

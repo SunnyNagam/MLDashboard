@@ -10,6 +10,7 @@ import { useNotesStore } from "@/stores/useNotesStore";
 
 // Component Imports
 import Calendar from "@/components/Calendar.vue";
+import Tasks from "@/components/Tasks.vue";
 import Chat from "@/components/Chat.vue";
 import FlexibleChallengeCard from "@/components/FlexibleChallengeCard.vue";
 import RedditSummaryCard from "@/components/RedditSummaryCard.vue";
@@ -105,6 +106,12 @@ const defaultConfig = {
       on: { expand: () => expandComponent(Calendar, { collapsed: false }) },
     },
     {
+      name: "Tasks",
+      component: Tasks,
+      props: { collapsed: false },
+      on: { expand: () => expandComponent(Tasks, { collapsed: false }) },
+    },
+    {
       name: "Reddit Summary",
       component: RedditSummaryCard,
       props: { collapsed: false },
@@ -146,6 +153,7 @@ const defaultConfig = {
 
 const componentMap = {
   Calendar,
+  Tasks,
   Chat,
   RedditSummaryCard,
   FlexibleChallengeCard,
@@ -270,6 +278,7 @@ watch(
 // SECTION: Component Registration and Management (Adding, Removing)
 const availableComponents = computed(() => [
   { name: "Calendar", componentName: "Calendar" },
+  { name: "Tasks", componentName: "Tasks" },
   { name: "Chat", componentName: "Chat" },
   { name: "Flexible Challenge System", componentName: "FlexibleChallengeCard" },
   { name: "Reddit Summary", componentName: "RedditSummaryCard" },

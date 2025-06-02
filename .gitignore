@@ -34,6 +34,8 @@ lambda/*/*.zip
 lambda/*.zip
 lambda/fetchCalendar/token.json
 lambda/fetchCalendar/credentials.json
+lambda/googleTasks/token.json
+lambda/googleTasks/credentials.json
 lambda/layers/*/node_modules
 lambda/layers/*/credentials.json
 lambda/layers/*/token.json
@@ -43,3 +45,6 @@ lambda/*/local.js
 wooshScripts/*.csv
 wooshScripts/*.json
 .aider*
+
+# Local Netlify folder
+.netlify
