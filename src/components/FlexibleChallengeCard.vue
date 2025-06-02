@@ -12,12 +12,12 @@
         <v-icon>{{ showContent ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
       </v-btn>
 
-      <v-toolbar-title>ToDo</v-toolbar-title>
+      <v-toolbar-title>Habits</v-toolbar-title>
 
       <!-- Display Total Habit Score -->
       <v-chip color="amber" class="ml-2">
         <v-icon start>mdi-trophy</v-icon>
-        {{ totalHabitCompletionsScore }}
+        {{ totalCompletionsScore }}
       </v-chip>
 
       <v-spacer></v-spacer>
@@ -43,6 +43,9 @@
           <v-btn icon="mdi-dots-vertical" v-bind="props"></v-btn>
         </template>
         <v-list>
+          <v-list-item @click="cleanupTrackingData">
+            <v-list-item-title>Reset Tracking Data</v-list-item-title>
+          </v-list-item>
           <v-list-item @click="resetToDefaults">
             <v-list-item-title>Reset to Defaults</v-list-item-title>
           </v-list-item>
@@ -69,8 +72,8 @@
 
           <v-card-text class="min-h-[60px] p-2">
             <draggable
-              v-model="todayActivities"
-              :group="{ name: 'tasks', pull: true, put: true }"
+              v-model="todayHabits"
+              :group="{ name: 'habits', pull: true, put: true }"
               item-key="id"
               class="flex flex-wrap min-h-[60px]"
               ghost-class="ghost-task"
@@ -80,25 +83,22 @@
             >
               <template #item="{ element }">
                 <v-chip
-                  :color="element.color || (element.isTodo ? 'purple' : 'primary')"
+                  :color="element.color || 'primary'"
                   variant="elevated"
                   class="ma-1 today-chip"
                   closable
                   @click:close="removeFromToday(element)"
-                  @click="showTaskDetails(element)"
+                  @click="showHabitDetails(element)"
                 >
-                  <v-icon start size="small">{{ element.isTodo ? "mdi-check-circle-outline" : "mdi-checkbox-blank-circle-outline" }}</v-icon>
+                  <v-icon start size="small">mdi-checkbox-blank-circle-outline</v-icon>
                   {{ element.title }}
-                  <span v-if="element.dueDate" class="text-xs ms-2 text-grey-500"
-                    >({{ new Date(element.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) }})</span
-                  >
                   <span v-if="element.duration" class="text-xs ms-2 text-grey-100">({{ element.duration }})</span>
                 </v-chip>
               </template>
               <template #header>
-                <div v-if="todayActivities.length === 0" class="text-center py-4 empty-today">
+                <div v-if="todayHabits.length === 0" class="text-center py-4 empty-today">
                   <v-icon size="large" color="grey-darken-1">mdi-drag</v-icon>
-                  <div class="text-grey-darken-1 mt-2">Drag tasks here to plan your day</div>
+                  <div class="text-grey-darken-1 mt-2">Drag habits here to plan your day</div>
                 </div>
               </template>
             </draggable>
@@ -106,228 +106,146 @@
         </v-card>
       </v-card-text>
 
-      <!-- Options Columns -->
+      <!-- Habits Section -->
       <v-card-text>
-        <div class="d-flex flex-column flex-md-row">
-          <!-- To Do Column -->
-          <v-card class="category-column mb-4 border-r border-red-500 border-2 flex-1">
-            <v-card-title class="d-flex align-center gap-2 py-2">
-              <v-icon color="purple-lighten-1">mdi-checkbox-marked-circle-outline</v-icon>
-              <span>To-Do</span>
-              <v-spacer></v-spacer>
-              <div class="bg-[rgba(255,9,9,0.1)] rounded-md h-full text-center">
-                <draggable
-                  v-model="trashZone"
-                  :group="{ name: 'tasks', put: true, pull: false }"
-                  item-key="id"
-                  ghost-class="ghost-task"
-                  :animation="200"
-                  @change="handleTrashDrop"
-                >
-                  <template #header>
-                    <v-icon color="rgba(255, 9, 9, 0.2)" size="large" class="">mdi-delete-circle</v-icon>
-                  </template>
-                  <template #item="{ element }"> </template>
-                </draggable>
-              </div>
-              <v-btn icon="mdi-plus" size="x-small" @click="openItemDialog('todo')"></v-btn>
-            </v-card-title>
-
-            <v-divider></v-divider>
-
-            <v-card-text class="flex-grow-1 overflow-y-auto pa-1 pr-2">
-              <draggable
-                v-model="todoTasks"
-                :group="{ name: 'tasks', pull: true, put: true }"
-                item-key="id"
-                class="min-h-[200px]"
-                :animation="200"
-                ghost-class="ghost-task"
-                drag-class="dragging-task"
-              >
-                <template #item="{ element }">
-                  <v-chip class="ma-1 justify-start mb-2 cursor-grab relative" @click="showTaskDetails(element)" :class="{ 'line-through': element.completed }">
-                    <template v-slot:prepend>
-                      <v-icon
-                        size="small"
-                        :icon="element.completed ? 'mdi-check-circle' : 'mdi-checkbox-blank-circle-outline'"
-                        @click.stop="element.completed = !element.completed"
-                        class="text-purple-lighten-1 pr-2"
-                      ></v-icon>
-                    </template>
-                    {{ element.title }}
-                    <v-chip v-if="element.dueDate" size="x-small" color="grey" class="ml-1">{{
-                      new Date(element.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-                    }}</v-chip>
-                  </v-chip>
+        <v-card class="category-column d-flex flex-column">
+          <v-card-title class="d-flex align-center gap-2 py-2">
+            <v-icon>mdi-lightning-bolt</v-icon>
+            <span>Habits</span>
+            <v-spacer></v-spacer>
+            <div class="bg-[rgba(255,9,9,0.1)] rounded-md h-full text-center">
+              <draggable v-model="trashZone" :group="{ name: 'habits', put: true, pull: false }" item-key="id" ghost-class="ghost-task" :animation="200">
+                <template #header>
+                  <v-icon color="rgba(255, 9, 9, 0.2)" size="large" class="">mdi-delete-circle</v-icon>
                 </template>
+                <template #item="{ element }"> </template>
               </draggable>
-            </v-card-text>
-          </v-card>
+            </div>
+          </v-card-title>
 
-          <!-- Habits Column with 3 sections -->
-          <v-card class="category-column mb-4 mb-md-0 flex-1 d-flex flex-column">
-            <v-card-title class="d-flex align-center gap-2 py-2">
-              <v-icon>mdi-lightning-bolt</v-icon>
-              <span>Habits</span>
-              <v-spacer></v-spacer>
-              <div class="bg-[rgba(255,9,9,0.1)] rounded-md h-full text-center">
+          <v-divider></v-divider>
+
+          <!-- Energy Level Sections -->
+          <v-card-text class="flex-grow pa-0 overflow-y-auto max-h-full">
+            <div v-for="category in categories" :key="category.level" class="rounded overflow-hidden border border-white border-opacity-10">
+              <div class="d-flex align-center w-100 px-3 min-h-[40px] font-medium">
+                <span class="mr-2">{{ category.icon }}</span>
+                <span class="font-weight-medium">{{ category.level }}</span>
+                <v-spacer></v-spacer>
+                <v-btn
+                  icon="mdi-plus"
+                  size="x-small"
+                  @click.stop="
+                    () => {
+                      openHabitDialog('habit');
+                      currentItem.energyLevel = categories.find((c) => c.level === category.level).level;
+                    }
+                  "
+                ></v-btn>
+              </div>
+
+              <div class="pr-2">
                 <draggable
-                  v-model="trashZone"
-                  :group="{ name: 'tasks', put: true, pull: false }"
+                  v-model="filteredHabits[category.level]"
+                  :group="{ name: 'habits', pull: true, put: true }"
                   item-key="id"
-                  ghost-class="ghost-task"
+                  class="min-h-[50px] p-1"
+                  @change="handleDragChange"
                   :animation="200"
-                  @change="handleTrashDrop"
+                  ghost-class="ghost-task"
+                  drag-class="dragging-task"
                 >
-                  <template #header>
-                    <v-icon color="rgba(255, 9, 9, 0.2)" size="large" class="">mdi-delete-circle</v-icon>
+                  <template #item="{ element }">
+                    <v-chip :color="element.color || undefined" class="ma-1 justify-start cursor-grab relative" @click="showHabitDetails(element)">
+                      <template v-slot:prepend>
+                        <v-icon
+                          size="small"
+                          :icon="element.favorite ? 'mdi-star' : 'mdi-star-outline'"
+                          @click.stop="
+                            element.favorite = !element.favorite;
+                            saveState();
+                          "
+                          :color="element.favorite ? 'amber' : ''"
+                          class="pr-2"
+                        ></v-icon>
+                      </template>
+                      {{ element.title }}
+                      <!-- Duration as a chip -->
+                      <v-chip size="x-small" color="grey" class="ml-1">{{ element.duration }}</v-chip>
+
+                      <!-- Show streak if exists -->
+                      <v-chip v-if="element.currentStreak > 0" size="x-small" color="amber" class="ml-1" :text="`${element.currentStreak}🔥`"></v-chip>
+
+                      <!-- Show total completions instead of complete button -->
+                      <v-chip size="x-small" color="success" class="ml-1">{{ element.totalCompletions || 0 }}</v-chip>
+                    </v-chip>
                   </template>
-                  <template #item="{ element }"> </template>
                 </draggable>
               </div>
-            </v-card-title>
-
-            <v-divider></v-divider>
-
-            <!-- Energy Level Sections -->
-            <v-card-text class="flex-grow pa-0 overflow-y-auto max-h-full">
-              <div v-for="category in categories" :key="category.level" class="rounded overflow-hidden border border-white border-opacity-10">
-                <div class="d-flex align-center w-100 px-3 min-h-[40px] font-medium">
-                  <span class="mr-2">{{ category.icon }}</span>
-                  <span class="font-weight-medium">{{ category.level }}</span>
-                  <v-spacer></v-spacer>
-                  <v-btn
-                    icon="mdi-plus"
-                    size="x-small"
-                    @click.stop="
-                      () => {
-                        openItemDialog('task');
-                        currentItem.energyLevel = categories.find((c) => c.level === category.level).level;
-                      }
-                    "
-                  ></v-btn>
-                </div>
-
-                <div class="pr-2">
-                  <draggable
-                    v-model="filteredTasks[category.level]"
-                    :group="{ name: 'tasks', pull: true, put: true }"
-                    item-key="id"
-                    class="min-h-[50px] p-1"
-                    @change="handleDragChange"
-                    :animation="200"
-                    ghost-class="ghost-task"
-                    drag-class="dragging-task"
-                  >
-                    <template #item="{ element }">
-                      <v-chip :color="element.color || undefined" class="ma-1 justify-start cursor-grab relative" @click="showTaskDetails(element)">
-                        <template v-slot:prepend>
-                          <v-icon
-                            size="small"
-                            :icon="element.favorite ? 'mdi-star' : 'mdi-star-outline'"
-                            @click.stop="
-                              element.favorite = !element.favorite;
-                              saveState();
-                            "
-                            :color="element.favorite ? 'amber' : ''"
-                            class="pr-2"
-                          ></v-icon>
-                        </template>
-                        {{ element.title }}
-                        <!-- Duration as a chip -->
-                        <v-chip size="x-small" color="grey" class="ml-1">{{ element.duration }}</v-chip>
-
-                        <!-- Show streak if exists -->
-                        <v-chip v-if="element.currentStreak > 0" size="x-small" color="amber" class="ml-1" :text="`${element.currentStreak}🔥`"></v-chip>
-
-                        <!-- Show total completions instead of complete button -->
-                        <v-chip size="x-small" color="success" class="ml-1">{{ element.totalCompletions || 0 }}</v-chip>
-                      </v-chip>
-                    </template>
-                  </draggable>
-                </div>
-              </div>
-            </v-card-text>
-          </v-card>
-        </div>
+            </div>
+          </v-card-text>
+        </v-card>
       </v-card-text>
     </div>
 
     <v-dialog v-model="itemDialog" max-width="500">
       <v-card>
-        <v-card-title>
-          {{ currentItem.id ? "Edit" : "Add New" }}
-          {{ currentItem.type === "todo" ? "To-Do Task" : "Habit Option" }}
-        </v-card-title>
+        <v-card-title> {{ currentItem.id ? "Edit" : "Add New" }} Habit </v-card-title>
         <v-card-text>
-          <v-form @submit.prevent="saveItem">
+          <v-form @submit.prevent="saveHabit">
             <v-text-field v-model="currentItem.title" label="Title" required></v-text-field>
             <v-textarea v-model="currentItem.description" label="Description" rows="3"></v-textarea>
-
-            <!-- Task-specific fields -->
-            <template v-if="currentItem.type === 'task'">
-              <v-text-field v-model="currentItem.duration" label="Duration (e.g. '15 mins')"></v-text-field>
-              <v-select v-model="currentItem.color" :items="colorOptions" label="Color" clearable></v-select>
-              <v-select v-model="currentItem.energyLevel" :items="categories" item-title="level" item-value="level" label="Energy Level"></v-select>
-            </template>
-
-            <!-- Todo-specific fields -->
-            <template v-else>
-              <v-checkbox v-model="dueDateEnabled" label="Set due date" color="purple"></v-checkbox>
-              <v-date-picker v-if="dueDateEnabled" v-model="currentItem.dueDate" label="Due Date"></v-date-picker>
-              <v-checkbox v-if="currentItem.id" v-model="currentItem.completed" label="Mark as completed" color="purple"></v-checkbox>
-            </template>
+            <v-text-field v-model="currentItem.duration" label="Duration (e.g. '15 mins')"></v-text-field>
+            <v-select v-model="currentItem.color" :items="colorOptions" label="Color" clearable></v-select>
+            <v-select v-model="currentItem.energyLevel" :items="categories" item-title="level" item-value="level" label="Energy Level"></v-select>
           </v-form>
         </v-card-text>
 
-        <!-- Add tracking section for tasks -->
-        <template v-if="currentItem.type === 'task'">
-          <v-divider class="my-3"></v-divider>
+        <!-- Add tracking section for habits -->
+        <v-divider class="my-3"></v-divider>
 
-          <v-card-text>
-            <div class="d-flex justify-space-between align-center mb-2">
-              <span class="text-subtitle-1">Progress Tracking</span>
+        <v-card-text>
+          <div class="d-flex justify-space-between align-center mb-2">
+            <span class="text-subtitle-1">Progress Tracking</span>
 
-              <!-- Remove the complete button and add instruction text -->
-              <v-chip color="info" size="small">
-                <v-icon start size="small">mdi-information-outline</v-icon>
-                Drag to Today's Plan to complete
-              </v-chip>
+            <!-- Remove the complete button and add instruction text -->
+            <v-chip color="info" size="small">
+              <v-icon start size="small">mdi-information-outline</v-icon>
+              Drag to Today's Plan to complete
+            </v-chip>
+          </div>
+
+          <div class="d-flex align-center mb-2">
+            <v-icon color="amber" class="mr-2">mdi-trophy</v-icon>
+            <span>Total completions: {{ currentItem.totalCompletions || 0 }}</span>
+          </div>
+
+          <div class="d-flex align-center mb-2">
+            <v-icon color="orange" class="mr-2">mdi-fire</v-icon>
+            <span>Current streak: {{ currentItem.currentStreak || 0 }} days</span>
+          </div>
+
+          <div class="mt-4">
+            <div class="text-subtitle-2 mb-1">Last 30 days:</div>
+            <div class="d-flex justify-space-between flex-wrap">
+              <span
+                v-for="i in 30"
+                :key="i"
+                :class="{ 'text-success': (currentItem.completionBitMap & (1 << (i - 1))) !== 0 }"
+                class="mx-px text-lg leading-none"
+              >
+                {{ (currentItem.completionBitMap & (1 << (i - 1))) !== 0 ? "●" : "○" }}
+              </span>
             </div>
-
-            <div class="d-flex align-center mb-2">
-              <v-icon color="amber" class="mr-2">mdi-trophy</v-icon>
-              <span>Total completions: {{ currentItem.totalCompletions || 0 }}</span>
-            </div>
-
-            <div class="d-flex align-center mb-2">
-              <v-icon color="orange" class="mr-2">mdi-fire</v-icon>
-              <span>Current streak: {{ currentItem.currentStreak || 0 }} days</span>
-            </div>
-
-            <div class="mt-4">
-              <div class="text-subtitle-2 mb-1">Last 30 days:</div>
-              <div class="d-flex justify-space-between flex-wrap">
-                <span
-                  v-for="i in 30"
-                  :key="i"
-                  :class="{ 'text-success': (currentItem.completionBitMap & (1 << (i - 1))) !== 0 }"
-                  class="mx-px text-lg leading-none"
-                >
-                  {{ (currentItem.completionBitMap & (1 << (i - 1))) !== 0 ? "●" : "○" }}
-                </span>
-              </div>
-            </div>
-          </v-card-text>
-        </template>
+          </div>
+        </v-card-text>
 
         <v-card-actions>
           <v-btn
             v-if="currentItem.id"
             color="error"
             @click="
-              deleteItem(currentItem);
+              deleteHabit(currentItem);
               itemDialog = false;
             "
           >
@@ -335,9 +253,7 @@
           </v-btn>
           <v-spacer></v-spacer>
           <v-btn color="grey-darken-1" @click="itemDialog = false">Cancel</v-btn>
-          <v-btn :color="currentItem.type === 'todo' ? 'purple' : 'success'" @click="saveItem" :disabled="!currentItem.title">
-            {{ currentItem.id ? "Save" : "Add" }} {{ currentItem.type === "todo" ? "To-Do" : "Option" }}
-          </v-btn>
+          <v-btn color="success" @click="saveHabit" :disabled="!currentItem.title"> {{ currentItem.id ? "Save" : "Add" }} Habit </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -368,29 +284,29 @@ defineEmits(["expand"]);
 
 // State
 const showContent = ref(!props.collapsed);
-const selectedTask = ref(null);
 const apiIsLoading = ref(false);
 const itemDialog = ref(false);
-const dueDateEnabled = ref(false);
+const trashZone = ref([]);
 
-// New task forms
+// Habit form
 const currentItem = ref({
   id: null,
   title: "",
   description: "",
-  type: null, // 'todo' or 'task'
-  // Common fields for both types
   color: "",
-  // Task-specific fields
   duration: "",
   energyLevel: null,
   level: null,
   favorite: false,
-  // Todo-specific fields
-  dueDate: null,
-  completed: false,
-  isTodo: false,
+  totalCompletions: 0,
+  currentStreak: 0,
+  completionBitMap: 0,
+  lastUpdated: new Date().toISOString().split("T")[0],
 });
+
+// Constants
+const BASE_URL = "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod";
+const THIRTY_DAY_MASK = 0x3fffffff; // 30 bits of 1s
 
 // Energy level categories
 const categories = [
@@ -399,121 +315,92 @@ const categories = [
   { level: "High Options", icon: "🌞", color: "success", bgColor: "success-darken-4" },
 ];
 
-// Color options for tasks
+// Color options for habits
 const colorOptions = ["primary", "secondary", "success", "info", "warning", "error", "blue", "green", "purple", "teal", "cyan"];
 
-// In the initial tasks database (tasksDB) and when creating new items, add the tracking fields:
-const getNewHabit = (title, description, duration, level) => {
-  return {
-    id: `habit-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
-    title,
-    description,
-    duration,
-    level,
-    // New tracking fields
-    totalCompletions: 0,
-    currentStreak: 0,
-    completionBitMap: 0, // 30-day rolling window as a binary number
-    lastUpdated: new Date().toISOString().split("T")[0], // Store date as YYYY-MM-DD
-  };
-};
+// Helper function to create new habits
+const createNewHabit = (title, description, duration, level) => ({
+  id: `habit-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+  title,
+  description,
+  duration,
+  level,
+  totalCompletions: 0,
+  currentStreak: 0,
+  completionBitMap: 0,
+  lastUpdated: new Date().toISOString().split("T")[0],
+});
 
-// Update tasksDB to use the new function
-const tasksDB = {
+// Default habits database
+const defaultHabits = {
   "Low Options": [
-    getNewHabit("5-min walk", "A quick walk around the block to get some fresh air", "5 mins", "Low Options"),
-    getNewHabit("Quick shower/self-care", "Basic self-care routine", "10 mins", "Low Options"),
-    getNewHabit("Short journaling", "Write down current thoughts and feelings", "5 mins", "Low Options"),
-    getNewHabit("5-min meditation", "Brief mindfulness practice", "5 mins", "Low Options"),
+    createNewHabit("5-min walk", "A quick walk around the block to get some fresh air", "5 mins", "Low Options"),
+    createNewHabit("Quick shower/self-care", "Basic self-care routine", "10 mins", "Low Options"),
+    createNewHabit("Short journaling", "Write down current thoughts and feelings", "5 mins", "Low Options"),
+    createNewHabit("5-min meditation", "Brief mindfulness practice", "5 mins", "Low Options"),
   ],
   "Medium Options": [
-    getNewHabit("15-min home workout", "Quick home fitness routine (HFR)", "15 mins", "Medium Options"),
-    getNewHabit("20-30 min coding", "Short coding practice session", "25 mins", "Medium Options"),
-    getNewHabit("Quick social interaction", "Brief chat or call with friend/family", "15 mins", "Medium Options"),
-    getNewHabit("Cook easy meal", "Prepare a simple, healthy meal", "30 mins", "Medium Options"),
+    createNewHabit("15-min home workout", "Quick home fitness routine", "15 mins", "Medium Options"),
+    createNewHabit("20-30 min coding", "Short coding practice session", "25 mins", "Medium Options"),
+    createNewHabit("Quick social interaction", "Brief chat or call with friend/family", "15 mins", "Medium Options"),
+    createNewHabit("Cook easy meal", "Prepare a simple, healthy meal", "30 mins", "Medium Options"),
   ],
   "High Options": [
-    getNewHabit("Full gym session", "Complete workout at the gym", "60 mins", "High Options"),
-    getNewHabit("Exciting coding project", "Work on a challenging coding project", "60+ mins", "High Options"),
-    getNewHabit("Social event", "Attend or plan a social gathering", "Flexible", "High Options"),
-    getNewHabit("New experience", "Try something new and stimulating", "Flexible", "High Options"),
+    createNewHabit("Full gym session", "Complete workout at the gym", "60 mins", "High Options"),
+    createNewHabit("Exciting coding project", "Work on a challenging coding project", "60+ mins", "High Options"),
+    createNewHabit("Social event", "Attend or plan a social gathering", "Flexible", "High Options"),
+    createNewHabit("New experience", "Try something new and stimulating", "Flexible", "High Options"),
   ],
 };
 
-// Initial to-do tasks
-const todosDB = [
-  { id: "todo1", title: "Pay electricity bill", description: "Due on the 15th", dueDate: "2024-08-15", isTodo: true, completed: false },
-  {
-    id: "todo2",
-    title: "Call dentist",
-    description: "Schedule appointment for cleaning",
-    dueDate: "2024-07-22",
-    isTodo: true,
-    completed: false,
-  },
-  {
-    id: "todo3",
-    title: "Order new laptop",
-    description: "Research models and pricing",
-    dueDate: "2024-07-30",
-    isTodo: true,
-    completed: false,
-  },
-];
+// Reactive habit lists
+const habits = ref({
+  "Low Options": [...defaultHabits["Low Options"]],
+  "Medium Options": [...defaultHabits["Medium Options"]],
+  "High Options": [...defaultHabits["High Options"]],
+});
 
-// Get today's date formatted
-const currentDate = computed(() => {
-  return new Date().toLocaleDateString("en-US", {
+// Today's planned habits
+const todayHabits = ref([]);
+
+// Computed properties
+const currentDate = computed(() =>
+  new Date().toLocaleDateString("en-US", {
     weekday: "short",
     month: "short",
     day: "numeric",
-  });
-});
+  })
+);
 
-// Calculate total duration of today's tasks
 const totalTodayDuration = computed(() => {
-  if (todayActivities.value.length === 0) return "0 mins";
+  if (todayHabits.value.length === 0) return "0 mins";
 
-  let totalMinutes = 0;
-  todayActivities.value.forEach((task) => {
-    const match = task.duration?.match(/\d+/);
-    totalMinutes += match ? parseInt(match[0]) : 0;
-  });
+  const totalMinutes = todayHabits.value.reduce((total, habit) => {
+    const match = habit.duration?.match(/\d+/);
+    return total + (match ? parseInt(match[0]) : 0);
+  }, 0);
 
   return `${totalMinutes} mins`;
 });
 
-// Computed property for total habit completions score
-const totalHabitCompletionsScore = computed(() => {
-  let totalScore = 0;
-  for (const category in categoryTasks.value) {
-    categoryTasks.value[category].forEach((habit) => {
-      // Ensure we only count habits (tasks), not todos
-      if (!habit.isTodo) {
-        totalScore += habit.totalCompletions * habit.duration.replace(/[^0-9]/g, "") || 0;
-      }
-    });
-  }
-  return totalScore;
-});
+const totalCompletionsScore = computed(() =>
+  Object.values(habits.value)
+    .flat()
+    .reduce((total, habit) => total + (habit.totalCompletions || 0), 0)
+);
 
-// Reactive task lists for each mood
-const categoryTasks = ref({
-  "Low Options": [...tasksDB["Low Options"]],
-  "Medium Options": [...tasksDB["Medium Options"]],
-  "High Options": [...tasksDB["High Options"]],
-});
+const filteredHabits = computed(() => habits.value);
 
-// To-Do tasks list
-const todoTasks = ref([...todosDB]);
+// Utility functions
+const getTodaysDate = () => new Date().toISOString().split("T")[0];
 
-// Today's activities list
-const todayActivities = ref([]);
+const parseDuration = (duration) => {
+  if (!duration || duration === "Flexible") return Infinity;
+  const match = duration.match(/(\d+)/);
+  return match ? parseInt(match[1], 10) : Infinity;
+};
 
-// API Base URL
-const BASE_URL = "https://c6xl1u1f5a.execute-api.us-east-2.amazonaws.com/Prod";
-
-// API Call Helper
+// API functions
 const apiCall = async (endpoint, method = "GET", body = null) => {
   apiIsLoading.value = true;
   try {
@@ -528,99 +415,92 @@ const apiCall = async (endpoint, method = "GET", body = null) => {
   }
 };
 
-// Load saved state from API or localStorage
+const saveState = async () => {
+  const stateToSave = {
+    categoryTasks: habits.value, // Keep old key name for compatibility
+    todayActivities: todayHabits.value, // Keep old key name for compatibility
+    lastSaved: new Date().toISOString(),
+  };
+
+  localStorage.setItem("habitsHub", JSON.stringify(stateToSave));
+
+  if (getApiKey()) {
+    apiCall(`${BASE_URL}/getData?key=HabitsHub`, "PUT", stateToSave);
+  }
+};
+
 const loadSavedState = async () => {
   try {
-    // Try to load from API first
     if (getApiKey()) {
-      // Load habits data
-      const habitData = await apiCall(`${BASE_URL}/getData?key=HabitAndTodoHub`);
-      if (habitData && habitData.categoryTasks) {
-        categoryTasks.value = habitData.categoryTasks;
-        if (habitData.todayActivities) {
-          todayActivities.value = habitData.todayActivities;
+      // Try new endpoint first, fallback to old endpoint
+      let habitData = await apiCall(`${BASE_URL}/getData?key=HabitsHub`);
+
+      if (!habitData?.categoryTasks) {
+        console.log("Migrating from old endpoint...");
+        habitData = await apiCall(`${BASE_URL}/getData?key=HabitAndTodoHub`);
+
+        if (habitData?.categoryTasks) {
+          const migratedData = {
+            categoryTasks: habitData.categoryTasks,
+            todayActivities: habitData.todayActivities?.filter((item) => !item.isTodo) || [],
+            lastSaved: new Date().toISOString(),
+          };
+          apiCall(`${BASE_URL}/getData?key=HabitsHub`, "PUT", migratedData);
+          habitData = migratedData;
         }
       }
 
-      // Load todo data from separate key
-      const todoData = await apiCall(`${BASE_URL}/getData?key=TodoList`);
-      if (todoData) {
-        todoTasks.value = todoData;
+      if (habitData?.categoryTasks) {
+        habits.value = habitData.categoryTasks;
+        todayHabits.value = habitData.todayActivities?.filter((item) => !item.isTodo) || [];
       }
       return;
     }
 
-    // Fall back to localStorage if API fails or no API key
-    const savedHabitState = localStorage.getItem("habitAndTodoHub");
-    if (savedHabitState) {
-      const data = JSON.parse(savedHabitState);
-      categoryTasks.value = data.categoryTasks;
-      if (data.todayActivities) {
-        todayActivities.value = data.todayActivities;
+    // localStorage fallback with migration
+    let savedState = localStorage.getItem("habitsHub");
+
+    if (!savedState) {
+      console.log("Migrating from old localStorage...");
+      savedState = localStorage.getItem("habitAndTodoHub");
+
+      if (savedState) {
+        const oldData = JSON.parse(savedState);
+        const migratedData = {
+          categoryTasks: oldData.categoryTasks,
+          todayActivities: oldData.todayActivities?.filter((item) => !item.isTodo) || [],
+          lastSaved: new Date().toISOString(),
+        };
+        localStorage.setItem("habitsHub", JSON.stringify(migratedData));
+        savedState = JSON.stringify(migratedData);
       }
     }
 
-    // Load todos from localStorage
-    const savedTodoState = localStorage.getItem("todoList");
-    if (savedTodoState) {
-      const data = JSON.parse(savedTodoState);
-      if (data) {
-        todoTasks.value = data;
-      }
+    if (savedState) {
+      const data = JSON.parse(savedState);
+      habits.value = data.categoryTasks;
+      todayHabits.value = data.todayActivities?.filter((item) => !item.isTodo) || [];
     }
+
     updateHabitTracking();
   } catch (error) {
     console.error("Error loading saved state:", error);
   }
 };
 
-// Save current state to API and localStorage
-const saveState = async () => {
-  // Save habits state
-  const habitStateToSave = {
-    categoryTasks: categoryTasks.value,
-    todayActivities: todayActivities.value,
-    lastSaved: new Date().toISOString(),
-  };
-
-  // Save to localStorage
-  localStorage.setItem("habitAndTodoHub", JSON.stringify(habitStateToSave));
-  localStorage.setItem("todoList", JSON.stringify(todoTasks.value));
-
-  // Save to API if key exists
-  if (getApiKey()) {
-    apiCall(`${BASE_URL}/getData?key=HabitAndTodoHub`, "PUT", habitStateToSave);
-    apiCall(`${BASE_URL}/getData?key=TodoList`, "PUT", todoTasks.value);
-  }
-};
-
-const removeFromToday = (activity) => {
-  const index = todayActivities.value.findIndex((a) => a.id === activity.id);
+// Habit management functions
+const removeFromToday = (habit) => {
+  const index = todayHabits.value.findIndex((h) => h.id === habit.id);
   if (index !== -1) {
-    const task = todayActivities.value[index];
-
-    // Simplified - we know the task exists and has either isTodo or level
-    if (task.isTodo) {
-      todoTasks.value.push(task);
-    } else {
-      categoryTasks.value[task.level].push(task);
-    }
-    todayActivities.value.splice(index, 1);
+    const removedHabit = todayHabits.value[index];
+    habits.value[removedHabit.level].push(removedHabit);
+    todayHabits.value.splice(index, 1);
   }
 };
 
-const showTaskDetails = (item) => {
-  openItemDialog(item.isTodo ? "todo" : "task", item);
-};
+const showHabitDetails = (habit) => openHabitDialog(habit);
 
-// Combine sorting methods into one
-const sortTasks = (criterion) => {
-  const parseDuration = (duration) => {
-    if (!duration || duration === "Flexible") return Infinity;
-    const match = duration.match(/(\d+)/);
-    return match ? parseInt(match[1], 10) : Infinity;
-  };
-
+const sortHabits = (criterion) => {
   const sortBy = (a, b) => {
     if (criterion === "favorites") {
       if (a.favorite && !b.favorite) return -1;
@@ -631,216 +511,208 @@ const sortTasks = (criterion) => {
     return a.title.localeCompare(b.title);
   };
 
-  for (const category in categoryTasks.value) {
-    categoryTasks.value[category].sort(sortBy);
-  }
-  todoTasks.value.sort(sortBy);
+  Object.keys(habits.value).forEach((category) => {
+    habits.value[category].sort(sortBy);
+  });
   saveState();
 };
 
-const openItemDialog = (type, item = null) => {
-  // Reset the form
+const openHabitDialog = (habit = null) => {
   currentItem.value = {
     id: null,
     title: "",
     description: "",
-    type: type,
     color: "",
-    duration: type === "task" ? "15 mins" : "",
+    duration: "15 mins",
     energyLevel: null,
     level: null,
     favorite: false,
-    dueDate: null,
-    completed: false,
     completionBitMap: 0,
     currentStreak: 0,
     totalCompletions: 0,
-    lastUpdated: new Date().toISOString().split("T")[0],
-    isTodo: type === "todo",
+    lastUpdated: getTodaysDate(),
   };
 
-  // If editing an existing item, populate the form
-  if (item) {
-    Object.keys(item).forEach((key) => {
-      if (key in currentItem.value) {
-        currentItem.value[key] = item[key];
-      }
-    });
-
-    // Handle due date for todos
-    if (type === "todo") {
-      dueDateEnabled.value = !!item.dueDate;
-      if (item.dueDate) {
-        currentItem.value.dueDate = new Date(item.dueDate);
-      }
-    }
+  if (habit) {
+    Object.assign(currentItem.value, habit);
   }
 
   itemDialog.value = true;
 };
 
-const saveItem = () => {
-  const item = { ...currentItem.value };
+const saveHabit = () => {
+  const habit = { ...currentItem.value };
 
-  // Generate a new ID if this is a new item
-  if (!item.id) {
-    item.id = `${item.type}${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+  if (!habit.id) {
+    habit.id = `habit-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
   }
 
-  if (item.type === "task") {
-    // Handle task-specific fields
-    item.level = item.energyLevel;
-    item.duration = item.duration || "Flexible";
+  habit.level = habit.energyLevel;
+  habit.duration = habit.duration || "Flexible";
 
-    // Save to appropriate collection
-    if (item.id) {
-      // Update existing task
-      for (const category in categoryTasks.value) {
-        const index = categoryTasks.value[category].findIndex((t) => t.id === item.id);
-        if (index !== -1) {
-          categoryTasks.value[category].splice(index, 1);
-          break;
-        }
-      }
-    }
-
-    categoryTasks.value[item.level].push(item);
-  } else {
-    // Handle todo-specific fields
-    item.dueDate = dueDateEnabled.value ? item.dueDate : null;
-
-    // Save to todo collection
-    if (item.id) {
-      // Update existing todo
-      const index = todoTasks.value.findIndex((t) => t.id === item.id);
-      if (index !== -1) {
-        todoTasks.value.splice(index, 1);
-      }
-    }
-
-    todoTasks.value.push(item);
+  // Remove from old category if editing
+  if (habit.id) {
+    Object.values(habits.value).forEach((categoryHabits) => {
+      const index = categoryHabits.findIndex((h) => h.id === habit.id);
+      if (index !== -1) categoryHabits.splice(index, 1);
+    });
   }
 
+  habits.value[habit.level].push(habit);
   itemDialog.value = false;
   saveState();
 };
 
-const deleteItem = (item) => {
-  if (item.isTodo) {
-    // Remove from todo list
-    const index = todoTasks.value.findIndex((t) => t.id === item.id);
-    if (index !== -1) {
-      todoTasks.value.splice(index, 1);
-    }
-  } else {
-    // Find which category the task belongs to
-    for (const [category, tasks] of Object.entries(categoryTasks.value)) {
-      const index = tasks.findIndex((t) => t.id === item.id);
-      if (index !== -1) {
-        categoryTasks.value[category].splice(index, 1);
-        break;
-      }
-    }
-  }
+const deleteHabit = (habit) => {
+  Object.values(habits.value).forEach((categoryHabits) => {
+    const index = categoryHabits.findIndex((h) => h.id === habit.id);
+    if (index !== -1) categoryHabits.splice(index, 1);
+  });
 
-  // Also remove from today if it's there
-  removeFromToday(item);
+  removeFromToday(habit);
   saveState();
 };
 
+const resetToDefaults = () => {
+  if (confirm("This will reset all your habits to defaults. Continue?")) {
+    habits.value = {
+      "Low Options": [...defaultHabits["Low Options"]],
+      "Medium Options": [...defaultHabits["Medium Options"]],
+      "High Options": [...defaultHabits["High Options"]],
+    };
+    todayHabits.value = [];
+    saveState();
+  }
+};
+
+const cleanupTrackingData = () => {
+  if (confirm("This will reset all completion counts and streaks but keep your habits. Continue?")) {
+    const today = getTodaysDate();
+
+    Object.values(habits.value)
+      .flat()
+      .forEach((habit) => {
+        habit.completionBitMap = 0;
+        habit.totalCompletions = 0;
+        habit.currentStreak = 0;
+        habit.lastUpdated = today;
+      });
+
+    todayHabits.value = [];
+    saveState();
+  }
+};
+
+// Drag and drop handlers
 const handleDragChange = (evt) => {
-  // Handle when items are added to a category from Today
   if (evt.added) {
-    const task = evt.added.element;
-    // If it's a Todo that was mistakenly dragged to a habit category, move it back to todos
-    if (!task.isTodo) {
-      task.level = findTaskCategory(task);
-    }
+    const habit = evt.added.element;
+    habit.level = findHabitCategory(habit);
   }
   saveState();
 };
 
 const handleTodayChange = (evt) => {
   if (evt.added) {
-    const task = evt.added.element;
-
-    // If it's a habit (not a todo), mark it as completed for today
-    if (!task.isTodo) {
-      // This is the ONLY place where habits get marked complete
-      completeHabit(task);
-
-      // Optionally add a visual indicator or notification
-      console.log(`Habit "${task.title}" marked as completed for today!`);
-    }
+    const habit = evt.added.element;
+    completeHabit(habit);
+    console.log(`Habit "${habit.title}" completed!`);
   }
   saveState();
 };
 
-// Add handler for trash drop
-const trashZone = ref([]);
-const handleTrashDrop = (evt) => {
-  if (evt.added) {
-    const item = evt.added.element;
+// Watch for items being dragged to trash instead of using @change
+watch(
+  trashZone,
+  (newItems, oldItems) => {
+    if (newItems.length > oldItems.length) {
+      // An item was added to trash
+      const newItem = newItems[newItems.length - 1];
 
-    // Confirm deletion
-    if (confirm(`Are you sure you want to delete "${item.title}"?`)) {
-      deleteItem(item);
-      console.log(`Item "${item.title}" has been deleted`);
+      if (confirm(`Delete "${newItem.title}"?`)) {
+        deleteHabit(newItem);
+      } else {
+        // If user cancels, put the habit back to its original category
+        const category = newItem.level || "Low Options";
+        if (habits.value[category]) {
+          habits.value[category].push(newItem);
+        } else {
+          habits.value["Low Options"].push(newItem);
+        }
+        saveState();
+      }
+
+      // Clear the trash zone
       trashZone.value = [];
     }
-  }
-};
-
-// Watch for changes in categoryTasks to save state
-watch(
-  [categoryTasks, todayActivities],
-  () => {
-    saveState();
   },
   { deep: true }
 );
 
-// Watch for changes in todoTasks separately
-watch(
-  todoTasks,
-  () => {
-    saveState();
-  },
-  { deep: true }
-);
-
-// Load saved state on component mount
-onMounted(() => {
-  loadSavedState();
-});
-
-const filteredTasks = computed(() => {
-  return categoryTasks.value;
-});
-
-const findTaskCategory = (task) => {
-  if (task.isTodo) return "todo";
-
-  for (const category in categoryTasks.value) {
-    if (categoryTasks.value[category].some((t) => t.id === task.id)) {
-      return category;
-    }
+// Utility functions
+const findHabitCategory = (habit) => {
+  for (const [category, categoryHabits] of Object.entries(habits.value)) {
+    if (categoryHabits.some((h) => h.id === habit.id)) return category;
   }
 };
 
-const resetToDefaults = () => {
-  if (confirm("This will reset all your habit options and todo tasks to defaults. Continue?")) {
-    categoryTasks.value = {
-      "Low Options": [...tasksDB["Low Options"]],
-      "Medium Options": [...tasksDB["Medium Options"]],
-      "High Options": [...tasksDB["High Options"]],
-    };
-    todoTasks.value = [...todosDB];
-    todayActivities.value = [];
-    saveState();
+// Habit tracking functions
+const completeHabit = (habit) => {
+  const today = getTodaysDate();
+  const daysSinceUpdate = Math.floor((new Date(today) - new Date(habit.lastUpdated || today)) / (1000 * 60 * 60 * 24));
+
+  if (daysSinceUpdate > 0) {
+    habit.completionBitMap = (habit.completionBitMap << daysSinceUpdate) & THIRTY_DAY_MASK;
   }
+
+  habit.completionBitMap |= 1; // Set today's bit
+  habit.totalCompletions = (habit.totalCompletions || 0) + 1;
+
+  // Calculate streak
+  if (daysSinceUpdate === 0) {
+    if (habit.currentStreak === 0) habit.currentStreak = 1;
+  } else if (daysSinceUpdate === 1) {
+    const yesterdayCompleted = (habit.completionBitMap & 2) !== 0;
+    habit.currentStreak = yesterdayCompleted ? (habit.currentStreak || 0) + 1 : 1;
+  } else {
+    habit.currentStreak = 1;
+  }
+
+  habit.lastUpdated = today;
+  saveState();
 };
 
+const updateHabitTracking = () => {
+  const today = getTodaysDate();
+
+  Object.values(habits.value)
+    .flat()
+    .forEach((habit) => {
+      if (habit.completionBitMap === undefined) {
+        habit.completionBitMap = 0;
+        habit.totalCompletions = habit.totalCompletions || 0;
+        habit.currentStreak = 0;
+        habit.lastUpdated = today;
+      } else if (habit.lastUpdated !== today) {
+        const daysSinceUpdate = Math.floor((new Date(today) - new Date(habit.lastUpdated || today)) / (1000 * 60 * 60 * 24));
+
+        if (daysSinceUpdate > 0) {
+          habit.completionBitMap = (habit.completionBitMap << daysSinceUpdate) & THIRTY_DAY_MASK;
+          habit.currentStreak = 0; // Reset streak if any days passed
+          habit.lastUpdated = today;
+        }
+      }
+
+      // Ensure streak is 0 if not completed today
+      const todayCompleted = (habit.completionBitMap & 1) !== 0;
+      if (!todayCompleted) habit.currentStreak = 0;
+    });
+
+  saveState();
+};
+
+// Watchers and lifecycle
+watch([habits, todayHabits], saveState, { deep: true });
 watch(
   () => props.collapsed,
   (newValue) => {
@@ -848,99 +720,7 @@ watch(
   }
 );
 
-// Add these helper functions for bitmap manipulation
-const completeHabit = (habit) => {
-  // Update last updated date
-  const today = new Date().toISOString().split("T")[0];
-  const lastDate = habit.lastUpdated || today;
-
-  // Calculate days since last update
-  const daysSinceUpdate = Math.floor((new Date(today) - new Date(lastDate)) / (1000 * 60 * 60 * 24));
-
-  // Shift the bitmap by the number of days since last update (up to 30 days)
-  if (daysSinceUpdate > 0) {
-    // Shift bits to the left (older days)
-    habit.completionBitMap = habit.completionBitMap << daysSinceUpdate;
-
-    // Clear any bits beyond 30 days (using a 30-bit mask)
-    habit.completionBitMap = habit.completionBitMap & 0x3fffffff; // 30 bits of 1s
-
-    // If more than 1 day has passed, streak is broken
-    if (daysSinceUpdate > 1) {
-      habit.currentStreak = 0;
-    }
-  }
-
-  // Set today's bit (rightmost bit) to 1
-  habit.completionBitMap = habit.completionBitMap | 1;
-
-  // Update totalCompletions
-  habit.totalCompletions = (habit.totalCompletions || 0) + 1;
-
-  // Update streak - currentStreak+1 if yesterday was completed, otherwise reset to 1
-  if (daysSinceUpdate === 1) {
-    // Check if yesterday's bit is 1 (second bit from right)
-    const yesterdayCompleted = (habit.completionBitMap & 2) !== 0;
-    if (yesterdayCompleted) {
-      habit.currentStreak++;
-    } else {
-      habit.currentStreak = 1;
-    }
-  } else if (daysSinceUpdate > 1 || daysSinceUpdate === 0) {
-    // If more than 1 day passed or it's the same day, start/continue streak at 1
-    habit.currentStreak = 1;
-  }
-
-  // Update lastUpdated
-  habit.lastUpdated = today;
-
-  // Save state
-  saveState();
-};
-
-// Function to check completion status and update streaks on component load
-const updateHabitTracking = () => {
-  const today = new Date().toISOString().split("T")[0];
-
-  for (const category in categoryTasks.value) {
-    categoryTasks.value[category].forEach((habit) => {
-      // Initialize tracking fields if not present
-      if (habit.completionBitMap === undefined) {
-        habit.completionBitMap = 0;
-        habit.totalCompletions = 0;
-        habit.currentStreak = 0;
-        habit.lastUpdated = today;
-      } else if (habit.lastUpdated !== today) {
-        // Calculate days since last update
-        const daysSinceUpdate = Math.floor((new Date(today) - new Date(habit.lastUpdated || today)) / (1000 * 60 * 60 * 24));
-
-        if (daysSinceUpdate > 0) {
-          // Shift bitmap without marking today as complete
-          habit.completionBitMap = habit.completionBitMap << daysSinceUpdate;
-          habit.completionBitMap = habit.completionBitMap & 0x3fffffff;
-
-          // Check if streak is broken (more than 1 day passed)
-          if (daysSinceUpdate > 1) {
-            habit.currentStreak = 0;
-          }
-
-          habit.lastUpdated = today;
-        }
-      }
-    });
-  }
-
-  saveState();
-};
-
-// Function to get completion history array from bitmap
-const getCompletionHistory = (bitmap) => {
-  const history = [];
-  for (let i = 0; i < 30; i++) {
-    history.push((bitmap & (1 << i)) !== 0);
-  }
-  return history;
-};
+onMounted(loadSavedState);
 </script>
 
 <style scoped>
@@ -949,10 +729,6 @@ const getCompletionHistory = (bitmap) => {
   max-height: 500px;
   display: flex;
   flex-direction: column;
-}
-
-.todo-column {
-  border-left: 2px solid rgba(156, 39, 176, 0.3);
 }
 
 .today-card {
