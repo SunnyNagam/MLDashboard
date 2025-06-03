@@ -19,6 +19,9 @@
         hide-details
         @update:model-value="fetchTasks"
       ></v-select>
+      <v-btn icon size="small" @click="sortByDate = !sortByDate" :color="sortByDate ? 'primary' : 'grey'">
+        <v-icon>{{ sortByDate ? "mdi-sort-clock-descending" : "mdi-sort-variant" }}</v-icon>
+      </v-btn>
       <v-btn icon size="small" @click="$emit('expand')">
         <v-icon>mdi-arrow-expand</v-icon>
       </v-btn>
@@ -76,7 +79,7 @@
       <v-sheet class="pa-2">
         <div class="tasks-container">
           <v-list v-if="tasks.length > 0" class="py-0" density="compact">
-            <v-list-item v-for="task in tasks" :key="task.id" :class="['border-b border-gray-200', getTaskAgeClass(task)]" @click="showTask(task)">
+            <v-list-item v-for="task in sortedTasks" :key="task.id" :class="['border-b border-gray-200', getTaskAgeClass(task)]" @click="showTask(task)">
               <template v-slot:prepend>
                 <v-checkbox
                   :model-value="task.status === 'completed'"
@@ -206,6 +209,7 @@ const taskLists = ref([]);
 const selectedTaskList = ref("");
 const showTasks = ref(true);
 const editingTask = ref(null);
+const sortByDate = ref(true);
 
 // Quick Add functionality
 const quickTaskTitle = ref("");
@@ -286,9 +290,12 @@ const getTaskAge = (task) => {
   const updatedDate = new Date(task.updated);
   const daysSinceUpdate = Math.floor((now - updatedDate) / (1000 * 60 * 60 * 24));
   const hoursSinceUpdate = Math.floor((now - updatedDate) / (1000 * 60 * 60));
+  const minutesSinceUpdate = Math.floor((now - updatedDate) / (1000 * 60));
 
   if (daysSinceUpdate === 0) {
-    if (hoursSinceUpdate === 0) return "now";
+    if (minutesSinceUpdate === 0) return "just now";
+    if (minutesSinceUpdate === 1) return "1min ago";
+    if (minutesSinceUpdate < 60) return `${minutesSinceUpdate}mins ago`;
     if (hoursSinceUpdate === 1) return "1hr ago";
     return `${hoursSinceUpdate}hrs ago`;
   }
@@ -625,6 +632,18 @@ watch(
 if (props.collapsed) {
   showTasks.value = false;
 }
+
+// Create a computed property for sorted tasks
+const sortedTasks = computed(() => {
+  if (sortByDate.value) {
+    return [...tasks.value].sort((a, b) => {
+      const dateA = new Date(a.due || 0).getTime();
+      const dateB = new Date(b.due || 0).getTime();
+      return dateA - dateB;
+    });
+  }
+  return tasks.value;
+});
 </script>
 
 <style scoped>
