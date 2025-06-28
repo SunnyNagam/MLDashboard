@@ -99,7 +99,7 @@
                   {{ getTaskAge(task) }}
                   <span v-if="task.due" class="ml-2">
                     <v-icon size="12" class="mr-1">mdi-calendar-clock</v-icon>
-                    {{ formatDate(task.due) }}
+                    {{ formatDate(task.due) }} {{ getTimeUntilDue(task) }}
                   </span>
                 </v-list-item-subtitle>
               </v-list-item-content>
@@ -309,6 +309,61 @@ const getTaskAge = (task) => {
   const months = Math.floor(daysSinceUpdate / 30);
   const days = daysSinceUpdate % 30;
   return days === 0 ? `${months}m ago` : `${months}m ${days}d ago`;
+};
+
+const getTimeUntilDue = (task) => {
+  if (!task.due) return "";
+
+  const now = new Date();
+  const dueDate = new Date(task.due);
+  const timeDiff = dueDate - now;
+  const daysUntilDue = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+  const hoursUntilDue = Math.floor(timeDiff / (1000 * 60 * 60));
+  const minutesUntilDue = Math.floor(timeDiff / (1000 * 60));
+
+  // If overdue
+  if (timeDiff < 0) {
+    const daysPast = Math.abs(daysUntilDue);
+    const hoursPast = Math.abs(hoursUntilDue);
+    const minutesPast = Math.abs(minutesUntilDue);
+
+    if (daysPast === 0) {
+      if (minutesPast === 0) return "(overdue)";
+      if (minutesPast === 1) return "(1min overdue)";
+      if (minutesPast < 60) return `(${minutesPast}mins overdue)`;
+      if (hoursPast === 1) return "(1hr overdue)";
+      return `(${hoursPast}hrs overdue)`;
+    }
+    if (daysPast === 1) return "(1d overdue)";
+    if (daysPast < 7) return `(${daysPast}d overdue)`;
+    if (daysPast < 30) {
+      const weeks = Math.floor(daysPast / 7);
+      const days = daysPast % 7;
+      return days === 0 ? `(${weeks}w overdue)` : `(${weeks}w ${days}d overdue)`;
+    }
+    const months = Math.floor(daysPast / 30);
+    const days = daysPast % 30;
+    return days === 0 ? `(${months}m overdue)` : `(${months}m ${days}d overdue)`;
+  }
+
+  // If due in the future
+  if (daysUntilDue === 0) {
+    if (minutesUntilDue === 0) return "(due now)";
+    if (minutesUntilDue === 1) return "(1min)";
+    if (minutesUntilDue < 60) return `(${minutesUntilDue}mins)`;
+    if (hoursUntilDue === 1) return "(1hr)";
+    return `(${hoursUntilDue}hrs)`;
+  }
+  if (daysUntilDue === 1) return "(1d)";
+  if (daysUntilDue < 7) return `(${daysUntilDue}d)`;
+  if (daysUntilDue < 30) {
+    const weeks = Math.floor(daysUntilDue / 7);
+    const days = daysUntilDue % 7;
+    return days === 0 ? `(${weeks}w)` : `(${weeks}w ${days}d)`;
+  }
+  const months = Math.floor(daysUntilDue / 30);
+  const days = daysUntilDue % 30;
+  return days === 0 ? `(${months}m)` : `(${months}m ${days}d)`;
 };
 
 const getTaskAgeChip = (task) => {
@@ -672,7 +727,7 @@ const sortedTasks = computed(() => {
 }
 
 .tasks-container {
-  max-height: 300px;
+  max-height: 500px;
   overflow-y: auto;
 }
 
