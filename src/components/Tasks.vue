@@ -48,30 +48,51 @@
       <!-- Statistics Header -->
       <v-sheet class="px-2 pb-1" v-if="tasks.length > 0">
         <div class="stats-container">
-          <v-chip size="small" variant="text" class="mr-1">
-            <v-icon size="12" class="mr-1">mdi-format-list-checks</v-icon>
-            {{ taskStats.total }}
-          </v-chip>
-          <v-chip size="small" variant="text" color="info" class="mr-1" v-if="taskStats.fresh > 0">
-            <v-icon size="12" class="mr-1">mdi-clock-fast</v-icon>
-            {{ taskStats.fresh }}
-          </v-chip>
-          <v-chip size="small" variant="text" color="warning" class="mr-1" v-if="taskStats.stale > 0">
-            <v-icon size="12" class="mr-1">mdi-clock-alert</v-icon>
-            {{ taskStats.stale }}
-          </v-chip>
-          <v-chip size="small" variant="text" color="error" class="mr-1" v-if="taskStats.veryOld > 0">
-            <v-icon size="12" class="mr-1">mdi-clock-remove</v-icon>
-            {{ taskStats.veryOld }}
-          </v-chip>
+          <v-tooltip text="Total tasks in this list">
+            <template v-slot:activator="{ props }">
+              <v-chip v-bind="props" size="small" variant="text" class="mr-1">
+                <v-icon size="12" class="mr-1">mdi-format-list-checks</v-icon>
+                {{ taskStats.total }}
+              </v-chip>
+            </template>
+          </v-tooltip>
+          <v-tooltip text="Fresh tasks (updated within 7 days)" v-if="taskStats.fresh > 0">
+            <template v-slot:activator="{ props }">
+              <v-chip v-bind="props" size="small" variant="text" color="info" class="mr-1">
+                <v-icon size="12" class="mr-1">mdi-clock-fast</v-icon>
+                {{ taskStats.fresh }}
+              </v-chip>
+            </template>
+          </v-tooltip>
+          <v-tooltip text="Stale tasks (updated 7-30 days ago)" v-if="taskStats.stale > 0">
+            <template v-slot:activator="{ props }">
+              <v-chip v-bind="props" size="small" variant="text" color="warning" class="mr-1">
+                <v-icon size="12" class="mr-1">mdi-clock-alert</v-icon>
+                {{ taskStats.stale }}
+              </v-chip>
+            </template>
+          </v-tooltip>
+          <v-tooltip text="Very old tasks (updated over 30 days ago)" v-if="taskStats.veryOld > 0">
+            <template v-slot:activator="{ props }">
+              <v-chip v-bind="props" size="small" variant="text" color="error" class="mr-1">
+                <v-icon size="12" class="mr-1">mdi-clock-remove</v-icon>
+                {{ taskStats.veryOld }}
+              </v-chip>
+            </template>
+          </v-tooltip>
           <div class="ml-auto">
-            <v-progress-linear
-              :model-value="taskStats.freshPercentage"
-              height="4"
-              color="success"
-              bg-color="grey-lighten-1"
-              class="completion-progress"
-            ></v-progress-linear>
+            <v-tooltip text="Percentage of fresh tasks (updated within 7 days)">
+              <template v-slot:activator="{ props }">
+                <v-progress-linear
+                  v-bind="props"
+                  :model-value="taskStats.freshPercentage"
+                  height="4"
+                  color="success"
+                  bg-color="grey-lighten-1"
+                  class="completion-progress"
+                ></v-progress-linear>
+              </template>
+            </v-tooltip>
           </div>
         </div>
       </v-sheet>
@@ -99,7 +120,7 @@
                   {{ getTaskAge(task) }}
                   <span v-if="task.due" class="ml-2">
                     <v-icon size="12" class="mr-1">mdi-calendar-clock</v-icon>
-                    {{ formatDate(task.due) }} {{ getTimeUntilDue(task) }}
+                    {{ formatDate(task.due) }} <span :class="getDueDateColorClass(task)">{{ getTimeUntilDue(task) }}</span>
                   </span>
                 </v-list-item-subtitle>
               </v-list-item-content>
@@ -364,6 +385,27 @@ const getTimeUntilDue = (task) => {
   const months = Math.floor(daysUntilDue / 30);
   const days = daysUntilDue % 30;
   return days === 0 ? `(${months}m)` : `(${months}m ${days}d)`;
+};
+
+const getDueDateColorClass = (task) => {
+  if (!task.due) return "";
+
+  const now = new Date();
+  const dueDate = new Date(task.due);
+  const timeDiff = dueDate - now;
+  const daysUntilDue = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+
+  // Overdue - red
+  if (timeDiff < 0) return "text-red-500";
+
+  // Due today or tomorrow - orange
+  if (daysUntilDue <= 1) return "text-orange-500";
+
+  // Due within a week - yellow
+  if (daysUntilDue <= 7) return "text-yellow-600";
+
+  // Due in the future - green
+  return "text-green-600";
 };
 
 const getTaskAgeChip = (task) => {
@@ -783,5 +825,22 @@ const sortedTasks = computed(() => {
 
 .v-text-field:focus-within {
   transform: scale(1.02);
+}
+
+/* Due date coloring */
+.text-red-500 {
+  color: #ef4444 !important;
+}
+
+.text-orange-500 {
+  color: #f97316 !important;
+}
+
+.text-yellow-600 {
+  color: #ca8a04 !important;
+}
+
+.text-green-600 {
+  color: #16a34a !important;
 }
 </style>

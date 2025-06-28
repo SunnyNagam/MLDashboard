@@ -21,6 +21,7 @@ import TodoList from "@/components/TodoList.vue";
 import Woosh from "./Woosh.vue";
 import WooshFriendsTest from "@/components/WooshFriendsTest.vue";
 import TranscriptSummarizer from "@/components/TranscriptSummarizer.vue";
+import WebView from "@/components/WebView.vue";
 
 // SECTION: API Key Management
 const apiKeyModalVisible = ref(false);
@@ -148,6 +149,12 @@ const defaultConfig = {
       props: { collapsed: true },
       on: { expand: () => expandComponent(WooshFriendsTest, { collapsed: true }) },
     },
+    {
+      name: "Web View",
+      component: WebView,
+      props: { collapsed: false },
+      on: { expand: () => expandComponent(WebView, { collapsed: false }) },
+    },
   ],
 };
 
@@ -163,6 +170,7 @@ const componentMap = {
   Woosh,
   WooshFriendsTest,
   TranscriptSummarizer,
+  WebView,
 };
 
 const shouldLoadContent = computed(() => !apiKeyModalVisible.value); // Only load content if API key is available
@@ -288,6 +296,7 @@ const availableComponents = computed(() => [
   { name: "Woosh", componentName: "Woosh" },
   { name: "WooshFriendsTest", componentName: "WooshFriendsTest" },
   { name: "Transcript Summarizer", componentName: "TranscriptSummarizer" },
+  { name: "Web View", componentName: "WebView" },
 ]);
 
 const addComponentDialog = ref(false);
